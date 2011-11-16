@@ -69,6 +69,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
 
 
 
+
+
+
+
+
+
+
+
+
+
+
       l'envers&nbsp;*/url.reverse}&lt;/chanson&gt;<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&lt;/musique&gt;<br>
       duXML:&nbsp;scala.xml.Elem&nbsp;=&nbsp;<br>
@@ -78,6 +89,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
     </div>
     <p>Oui, on peut <span style="font-weight: bold;">écrire directement
         du XML</span> et y incorporer <span style="font-weight: bold;">du
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -118,6 +140,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
 
 
 
+
+
+
+
+
+
+
+
+
+
+
         instructions</a></h3>
     <div class="code scala_code"> scala&gt; &lt;?name foo?&gt;<br>
       res7: scala.xml.ProcInstr = &lt;?name foo?&gt; </div>
@@ -125,6 +158,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
     <p class="scala_code">scala&gt; &lt;!-- dskf --&gt;<br>
       res8: scala.xml.Comment = &lt;!-- dskf --&lt;</p>
     <h3><a id="entityref" name="entityref"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-references">characters
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -175,6 +219,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
       :</p>
     <p class="scala_code">scala&gt; val xml2 =
       ConstructingParser.fromSource(Source.fromString("&lt;xml&gt;&lt;test&gt;&lt;![CDATA[a
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -300,6 +355,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
     <p>Pense à utiliser trim avant de comparer deux arbres<span style="font-family: monospace;">
         :</span></p>
     <p class="scala_code"><span style="font-family: monospace;"></span>scala&gt;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -471,6 +537,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
 
 
 
+
+
+
+
+
+
+
+
+
+
+
               Elem</text> </g>
           <g>
             <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
@@ -492,6 +569,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
               x="69" y="706.301" width="387.3" height="20"></rect>
             <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
               x="72" y="720.301">+apply(prefix,label,attributes,scope,child):
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -990,6 +1078,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
 
 
 
+
+
+
+
+
+
+
+
+
+
+
         ]]&gt; </code></p>
     <p class="scala_code">scala&gt; new
       Unparsed(",.&lt;&gt;&amp;&amp;dfs;")<br>
@@ -1032,6 +1131,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
         title="http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values">http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values</a>)
       ou la spec de l'auteur (<a href="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0"
         title="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0">https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0</a>)&nbsp;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1171,6 +1281,17 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
 
 
 
+
+
+
+
+
+
+
+
+
+
+
         String): Seq[Node]</code>, mais puisque ca peut retourner <code>null</code>,
       mieux vaut s'en méfier.</p>
     <h4>Pas d’attribut<br>
@@ -1266,6 +1387,17 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
       </code>qui définit le parser XML à utiliser pour parcourir le
       flux. Par défaut l'objet XML utilise <code>javax.xml.parsers.SAXParserFactory</code>
       pour créer le parser.<br>
@@ -1273,21 +1405,21 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
       seule methode abstraite d'<code>XMLLoader</code>, <code>parser</code>.
       Voici un exemple fictif:<br>
     </p>
-    <p> <code>object IxAimeElle extends XMLLoader[Elem] {<br>
-        &nbsp; override def parser: SAXParser = {<br>
-        &nbsp;&nbsp;&nbsp;
-        javax.xml.parsers.SchtroumpfParserFactory.newInstance.newSAXParser()<br>
-        &nbsp; }<br>
-        } </code><br>
+    <p class="scala_code"> object IxAimeElle extends XMLLoader[Elem] {<br>
+      &nbsp; override def parser: SAXParser = {<br>
+      &nbsp;&nbsp;&nbsp;
+      javax.xml.parsers.SchtroumpfParserFactory.newInstance.newSAXParser()<br>
+      &nbsp; }<br>
+      } <br>
     </p>
     <p> Plus sérieusement, cet exemple permets de créer un parser qui ne
-      respecte pas les DTD :<br>
-      <code>object MyXML extends XMLLoader[Elem] {<br>
-        &nbsp;&nbsp; override def parser: SAXParser = {<br>
-        &nbsp;&nbsp; val f =
-        javax.xml.parsers.SAXParserFactory.newInstance()<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://xml.org/sax/features/validation"
-          title="http://xml.org/sax/features/validation">http://xml.org/sax/features/validation</a>",
+      respecte pas les DTD :</p>
+    <p class="scala_code">object MyXML extends XMLLoader[Elem] {<br>
+      &nbsp;&nbsp; override def parser: SAXParser = {<br>
+      &nbsp;&nbsp; val f =
+      javax.xml.parsers.SAXParserFactory.newInstance()<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://xml.org/sax/features/validation"
+        title="http://xml.org/sax/features/validation">http://xml.org/sax/features/validation</a>",
 
 
 
@@ -1328,9 +1460,6 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        false)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/disallow-doctype-decl"
-          title="http://apache.org/xml/features/disallow-doctype-decl">http://apache.org/xml/features/disallow-doctype-decl</a>",
 
 
 
@@ -1342,6 +1471,9 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+      false)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/disallow-doctype-decl"
+        title="http://apache.org/xml/features/disallow-doctype-decl">http://apache.org/xml/features/disallow-doctype-decl</a>",
 
 
 
@@ -1371,9 +1503,6 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        false)<br>
-        &nbsp;&nbsp; &nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-dtd-grammar"
-          title="http://apache.org/xml/features/nonvalidating/load-dtd-grammar">http://apache.org/xml/features/nonvalidating/load-dtd-grammar</a>",
 
 
 
@@ -1396,6 +1525,9 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+      false)<br>
+      &nbsp;&nbsp; &nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-dtd-grammar"
+        title="http://apache.org/xml/features/nonvalidating/load-dtd-grammar">http://apache.org/xml/features/nonvalidating/load-dtd-grammar</a>",
 
 
 
@@ -1414,9 +1546,6 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        false)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-external-dtd"
-          title="http://apache.org/xml/features/nonvalidating/load-external-dtd">http://apache.org/xml/features/nonvalidating/load-external-dtd</a>",
 
 
 
@@ -1450,6 +1579,9 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+      false)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-external-dtd"
+        title="http://apache.org/xml/features/nonvalidating/load-external-dtd">http://apache.org/xml/features/nonvalidating/load-external-dtd</a>",
 
 
 
@@ -1457,13 +1589,57 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        false)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; f.newSAXParser()<br>
-        &nbsp;&nbsp; }<br>
-        }</code><br>
-      On pourrait aussi utiliser l'une des 10000 implémentations de
-      SAXParser qui existe pour java. <a href="./TagSoup.html" title="TagSoup">TagSoup</a>
-      par exemple.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      false)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.newSAXParser()<br>
+      &nbsp;&nbsp; }<br>
+      }</p>
+    <p>On pourrait aussi utiliser l'une des 10000 implémentations de
+      SAXParser qui existe pour java. <a target="_blank" href="http://mercury.ccil.org/%7Ecowan/XML/tagsoup/"
+        title="TagSoup">TagSoup</a> par exemple.</p>
     <p> </p>
     <p></p>
     <h2>Lecture d’un objet XML</h2>
@@ -1472,68 +1648,68 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
     <p>L’extraction de données peut se faire facilement avec les
       méthodes et attributs que j’ai décrit dans la<a target="_top" href="#package">
         présentation du package XML</a>. Ce document est truffé
-      d’exemple où je récupère le nom de la balise, les enfants, les
+      d’exemples où je récupère le nom de la balise, les enfants, les
       valeurs des attributs, …<br>
     </p>
     <p>La méthode <code>unapply</code> de la classe <code>Elem</code>
       permet de récupérer des données facilement :</p>
-    <p><code>scala&gt; val x = &lt;a attr1="1"
-        attr2="2"&gt;foo&lt;/a&gt;<br>
-        x: scala.xml.Elem = &lt;a attr1="1" attr2="2"&gt;foo&lt;/a&gt;<br>
-        scala&gt; x match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
-        Elem(prefix, label, attribute, _, children) =&gt; {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        println("prefix = "+prefix)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        println("label = "+label)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        println("attribute = "+attribute)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        println("children = "+children)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-        prefix = null<br>
-        label = a<br>
-        attribute =&nbsp; attr1="1" attr2="2"<br>
-        children = foo</code></p>
+    <p class="scala_code">scala&gt; val x = &lt;a attr1="1"
+      attr2="2"&gt;foo&lt;/a&gt;<br>
+      x: scala.xml.Elem = &lt;a attr1="1" attr2="2"&gt;foo&lt;/a&gt;<br>
+      scala&gt; x match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
+      Elem(prefix, label, attribute, _, children) =&gt; {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("prefix = "+prefix)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("label = "+label)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("attribute = "+attribute)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("children = "+children)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      prefix = null<br>
+      label = a<br>
+      attribute =&nbsp; attr1="1" attr2="2"<br>
+      children = foo</p>
     <h3>Les pseudos opérateurs XPATH</h3>
     <p><code>\</code> et <code>\\</code> permettent de faire des
-      recherches dans l’arbre. Le plus simple est de montrer quelques
-      exemples :<code><br>
-        scala&gt; &lt;a&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;c attr="abc"/&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;c
-        attr="ac"/&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; &lt;/a&gt;<br>
-        res57: scala.xml.Elem = <br>
-        &lt;a&gt;<br>
-        &nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
-        &nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
-        &nbsp;&nbsp;&nbsp; &lt;c attr="ac"&gt;&lt;/c&gt;<br>
-        &nbsp; &lt;/a&gt;</code><br>
+      recherches dans l’arbre à la XPATH. Le plus simple est de montrer
+      quelques exemples :<code><br>
+      </code></p>
+    <p class="scala_code">scala&gt; &lt;a&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;c attr="abc"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;c
+      attr="ac"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; &lt;/a&gt;<br>
+      res57: scala.xml.Elem = <br>
+      &lt;a&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;c attr="ac"&gt;&lt;/c&gt;<br>
+      &nbsp; &lt;/a&gt;<br>
     </p>
     <p>Renvoie la liste des enfants directs de type <code>&lt;c&gt;</code>
-      :<br>
-      <code>scala&gt; res57 \ "c"<br>
-        res58: scala.xml.NodeSeq = NodeSeq(&lt;c
-        attr="ac"&gt;&lt;/c&gt;)</code></p>
+      :</p>
+    <p class="scala_code">scala&gt; res57 \ "c"<br>
+      res58: scala.xml.NodeSeq = NodeSeq(&lt;c attr="ac"&gt;&lt;/c&gt;)</p>
     <p>Renvoie la liste des enfants directs de type <code>&lt;b&gt;</code>
-      :<br>
-      <code>scala&gt; res57 \ "b"<br>
-        res59: scala.xml.NodeSeq = <br>
-        NodeSeq(&lt;b&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
-        &nbsp;&nbsp;&nbsp; &lt;/b&gt;)</code></p>
+      :</p>
+    <p class="scala_code">scala&gt; res57 \ "b"<br>
+      res59: scala.xml.NodeSeq = <br>
+      NodeSeq(&lt;b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;/b&gt;)</p>
     <p>Renvoie la liste de tous les enfants de type <code>&lt;c&gt;</code>
-      :<br>
-      <code>scala&gt; res57 \\ "c"<br>
-        res60: scala.xml.NodeSeq = NodeSeq(&lt;c
-        attr="abc"&gt;&lt;/c&gt;, &lt;c attr="ac"&gt;&lt;/c&gt;)</code></p>
+      :</p>
+    <p class="scala_code">scala&gt; res57 \\ "c"<br>
+      res60: scala.xml.NodeSeq = NodeSeq(&lt;c attr="abc"&gt;&lt;/c&gt;,
+      &lt;c attr="ac"&gt;&lt;/c&gt;)</p>
     <p>Renvoie la liste des attributs <code>"attr"</code> de <code>&lt;c&gt;
 
 
@@ -1562,28 +1738,50 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-      </code>:<br>
-      <code>scala&gt; res57 \ "c" \ "@attr"<br>
-        res61: scala.xml.NodeSeq = ac</code><br>
-      <br>
-      Renvoie la liste des attributs <code>"attr" </code>de la racine
-      :<br>
-      <code>scala&gt; res57 \ "@attr"<br>
-        res62: scala.xml.NodeSeq = NodeSeq()</code><br>
-      <br>
-      Renvoie la liste des attributs <code>"attr"</code> de tous les
-      éléments :<br>
-      <code>scala&gt; res57 \\ "@attr"<br>
-        res63: scala.xml.NodeSeq = NodeSeq(abc, ac)</code><br>
-    </p>
+
+
+
+
+
+
+
+
+
+
+
+      </code>:</p>
+    <p class="scala_code">scala&gt; res57 \ "c" \ "@attr"<br>
+      res61: scala.xml.NodeSeq = ac</p>
+    <p> Renvoie la liste des attributs <code>"attr" </code>de la
+      racine :</p>
+    <p class="scala_code">scala&gt; res57 \ "@attr"<br>
+      res62: scala.xml.NodeSeq = NodeSeq()</p>
+    <p> Renvoie la liste des attributs <code>"attr"</code> de tous les
+      éléments :</p>
+    <p class="scala_code">scala&gt; res57 \\ "@attr"<br>
+      res63: scala.xml.NodeSeq = NodeSeq(abc, ac)</p>
     <p>Bon c’est sympa mais l’utilité du machin s’arrête là. Il n’est
       pas possible d’appliquer des filtres sur les attributs, genre <code>c[@attr="ac"]</code>
       par exemple. Mais puisque <code>\</code> et <code>\\</code>
       renvoient du <code>NodeSeq</code>, on peut utiliser la méthode
-      filter de <code>Sequence</code> :<br>
-      <code>scala&gt; res57 \\ "@attr" filter(_.text == "ac")<br>
-        res67: scala.xml.NodeSeq = NodeSeq(ac)</code></p>
-    <p>Pour plus d’exemples, va voir le site de <a target="_blank" href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">Daniel
+      filter de <code>Sequence</code> :</p>
+    <p class="scala_code">scala&gt; res57 \\ "@attr" filter(_.text ==
+      "ac")<br>
+      res67: scala.xml.NodeSeq = NodeSeq(ac)<span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;"></span>Pour plus
+      d’exemples, va voir le site de <a target="_blank" href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">Daniel
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1615,32 +1813,34 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
     <h3>Extraire des données d’<code>Elem</code> avec le matcher<br>
     </h3>
     <p>Je définis une méthode qui va afficher une petite phrase selon ce
-      qui est passé en paramètre :<br>
-      <code id="code">scala&gt;&nbsp;&nbsp; val cestQuoi:(Node)=&gt;Unit
-        =&nbsp; {x=&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; x match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        case &lt;sac&gt;&lt;/sac&gt; =&gt; println("Ce sac est vide")<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        case &lt;sac&gt;{bonbon}&lt;/sac&gt; =&gt; println("Ce sac ne
-        contient que des " + bonbon)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        case &lt;sac&gt;{dedans @ _*}&lt;/sac&gt; =&gt; {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; println("Ce
-        sac contient ")<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        dedans.foreach(n=&gt;cestQuoi(n))<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        case _ =&gt; println("Ce n’est pas un sac")<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-        cestQuoi: scala.xml.Node =&gt; Unit = &lt;function1&gt;</code></p>
-    <p>On peut écrire le pattern à matcher directement dans le <code>case</code>.
-      Entre accolade, on définit des variables que l’on peut réutiliser
-      après <code>=&gt;</code>.<br>
+      qui est passé en paramètre :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp; val
+      cestQuoi:(Node)=&gt;Unit =&nbsp; {x=&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; x match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case &lt;sac&gt;&lt;/sac&gt; =&gt; println("Ce sac est vide")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case &lt;sac&gt;{bonbon}&lt;/sac&gt; =&gt; println("Ce sac ne
+      contient que des " + bonbon)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case &lt;sac&gt;{dedans @ _*}&lt;/sac&gt; =&gt; {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; println("Ce sac
+      contient ")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      dedans.foreach(n=&gt;cestQuoi(n))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case _ =&gt; println("Ce n’est pas un sac")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      cestQuoi: scala.xml.Node =&gt; Unit = &lt;function1&gt;<span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;"></span>On peut écrire le
+      pattern à matcher directement dans le <code>case</code>. Entre
+      accolade, on définit des variables que l’on peut réutiliser après
+      <code>=&gt;</code>.<br>
       <code>&lt;sac&gt;{dedans @ _*}&lt;/sac&gt; </code>est un<cite>
         Pattern Sequences</cite> (voir chapitre 8.1.9 de la <a target="_blank"
         href="http://www.scala-lang.org/sites/default/files/linuxsoft_archives/docu/files/ScalaReference.pdf">Référence
@@ -1671,65 +1871,77 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
         Scala</a>). La variable <code>dedans</code> est une séquence
       qui contient tous les enfants de <code>&lt;sac&gt;</code>.<br>
     </p>
-    <p>J’applique cette méthode à un sac de nounours :<br>
-      <code>scala&gt; val sacDeNounours =
-        &lt;sac&gt;nounours&lt;/sac&gt;<br>
-        sacDeNounours: scala.xml.Elem = &lt;sac&gt;nounours&lt;/sac&gt;<br>
-        <br>
-      </code><code>scala&gt; cestQuoi(sacDeNounours)<br>
-        Ce sac ne contient que des nounours</code><br>
-    </p>
-    <p>J’applique cette méthode à un sac vide :<br>
-      <code>scala&gt;&nbsp;&nbsp; val sacVide = &lt;sac/&gt;<br>
-        sacVide: scala.xml.Elem = &lt;sac&gt;&lt;/sac&gt;</code><br>
+    <p>J’applique cette méthode à un sac de nounours :</p>
+    <p class="scala_code">scala&gt; val sacDeNounours =
+      &lt;sac&gt;nounours&lt;/sac&gt;<br>
+      sacDeNounours: scala.xml.Elem = &lt;sac&gt;nounours&lt;/sac&gt;<br>
       <br>
-      <code>scala&gt; cestQuoi(sacVide)<br>
-        Ce sac est vide<br>
-      </code></p>
-    <p>J’applique cette méthode à un sac d’assortiments :<br>
-      <code>scala&gt; </code><code>sacAssortiment: scala.xml.Elem = <br>
-        &lt;sac&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;fraises&lt;/sac&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;banane&lt;/sac&gt;<br>
-        &nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
-      </code><code>scala&gt;&nbsp;&nbsp; val sacAssortiment =<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;sac&gt;fraises&lt;/sac&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;sac&gt;banane&lt;/sac&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
-      </code><br>
-      <code>scala&gt; cestQuoi(sacAssortiment)<br>
-        Ce sac contient <br>
-        Ce n’est pas un sac<br>
-        Ce sac ne contient que des fraises<br>
-        Ce n’est pas un sac<br>
-        Ce sac ne contient que des banane<br>
-        Ce n’est pas un sac</code><br>
-      Et oui! N’oublions pas que les espaces de formattage sont
+      scala&gt; cestQuoi(sacDeNounours)<br>
+      Ce sac ne contient que des nounours<br>
+    </p>
+    <p>J’applique cette méthode à un sac vide :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp; val sacVide =
+      &lt;sac/&gt;<br>
+      sacVide: scala.xml.Elem = &lt;sac&gt;&lt;/sac&gt;<br>
+      <br>
+      scala&gt; cestQuoi(sacVide)<br>
+      Ce sac est vide</p>
+    <p>J’applique cette méthode à un sac d’assortiments :</p>
+    <p class="scala_code">scala&gt; sacAssortiment: scala.xml.Elem = <br>
+      &lt;sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;fraises&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;banane&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
+      scala&gt;&nbsp;&nbsp; val sacAssortiment =<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;sac&gt;fraises&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;sac&gt;banane&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
+      <br>
+      scala&gt; cestQuoi(sacAssortiment)<br>
+      Ce sac contient <br>
+      Ce n’est pas un sac<br>
+      Ce sac ne contient que des fraises<br>
+      Ce n’est pas un sac<br>
+      Ce sac ne contient que des banane<br>
+      Ce n’est pas un sac</p>
+    <p> Et oui! N’oublions pas que les espaces de formattage sont
       significatifs.<br>
     </p>
-    <p><code></code>J’applique cette méthode à une frite :<br>
-      <code>scala&gt;&nbsp;&nbsp; val frite = &lt;frite/&gt;<br>
-        frite: scala.xml.Elem = &lt;frite&gt;&lt;/frite&gt;<br>
-      </code><br>
-      <code>scala&gt; cestQuoi(frite)<br>
-        Ce n’est pas un sac</code><br>
+    <p><code></code>J’applique cette méthode à une frite :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp; val frite =
+      &lt;frite/&gt;<br>
+      frite: scala.xml.Elem = &lt;frite&gt;&lt;/frite&gt;<br>
+      <br>
+      scala&gt; cestQuoi(frite)<br>
+      Ce n’est pas un sac<br>
     </p>
     <p>L’erreur courante avec cette méthode est d’oublier que les
       espaces et retours-chariots sont significatifs. Utiliser la
       méthode <a target="_top" href="#trim"><code>trim</code></a> si ce
       comportement n’est pas désirable.</p>
     <p>Il est possible d’imbriquer les balises dans un <code>case</code>
-      :<br>
-      <code>scala&gt;&nbsp;&nbsp; scala.xml.Utility.trim(sacAssortiment)
-        match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
-        &lt;sac&gt;&lt;sac&gt;{assortiment1}&lt;/sac&gt;&lt;sac&gt;{assortiment2}&lt;/sac&gt;&lt;/sac&gt;
+      :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp;
+      scala.xml.Utility.trim(sacAssortiment) match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
+      &lt;sac&gt;&lt;sac&gt;{assortiment1}&lt;/sac&gt;&lt;sac&gt;{assortiment2}&lt;/sac&gt;&lt;/sac&gt;
 
 
 
@@ -1757,12 +1969,34 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        =&gt; println("Ce sac est un assortiment de " + assortiment1 + "
-        et de " + assortiment2)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-        Ce sac est un assortiment de fraises et de bananes</code><br>
+
+
+
+
+
+
+
+
+
+
+
+      =&gt; println("Ce sac est un assortiment de " + assortiment1 + "
+      et de " + assortiment2)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      Ce sac est un assortiment de fraises et de bananes<br>
     </p>
     <p>Par contre <a target="_blank" href="http://stackoverflow.com/questions/2610191/scala-xml-pattern-matching-and-attributes">on
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1814,52 +2048,61 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
       &lt;script&gt; &lt;link&gt; et &lt;style&gt; dont on voudrait se
       débarraser. Par exemple :<br>
     </p>
-    <p> <code>&lt;html&gt;<br>
-        &lt;head&gt;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
-        robot')&lt;/script&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-        Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-        href="../Styles/stylesheet.css" rel="stylesheet"
-        type="text/css"/&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
-        type="text/css"&gt;&lt;/style&gt;<br>
-        &lt;/head&gt;<br>
-        &lt;body&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a href="</code><code></code><code>http://www.gargamel.com</code><code></code><code>/pages/foo.html</code><code>"&gt;Bar&lt;/a&gt;<br>
-        &lt;/body&gt;<br>
-        &lt;/html&gt;<br>
-      </code></p>
-    <p></p>
-    <p>doit être transformé en <br>
-      <code>&lt;html&gt;<br>
-        &lt;head&gt;<br>
-        &nbsp; &lt;title&gt;The Hobbit&lt;/title&gt;<br>
-        &nbsp; &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
-        &lt;/head&gt;<br>
-        &lt;body&gt;<br>
-        &nbsp;&nbsp; &lt;a href="</code><code>http://www.azrael.com</code><code>/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-        &lt;/body&gt;<br>
-        &lt;/html&gt;</code><code><br>
-      </code></p>
+    <p class="scala_code"> &lt;html&gt;<br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
+      robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+      href="../Styles/stylesheet.css" rel="stylesheet"
+      type="text/css"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
+      type="text/css"&gt;&lt;/style&gt;<br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;<br>
+      &lt;/html&gt;</p>
+    <p>doit être transformé en :</p>
+    <p class="scala_code">&lt;html&gt;<br>
+      &lt;head&gt;<br>
+      &nbsp; &lt;title&gt;The Hobbit&lt;/title&gt;<br>
+      &nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp; &lt;a
+      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;</p>
     <p></p>
     <h4> The « Scala way »</h4>
     <p> Scala definit 3 classes sympatiques pour parcourir et modifier
       un arbre XML.</p>
-    <p>– <code>BasicTransformer</code> est une classe marquée abstraite
+    <p>— <code>BasicTransformer</code> est une classe marquée abstraite
       qui définit 3 méthodes <code>transform</code>. Par défaut, elles
       parcourent récursivement les enfants du/des nœuds passés en
       paramètre en leur appliquant <code> transform</code>. Elle
       définit une méthode <code>apply(n: Node): Node </code>qui sous
       le capot appelle<code> transform(n: Node): Seq[Node]</code><br>
     </p>
-    <p>– <code>RewriteRule</code> est aussi une classe abstraite qui
+    <p>— <code>RewriteRule</code> est aussi une classe abstraite qui
       étend BasicTransformer. La différence entre <code>RewriteRule</code>
       et <code>BasicTransformer</code> est que la méthode surchargée <code>transform(n:
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1939,7 +2182,29 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
       </code>contenant un et un seul nœud si on utilise la méthode <code>apply(n:
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1978,7 +2243,7 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
         Node): Node</code>.<br>
     </p>
-    <p>– <code>RuleTransformer</code> est aussi marquée abstraite. Le
+    <p>— <code>RuleTransformer</code> est aussi marquée abstraite. Le
       constructeur prend en paramètre un nombre variable de <code>RewriteRule</code>.
       Elle surcharge<code> transform(n: Node): Seq[Node]</code> et
       applique sur <code>n</code> chaque <code>RewriteRule</code>
@@ -2020,27 +2285,38 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
       de les appliquer récursivement à tout l’arbre, y compris les
       attributs et autres types de nœuds.</p>
     <p>Pour en revenir à notre cas concrêt :</p>
-    <p>1) Définir un RewriteRule pour supprimer les balises enfants de
-      script :<br>
-      <code>scala&gt; class RewriteNoScript extends RewriteRule {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; import scala.xml.Node<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val toDelete =
-        List("script","link","style")<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; override def transform(n:
-        Node): Seq[Node] = {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; import
-        xml.Elem <br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; n match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        case e:Elem =&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        val newChildren = e.child.filter { c =&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <p class="scala_code">1) Définir un RewriteRule pour supprimer les
+      balises enfants de script :<br>
+      scala&gt; class RewriteNoScript extends RewriteRule {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; import scala.xml.Node<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val toDelete =
+      List("script","link","style")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; override def transform(n:
+      Node): Seq[Node] = {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; import xml.Elem
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; n match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case e:Elem =&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; val
+      newChildren = e.child.filter { c =&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
 
@@ -2077,74 +2353,86 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        !toDelete.contains(c.label)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        e.copy(child = newChildren)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        case o =&gt; o<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
-        defined class RewriteNoScript</code></p>
-    <p>Instanciation&nbsp;:<br>
-      <code>scala&gt; new RewriteNoScript<br>
-        res6: RewriteNoScript = &lt;function1&gt;</code></p>
-    <p>Création d’un jeu de données :<br>
-      <code>scala&gt; &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;title&gt;The Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;link type="text/css" rel="stylesheet"
-        href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;style type="text/css"&gt;&lt;/style&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
-        res9: scala.xml.Elem = <br>
-        &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
-        robot')&lt;/script&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-        Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
-        rel="stylesheet"
-        href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
-        type="text/css"&gt;&lt;/style&gt;<br>
-        &lt;/head&gt;</code><br>
+
+
+
+
+
+
+
+
+
+
+
+      !toDelete.contains(c.label)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      e.copy(child = newChildren)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case o =&gt; o<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
+      defined class RewriteNoScript</p>
+    <p>Instanciation&nbsp;:</p>
+    <p class="scala_code">scala&gt; new RewriteNoScript<br>
+      res6: RewriteNoScript = &lt;function1&gt;</p>
+    <p>Création d’un jeu de données :</p>
+    <p class="scala_code">scala&gt; &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;title&gt;The Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;link type="text/css" rel="stylesheet"
+      href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;style type="text/css"&gt;&lt;/style&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
+      res9: scala.xml.Elem = <br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
+      robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
+      rel="stylesheet" href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
+      type="text/css"&gt;&lt;/style&gt;<br>
+      &lt;/head&gt;<br>
     </p>
-    <p>Appliquer le jeu de données au <code>Transformer</code> :<br>
-      <code>scala&gt; res6(res9)<br>
-        res10: scala.xml.Node = <br>
-        &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-        Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &lt;/head&gt;</code><br>
+    <p>Appliquer le jeu de données au <code>Transformer</code> :</p>
+    <p class="scala_code">scala&gt; res6(res9)<br>
+      res10: scala.xml.Node = <br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &lt;/head&gt;<br>
     </p>
-    <p>2) Définir un <code>RewriteRule</code> pour modifier les liens<br>
-      <code>class RewriteLien extends RewriteRule {<br>
-        &nbsp; val oldPrefix = "http://www.gargamel.com"<br>
-        &nbsp; val newPrefix = "http://www.azrael.com"<br>
-        &nbsp; override def transform(node: Node): Seq[Node] = {<br>
-        &nbsp;&nbsp;&nbsp; node match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if
-        (e.label == "a" &amp;&amp; e.attributes.get("href").isDefined){<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <p>2) Définir un <code>RewriteRule</code> pour modifier les liens</p>
+    <p class="scala_code">class RewriteLien extends RewriteRule {<br>
+      &nbsp; val oldPrefix = "http://www.gargamel.com"<br>
+      &nbsp; val newPrefix = "http://www.azrael.com"<br>
+      &nbsp; override def transform(node: Node): Seq[Node] = {<br>
+      &nbsp;&nbsp;&nbsp; node match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (e.label
+      == "a" &amp;&amp; e.attributes.get("href").isDefined){<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      val newValAttribute = e.attributes.get("href").get.map(_ match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
 
@@ -2181,8 +2469,6 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        val newValAttribute = e.attributes.get("href").get.map(_ match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
 
@@ -2194,6 +2480,8 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+      case Text(value) =&gt; Text(value.replaceAll(oldPrefix,newPrefix))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
 
@@ -2219,9 +2507,6 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-        case Text(value) =&gt;
-        Text(value.replaceAll(oldPrefix,newPrefix))<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
 
@@ -2244,189 +2529,102 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        case n =&gt; n<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }) <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        e.copy(attributes = e.attributes.remove("href").append(new
-        UnprefixedAttribute("href", newValAttribute, Null)))<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else e<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case other =&gt; other<br>
-        &nbsp;&nbsp;&nbsp; }<br>
-        &nbsp; }<br>
-        }<br>
-        defined class RewriteLien</code></p>
-    <p>Instantiation :<br>
-      <code>scala&gt; new RewriteLien<br>
-        res25: RewriteLien = &lt;function1&gt;</code><br>
+      case n =&gt; n<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      }) <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      e.copy(attributes = e.attributes.remove("href").append(new
+      UnprefixedAttribute("href", newValAttribute, Null)))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else e<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case other =&gt; other<br>
+      &nbsp;&nbsp;&nbsp; }<br>
+      &nbsp; }<br>
+      }<br>
+      defined class RewriteLien</p>
+    <p>Instantiation :</p>
+    <p class="scala_code">scala&gt; new RewriteLien<br>
+      res25: RewriteLien = &lt;function1&gt;<br>
     </p>
-    <p>Jeu de test :<br>
-      <code>scala&gt; &lt;a
-        href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-        res26: scala.xml.Elem = &lt;a
-        href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;</code></p>
-    <p>Test :<br>
-      <code>scala&gt; res25(res26)<br>
-        res27: scala.xml.Node = &lt;a
-        href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;</code><br>
+    <p>Jeu de test :</p>
+    <p class="scala_code">scala&gt; &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      res26: scala.xml.Elem = &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;</p>
+    <p>Test :</p>
+    <p class="scala_code">scala&gt; res25(res26)<br>
+      res27: scala.xml.Node = &lt;a
+      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
     </p>
     <p>3) Composer les deux rewriters avec un transformer</p>
-    <p><code>scala&gt; val rwLien = new RewriteLien<br>
-        rwLien: RewriteLien = &lt;function1&gt;<br>
-        scala&gt; val rwNS = new RewriteNoScript<br>
-        rwNS: RewriteNoScript = &lt;function1&gt;<br>
-        scala&gt; val transformer = new RuleTransformer(rwLien,rwNS)<br>
-        transformer: scala.xml.transform.RuleTransformer =
-        &lt;function1&gt;</code><br>
+    <p class="scala_code">scala&gt; val rwLien = new RewriteLien<br>
+      rwLien: RewriteLien = &lt;function1&gt;<br>
+      scala&gt; val rwNS = new RewriteNoScript<br>
+      rwNS: RewriteNoScript = &lt;function1&gt;<br>
+      scala&gt; val transformer = new RuleTransformer(rwLien,rwNS)<br>
+      transformer: scala.xml.transform.RuleTransformer =
+      &lt;function1&gt;<br>
     </p>
     <p>4) Passer notre XML à la moulinette</p>
-    <p><code>scala&gt; &lt;html&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;title&gt;The Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;link href="../Styles/stylesheet.css" rel="stylesheet"
-        type="text/css"/&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;style type="text/css"&gt;&lt;/style&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &lt;body&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        &lt;a
-        href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/body&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/html&gt;<br>
-        res28: scala.xml.Elem = <br>
-        &lt;html&gt;<br>
-        &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
-        robot')&lt;/script&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-        Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
-        rel="stylesheet"
-        href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
-        type="text/css"&gt;&lt;/style&gt;<br>
-        &lt;/head&gt;<br>
-        &lt;body&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
-        href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-        &lt;/body&gt;<br>
-        &lt;/html&gt;<br>
-        <br>
-        scala&gt; transformer(res28)<br>
-        res29: scala.xml.Node = <br>
-        &lt;html&gt;<br>
-        &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-        Hobbit&lt;/title&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-        value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-        &lt;/head&gt;<br>
-        &lt;body&gt;<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
-        href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-        &lt;/body&gt;<br>
-        &lt;/html&gt;</code><br>
+    <p class="scala_code">scala&gt; &lt;html&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;title&gt;The Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;link href="../Styles/stylesheet.css" rel="stylesheet"
+      type="text/css"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;style type="text/css"&gt;&lt;/style&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/html&gt;<br>
+      res28: scala.xml.Elem = <br>
+      &lt;html&gt;<br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
+      robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
+      rel="stylesheet" href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
+      type="text/css"&gt;&lt;/style&gt;<br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;<br>
+      &lt;/html&gt;<br>
+      <br>
+      scala&gt; transformer(res28)<br>
+      res29: scala.xml.Node = <br>
+      &lt;html&gt;<br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
+      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;<br>
+      &lt;/html&gt;<br>
     </p>
     <p>Et voilà !</p>
     <h4>Le hic du « Scala way »<br>
@@ -2438,182 +2636,173 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
     <p>Tout d’abord, je crée un RewriteRule qui ajoute un attribut sur
       un nœud, et affiche le nœud avant et après transformation :<br>
     </p>
-    <p><code>scala&gt;class Rewrite(name:String) extends RewriteRule {<br>
-        &nbsp; import scala.xml.Node<br>
-        &nbsp; override def transform(n: Node): Seq[Node] = {<br>
-        &nbsp;&nbsp;&nbsp; println("to transform " + name + " " + n)<br>
-        &nbsp;&nbsp;&nbsp; import scala.xml.{Elem, Null,
-        UnprefixedAttribute}<br>
-        &nbsp;&nbsp;&nbsp; val ret = n match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt;
-        e.copy(attributes = new
-        UnprefixedAttribute(name,"yes",e.attributes))<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
-        &nbsp;&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp; println("transformed " + name + " " + ret)<br>
-        &nbsp;&nbsp;&nbsp; ret<br>
-        &nbsp;}<br>
-        }<br>
-        scala&gt; val xml =
-        &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        xml: scala.xml.Elem =
-        &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        scala&gt; val r1 = new Rewrite("r1")<br>
-        r1: Rewrite = &lt;function1&gt;<br>
-        scala&gt; r1(xml)<br>
-        to transform r1
-        &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r1 &lt;a
-        r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        res14: scala.xml.Node = &lt;a
-        r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</code><br>
+    <p class="scala_code">scala&gt;class Rewrite(name:String) extends
+      RewriteRule {<br>
+      &nbsp; import scala.xml.Node<br>
+      &nbsp; override def transform(n: Node): Seq[Node] = {<br>
+      &nbsp;&nbsp;&nbsp; println("to transform " + name + " " + n)<br>
+      &nbsp;&nbsp;&nbsp; import scala.xml.{Elem, Null,
+      UnprefixedAttribute}<br>
+      &nbsp;&nbsp;&nbsp; val ret = n match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; e.copy(attributes
+      = new UnprefixedAttribute(name,"yes",e.attributes))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
+      &nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp; println("transformed " + name + " " + ret)<br>
+      &nbsp;&nbsp;&nbsp; ret<br>
+      &nbsp;}<br>
+      }<br>
+      scala&gt; val xml =
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      xml: scala.xml.Elem =
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      scala&gt; val r1 = new Rewrite("r1")<br>
+      r1: Rewrite = &lt;function1&gt;<br>
+      scala&gt; r1(xml)<br>
+      to transform r1
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res14: scala.xml.Node = &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
     </p>
-    <p> <a href="./RuleRewriter.html" title="RuleRewriter"></a><br>
-    </p>
-    <p>Ensuite je le combine avec un <code> RuleTransformer</code> :<br>
-      <code>scala&gt; val t = new RuleTransformer(r1)<br>
-        t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
-        scala&gt; t(xml)<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        res15: scala.xml.Node = &lt;a r1="yes"&gt;&lt;b
-        r1="yes"&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</code><br>
+    <p>Ensuite je le combine avec un <code> RuleTransformer</code> :</p>
+    <p class="scala_code">scala&gt; val t = new RuleTransformer(r1)<br>
+      t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
+      scala&gt; t(xml)<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res15: scala.xml.Node = &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
     </p>
     <p> T’as pas un peu l'impression que ça mouline pour rien? Moi si.
-      En tous cas le résultat est correct. <br>
-    </p>
-    <p> Quand on combine deux <code>RewriteRule</code>, regarde bien
-      c'est ignoble:</p>
-    <p><code>scala&gt; val r2 = new Rewrite("r2")<br>
-        r2: Rewrite = &lt;function1&gt;<br>
-        scala&gt; val t = new RuleTransformer(r1,r2)<br>
-        t: scala.xml.transform.RuleTransformer = &lt;function1&gt;</code><br>
-    </p>
-    <p> <code>scala&gt; t(xml)<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
-        r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes"
-        r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
-        r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes"
-        r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes"
-        r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
-        r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes"
-        r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
-        r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        res18: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b
-        r2="yes" r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</code><br>
-    </p>
+      En tous cas le résultat est correct. </p>
+    <p> Quand on combine deux RewriteRule, regarde bien c'est ignoble:</p>
+    <p class="scala_code">scala&gt; val r2 = new Rewrite("r2")<br>
+      r2: Rewrite = &lt;function1&gt;<br>
+      scala&gt; val t = new RuleTransformer(r1,r2)<br>
+      t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
+      <br>
+      scala&gt; t(xml)<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res18: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</p>
     <p> <span style="font-weight: bold;">58 appels pour modifier 3
         nœuds</span>, mais le résultat est correct.<br>
     </p>
@@ -2622,46 +2811,45 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
     <p>Rien ne vaut une bonne méthode manuelle, en voici une qui pousse
       la stack à son maximum :<br>
     </p>
-    <p><code>scala&gt; class MyRuleTransformer(rw:RewriteRule *) {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | def transform(n:Node):Node = {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val parent =
-        rw.foldLeft(n){<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;
-        (node,rewrite) =&gt; rewrite(node)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; parent match {<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; &nbsp; case e:Elem =&gt;
-        e.copy(child=e.child.map(c=&gt;transform(c)))<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt;
-        o<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
-        &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
-        defined class MyRuleTransformer<br>
-        scala&gt; val t = new MyRuleTransformer(r1,r2)<br>
-        t: MyRuleTransformer = MyRuleTransformer@9ff430<br>
-      </code> </p>
-    <p><code> scala&gt; t.transform(xml)<br>
-        to transform r1
-        &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r1 &lt;a
-        r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        to transform r2 &lt;a
-        r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        transformed r2 &lt;a r2="yes"
-        r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-        to transform r1 &lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r1 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r2 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        transformed r2 &lt;b r2="yes"
-        r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-        to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-        transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-        transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-        res26: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b
-        r2="yes" r1="yes"&gt;&lt;c r2="yes"
-        r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</code><br>
+    <p class="scala_code">scala&gt; class
+      MyRuleTransformer(rw:RewriteRule *) {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | def transform(n:Node):Node = {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val parent =
+      rw.foldLeft(n){<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; (node,rewrite)
+      =&gt; rewrite(node)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; parent match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; &nbsp; case e:Elem =&gt;
+      e.copy(child=e.child.map(c=&gt;transform(c)))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
+      defined class MyRuleTransformer<br>
+      scala&gt; val t = new MyRuleTransformer(r1,r2)<br>
+      t: MyRuleTransformer = MyRuleTransformer@9ff430</p>
+    <p class="scala_code"><code> </code>scala&gt; t.transform(xml)<br>
+      to transform r1
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r2 &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r2 &lt;a r2="yes"
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes"
+      r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      res26: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
     </p>
     <p> « Seulement » 12 appels, mais avec par contre le gros
       inconvenient de bouffer plein de mémoire (À chaque appel, chaque
@@ -2738,8 +2926,30 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
 
 
 
+
+
+
+
+
+
+
+
+
+
+
         Scala&nbsp;</a></p>
     <p><a target="_blank" href="www.scala-lang.org/sites/default/files/pdfs/Scala%20Quick%20Reference.pdf">Scala
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2789,6 +2999,17 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
         alt="Creative Commons License" style="border-width: 0pt;" src="http://i.creativecommons.org/l/by/2.0/fr/88x31.png"></a><br>
     This <span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text"
       rel="dct:type">work</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/2.0/fr/">Creative
+
+
+
+
+
+
+
+
+
+
+
 
 
 
