@@ -1,3 +1,7 @@
+---
+categories:
+- articles
+---
 <!DOCTYPE html>
 <html>
   <head>
@@ -286,11 +290,11 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
     <div class="code"> <xml><test><!--[CDATA[a < b]]--></test></xml> </div>
     <p>Le soucis, c'est qu’on passe par une <code>String</code> et que
       le compilateur ne nous avertira pas si c’est malformé.</p>
-    <h3>Des { et des } à condition de les doubler</h3>
-    <p class="scala_code">scala&gt; &lt;accolade&gt;ceci {{ est une
-      accolade, ceux la }}}} sont deux accolades&lt;/accolade&gt;<br>
-      res31: scala.xml.Elem = &lt;accolade&gt;ceci { est une accolade,
-      ceux la }} sont deux accolades&lt;/accolade&gt;<br>
+    <h3>Des &#x7B; et des &#x7D; à condition de les doubler</h3>
+    <p class="scala_code">scala&gt; &lt;accolade&gt;ceci &#x7B;&#x7B; est une
+      accolade, ceux la &#x7D;&#x7D;&#x7D;&#x7D; sont deux accolades&lt;/accolade&gt;<br>
+      res31: scala.xml.Elem = &lt;accolade&gt;ceci &#x7B; est une accolade,
+      ceux la &#x7D;&#x7D; sont deux accolades&lt;/accolade&gt;<br>
     </p>
     <h3> Passer du XML en paramètre de méthodes </h3>
     <p>Attention à bien mettre un espace avant le chevron <code>&lt;</code>,
