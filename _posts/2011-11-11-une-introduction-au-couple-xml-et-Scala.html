@@ -1,0 +1,2904 @@
+---
+layout: default
+categories:
+- articles_prog
+---
+  <div class="section">
+    <h2>Avant propos</h2>
+    <p>À l'heure de <a target="_blank" href="www.yaml.org">YAML</a> et
+      de <a target="_blank" href="www.json.org">JSON</a>, il y a encore
+      des gens qui croient au typage fort des documents (non, cet
+      article n'est pas un troll). J'ai ramé un petit moment avant de
+      pouvoir manipuler du XML avec Scala sans avoir d'un côté la <a target="_blank"
+        href="http://www.scala-lang.org/api/current/index.html">scaladoc</a>
+      et <a target="_blank" href="http://stackoverflow.com/questions/tagged/scala">stackoverflow</a>
+      dans le brouteur, et de l'autre le code source de Scala pour
+      combler les manques de la scaladoc. Bien que l'API soit
+      sympathique, il est parfois difficile de tout comprendre et
+      d'avoir une vue d'ensemble du package <code>scala.xml</code>, la
+      scaladoc n'etant pas le meilleur ami du néophite (oui tu sais « à
+      cause » de l'héritage très libre, des fois la scaladoc d'une
+      classe ça ressemble a une méga partouse entre <cite>class</cite>,
+      <cite>trait</cite>, et <cite> object</cite>).</p>
+    <p>Si tes yeux se mettent à pisser le sang en lisant cet article, 
+      pour une quelconque raison, je te serais extrêmement reconnaissant
+       de bien vouloir me signaler mes erreurs.<br>
+    </p>
+    <p>Les exemples sont écrits dans la console Scala. J'utilise la
+      version 2.9.1 du langage.</p>
+    <h2>Écrire du XML</h2>
+    <h3>Mise en jambe<br>
+    </h3>
+    <p>Avant de te présenter tout le reste, regarde cet exemple <br>
+    </p>
+    <pre class="scala_code">
+      scala&gt;&nbsp;val&nbsp;artiste="Didier&nbsp;super"<br>
+      artiste:&nbsp;java.lang.String&nbsp;=&nbsp;Didier&nbsp;super<br>
+      <br>
+      scala&gt;&nbsp;val&nbsp;titre="on&nbsp;va&nbsp;tous&nbsp;crever"<br>
+titre:&nbsp;java.lang.String&nbsp;=&nbsp;on&nbsp;va&nbsp;tous&nbsp;crever<br>
+      <br>
+scala&gt;&nbsp;val&nbsp;url&nbsp;=&nbsp;"http://www.didiersuper.com/diskonvatous.htm"<br>
+url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.htm<br>
+      <br>
+      scala&gt;&nbsp;val&nbsp;duXML&nbsp;=&nbsp;&lt;musique&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&lt;chanson&nbsp;artiste={artiste.toUpperCase}&nbsp;titre={titre.split("&nbsp;").mkString("","_","")}&gt;{/*à
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      l'envers&nbsp;*/url.reverse}&lt;/chanson&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&lt;/musique&gt;<br>
+      duXML:&nbsp;scala.xml.Elem&nbsp;=&nbsp;<br>
+      &lt;musique&gt;<br>
+&lt;chanson&nbsp;artiste="DIDIER&nbsp;SUPER"&nbsp;titre="on_va_tous_crever"&gt;mth.suotavnoksid/moc.repusreidid.www//:ptth&lt;/chanson&gt;<br>
+      &lt;/musique&gt;<br>
+    </pre>
+    <p>Oui, on peut <span style="font-weight: bold;">écrire directement
+        du XML</span> et y incorporer <span style="font-weight: bold;">du
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        code scala commenté</span>, et obtenir un objet <code>Node</code>
+      en une seule ligne. Pas de concaténation de chaînes, pas de
+      dépendances à une librairie de template, tout est déjà là. De plus
+      cela ne compile pas si c'est mal formé (marqueur ouvrant et
+      fermant requis, deux fois le même attribut sur un marqueur
+      interdit…).</p>
+    <p>Outre des balises et des attributs, on peut utiliser les autres
+      fonctionalités d’XML<span style="text-decoration: line-through;"></span>
+      (j’explique les types de retour un peu plus loin dans
+      l’article)&nbsp;:</p>
+    <h3><a id="procinst" name="procinst"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-pi">processing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        instructions</a></h3>
+    <div class="code scala_code"> scala&gt; &lt;?name foo?&gt;<br>
+      res7: scala.xml.ProcInstr = &lt;?name foo?&gt; </div>
+    <h3><a id="comment" name="comment"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-comments">commentaires</a></h3>
+    <p class="scala_code">scala&gt; &lt;!-- dskf --&gt;<br>
+      res8: scala.xml.Comment = &lt;!-- dskf --&lt;</p>
+    <h3><a id="entityref" name="entityref"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-references">characters
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        et entity refs</a></h3>
+    <p class="scala_code"> scala&gt; &lt;a&gt;&amp;nbsp;&lt;/a&gt;<br>
+      res10: scala.xml.Elem = &lt;a&gt;&amp;nbsp;&lt;/a&gt;<br>
+      scala&gt; res10.child.head.getClass<br>
+      res12: java.lang.Class[_ &lt;: scala.xml.Node] = class
+      scala.xml.EntityRef scala&gt; &lt;a&gt;&amp;#xaa;&lt;/a&gt;<br>
+      res30: scala.xml.Elem = &lt;a&gt;ª&lt;/a&gt;<br>
+    </p>
+    <h3><a id="cdata" target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-cdata-sect">CDATA</a><br>
+    </h3>
+    On ne peut pas utiliser les sections <code>CDATA</code>
+    directement:
+    <p class="scala_code"> scala&gt; &lt;div&gt;&lt;![CDATA[starting tag
+      &lt;song&gt; and end stag &lt;/song&gt;]]&gt;&lt;/div&gt;<br>
+      res0: scala.xml.Elem = &lt;div&gt;starting tag
+      &amp;lt;song&amp;gt; and end stag
+      &amp;lt;/song&amp;gt;&lt;/div&gt;</p>
+    <p>Pfiou! Disparu le <code>CDATA</code>! Ça veut dire que si je
+      décide d’écrire <code>res0</code> dans un fichier, le <code>CDATA</code>
+      est perdu.<br>
+      Par contre nos chevrons ont bien été remplacés comme attendu. <br>
+    </p>
+    <p>On peut aisément palier cette disparition en instanciant la
+      classe <code>PCData</code>:</p>
+    <p class="scala_code">scala&gt; &lt;div&gt;{new PCData("starting tag
+      &lt;song&gt; and end stag &lt;/song&gt;")}&lt;/div&gt;<br>
+      res3: scala.xml.Elem = &lt;div&gt;&lt;![CDATA[starting tag
+      &lt;song&gt; and end stag &lt;/song&gt;]]&gt;&lt;/div&gt;</p>
+    <p>L’autre solution que j'ai trouvée <a href="http://blog.markfeeney.com/2011/03/scala-xml-gotchas.html">là</a>
+      :</p>
+    <p class="scala_code">scala&gt; val xml2 =
+      ConstructingParser.fromSource(Source.fromString("&lt;xml&gt;&lt;test&gt;&lt;![CDATA[a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      &lt; b]]&gt;&lt;/test&gt;&lt;/xml&gt;"), preserveWS =
+      true).document.docElem<br>
+      xml2: scala.xml.Node = &lt;xml&gt;&lt;test&gt;&lt;![CDATA[a &lt;
+      b]]&gt;&lt;/test&gt;&lt;/xml&gt;<br>
+    </p>
+    <div class="code"> <xml><test><!--[CDATA[a < b]]--></test></xml> </div>
+    <p>Le soucis, c'est qu’on passe par une <code>String</code> et que
+      le compilateur ne nous avertira pas si c’est malformé.</p>
+    <h3>Des &#x7B; et des &#x7D; à condition de les doubler</h3>
+    <p class="scala_code">scala&gt; &lt;accolade&gt;ceci &#x7B;&#x7B; est une
+      accolade, ceux la &#x7D;&#x7D;&#x7D;&#x7D; sont deux accolades&lt;/accolade&gt;<br>
+      res31: scala.xml.Elem = &lt;accolade&gt;ceci &#x7B; est une accolade,
+      ceux la &#x7D;&#x7D; sont deux accolades&lt;/accolade&gt;<br>
+    </p>
+    <h3> Passer du XML en paramètre de méthodes </h3>
+    <p>Attention à bien mettre un espace avant le chevron <code>&lt;</code>,
+      sinon vous passerez comme moi pour un boulet (<a href="http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala"
+        title="http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala">http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala</a>):</p>
+    <p class="scala_code">scala&gt; Elem(null, "a", Null, TopScope,
+      &lt;b/&gt;)<br>
+      resN: scala.xml.Elem = &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;<br>
+    </p>
+    <p></p>
+    <h3>Conservation du formatage</h3>
+    <p>Quand on écrit du XML, scala conserve le formatage :</p>
+    <p class="scala_code">scala&gt; &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      res16: scala.xml.Elem = &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      scala&gt; res16<br>
+      res17: scala.xml.Elem = &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+    </p>
+    <p><a id="text_as_format" name="text_as_format"></a>Scala crée des
+      nœuds pour chaque chaîne de séparateurs ( espace, tabulation,
+      retour chariot, … )</p>
+    <p class="scala_code">scala&gt; &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      res16: scala.xml.Elem = &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      scala&gt; res16<br>
+      res17: scala.xml.Elem = &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      scala&gt; res17.child.foreach(c=&gt;println(c.getClass))<br>
+      class scala.xml.Text<br>
+      class scala.xml.Elem<br>
+      class scala.xml.Text</p>
+    <p>Ce qui signifie que <code>&lt;a&gt;
+        &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;</code>
+      n’est pas égal à <code>&lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;</code>
+      :</p>
+    <p class="scala_code">scala&gt; &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      res40: scala.xml.Elem = &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      <br>
+      scala&gt; &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res41: scala.xml.Elem = &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      <br>
+      scala&gt; &lt;a&gt; &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt;
+      &lt;/a&gt;<br>
+      res42: scala.xml.Elem = &lt;a&gt;
+      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
+      <br>
+      scala&gt; res40 == res41<br>
+      res43: Boolean = false<br>
+      <br>
+      scala&gt; res40 == res42<br>
+      res44: Boolean = true<br>
+    </p>
+    <p> <a id="trim" name="trim"></a>Il est possible de supprimer tous
+      les blancs avec la méthode <code>trim</code> :</p>
+    <p class="scala_code">scala&gt; scala.xml.Utility.trim(res42)<br>
+      res45: scala.xml.Node = &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;</p>
+    <p>Pense à utiliser trim avant de comparer deux arbres<span style="font-family: monospace;">
+        :</span></p>
+    <p class="scala_code"><span style="font-family: monospace;"></span>scala&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      scala.xml.Utility.trim(res40) == scala.xml.Utility.trim(res41)<br>
+      res45: Boolean = true</p>
+    <h2>Afficher du XML</h2>
+    <p> </p>
+    <p> Cet exemple nous crache une belle représentation d'un nœud XML
+      qui tient sur une ligne de 80 colonnes et dont l'indentation est
+      de 10 colonnes:</p>
+    <p class="scala_code">scala&gt;
+      &lt;j&gt;&lt;k&gt;&lt;/k&gt;&lt;/j&gt;<br>
+      res31: scala.xml.Elem = &lt;j&gt;&lt;k&gt;&lt;/k&gt;&lt;/j&gt;<br>
+      scala&gt; new PrettyPrinter(80,10).formatNodes(res31)<br>
+      res32: String = <br>
+      &lt;j&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;k&gt;&lt;/k&gt;<br>
+      &lt;/j&gt;</p>
+    <h2><a id="package" name="package"></a>Le package scala.xml</h2>
+    <p> </p>
+    <p> <code>scala.xml</code> contient une floppée d'objets et de
+      classes qui représentent le "domaine métier" d'XML. Tous les
+      composants d'un document XML ont un pendant sous forme d’une
+      classe dans ce package.</p>
+    <p> Dans le SDK de Java, on manipule les objets métier definis dans
+      le package org.w3c.dom. Scala definit son propre modele métier.
+      Par conséquent, un <code>Node</code> scala n'est pas
+      interopérable avec un <code>Node</code> java. Tous les objets
+      présentés ici sont immutables.</p>
+    <p> </p>
+    <h3>Un dessin avec des boîtes et des flêches<br>
+    </h3>
+    <p>Tout d'abord un petit dessin avec du faux UML.&nbsp;</p>
+    <dl>
+      <dt>
+        <svg width="800px" viewBox="-108 47 875 680" xmlns="http://www.w3.org/2000/svg"
+          xlink="http://www.w3.org/1999/xlink">
+          <g>
+            <rect style="fill: #ffffff" x="410" y="63" width="79.3" height="44"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="410" y="63" width="79.3" height="44"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="449.65" y="79">&lt;&lt;trait&gt;&gt;</text>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="449.65" y="98">Seq</text>
+            <rect style="fill: #ffffff" x="443.3" y="49" width="54.2" height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 6; stroke: #778899"
+              x="443.3" y="49" width="54.2" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="449.3" y="63">T:Node</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="349" y="147.9" width="202.5"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="349" y="147.9" width="202.5" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:italic;font-weight:700"
+              x="450.25" y="166.9">NodeSeq</text>
+            <rect style="fill: #ffffff" x="349" y="175.9" width="202.5"
+              height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="349" y="175.9" width="202.5" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="352" y="189.9">+text: String</text>
+            <rect style="fill: #ffffff" x="349" y="195.9" width="202.5"
+              height="36"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="349" y="195.9" width="202.5" height="36"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="352" y="209.9">+\(that:String): NodeSeq</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="352" y="225.9">+\\(that:String): NodeSeq</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="449.65,125.236 449.65,127.45 450.25,127.45 450.25,147.9 "></polyline>
+            <polygon style="fill: #ffffff" points="457.65,125.236 449.65,109.236 441.65,125.236 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="457.65,125.236 449.65,109.236 441.65,125.236 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="292" y="309.9" width="279.5"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="292" y="309.9" width="279.5" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:italic;font-weight:700"
+              x="431.75" y="328.9">Node</text>
+            <rect style="fill: #ffffff" x="292" y="337.9" width="279.5"
+              height="68"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="292" y="337.9" width="279.5" height="68"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="295" y="351.9">+label: String</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="295" y="367.9">+prefix: String = null</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="295" y="383.9">+scope: NamespaceBinding = TopScope</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="295" y="399.9">+child: Seq[Node]</text>
+            <rect style="fill: #ffffff" x="292" y="405.9" width="279.5"
+              height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="292" y="405.9" width="279.5" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="295" y="419.9">+attribute(key:String): Metadata</text>
+          </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="450.25,250.136 450.25,270.9 431.75,270.9 431.75,309.9 "></polyline>
+            <polygon style="fill: #ffffff" points="458.25,250.136 450.25,234.136 442.25,250.136 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="458.25,250.136 450.25,234.136 442.25,250.136 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="74.1" y="555.401" width="379.6"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="74.1" y="555.401" width="379.6" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="263.9" y="574.401">Elem</text>
+            <rect style="fill: #ffffff" x="74.1" y="583.401" width="379.6"
+              height="8"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="74.1" y="583.401" width="379.6" height="8"></rect>
+            <rect style="fill: #ffffff" x="74.1" y="591.401" width="379.6"
+              height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="74.1" y="591.401" width="379.6" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="77.1" y="605.401">+copy(prefix,label,attributes,scope,child):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              Elem</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="431.75,444.136 431.75,480.401 263.9,480.401 263.9,555.401 "></polyline>
+            <polygon style="fill: #ffffff" points="439.75,444.136 431.75,428.136 423.75,444.136 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="439.75,444.136 431.75,428.136 423.75,444.136 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="69" y="678.301" width="387.3"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="69" y="678.301" width="387.3" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="262.65" y="697.301">companion:Elem</text>
+            <rect style="fill: #ffffff" x="69" y="706.301" width="387.3"
+              height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="69" y="706.301" width="387.3" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="72" y="720.301">+apply(prefix,label,attributes,scope,child):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              Elem</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="644.3" y="366.499" width="121.8"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="644.3" y="366.499" width="121.8" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:italic;font-weight:700"
+              x="705.2" y="385.499">SpecialNode</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="589.736,379.9 607.9,379.9 607.9,380.499 644.3,380.499 "></polyline>
+            <polygon style="fill: #ffffff" points="589.736,371.9 573.736,379.9 589.736,387.9 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="589.736,371.9 573.736,379.9 589.736,387.9 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="573.404" y="501.184" width="57.7"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="573.404" y="501.184" width="57.7" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="602.254" y="520.184">Atom</text>
+            <rect style="fill: #ffffff" x="585.104" y="487.184" width="54"
+              height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 6; stroke: #778899"
+              x="585.104" y="487.184" width="54" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="591.104" y="501.184">T:Any</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="705.2,412.735 705.2,423.499 623.104,423.499 623.104,423.499 602.254,423.499 602.254,486.354 "></polyline>
+            <polygon style="fill: #ffffff" points="713.2,412.735 705.2,396.735 697.2,412.735 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="713.2,412.735 705.2,396.735 697.2,412.735 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="663.404" y="581.184" width="47.6"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="663.404" y="581.184" width="47.6" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="687.204" y="600.184">Text</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="602.254,547.421 602.254,567.252 687.204,567.252 687.204,580.209 "></polyline>
+            <polygon style="fill: #ffffff" points="610.254,547.421 602.254,531.421 594.254,547.421 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="610.254,547.421 602.254,531.421 594.254,547.421 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="469.404" y="581.325" width="76.05"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="469.404" y="581.325" width="76.05" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="507.429" y="600.325">PCData</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="554.404" y="581.325" width="96.35"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="554.404" y="581.325" width="96.35" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="602.579" y="600.325">Unparsed</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="399.406" y="512.325" width="64.9"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="399.406" y="512.325" width="64.9" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="431.856" y="531.325">Group</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="431.75,445.087 431.75,480 431.856,480 431.856,511.396 "></polyline>
+            <polygon style="fill: #ffffff" points="439.75,445.087 431.75,429.087 423.75,445.087 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="439.75,445.087 431.75,429.087 423.75,445.087 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="658.406" y="501.297" width="93.7"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="658.406" y="501.297" width="93.7" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="705.256" y="520.297">EntityRef</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="705.2,412.735 705.2,447.395 705.256,447.395 705.256,500.29 "></polyline>
+            <polygon style="fill: #ffffff" points="713.2,412.735 705.2,396.735 697.2,412.735 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="713.2,412.735 705.2,396.735 697.2,412.735 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="536.408" y="254.297" width="95.95"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="536.408" y="254.297" width="95.95" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="584.383" y="273.297">Comment</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="705.2,347.256 705.2,324.398 584.383,324.398 584.383,283.304 "></polyline>
+            <polygon style="fill: #ffffff" points="697.2,347.256 705.2,363.256 713.2,347.256 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="697.2,347.256 705.2,363.256 713.2,347.256 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="658.408" y="249.297" width="92.55"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="658.408" y="249.297" width="92.55" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="704.683" y="268.297">ProcInstr</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="705.2,348.263 705.2,321.898 704.683,321.898 704.683,277.297 "></polyline>
+            <polygon style="fill: #ffffff" points="697.2,348.263 705.2,364.263 713.2,348.263 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="697.2,348.263 705.2,364.263 713.2,348.263 "></polygon>
+          </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="602.254,548.427 602.254,567.252 507.429,567.252 507.429,581.325 "></polyline>
+            <polygon style="fill: #ffffff" points="610.254,548.427 602.254,532.427 594.254,548.427 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="610.254,548.427 602.254,532.427 594.254,548.427 "></polygon>
+          </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="602.254,547.421 602.254,555.255 602.579,555.255 602.579,581.325 "></polyline>
+            <polygon style="fill: #ffffff" points="610.254,547.421 602.254,531.421 594.254,547.421 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="610.254,547.421 602.254,531.421 594.254,547.421 "></polygon>
+          </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 8; stroke: #000000"
+              points="263.9,611.401 263.9,630.401 262.1,630.401 262.1,649.184 260.65,649.184 260.65,670.596 "></polyline>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="255.65,657.948 260.65,673.948 265.65,657.948 "></polyline>
+            <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="264.1" y="639.792">&lt;&lt;companion&gt;&gt;</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="53.4" y="63" width="80.95" height="44"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="53.4" y="63" width="80.95" height="44"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="93.875" y="79">&lt;&lt;trait&gt;&gt;</text>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="93.875" y="98">Iterable</text>
+            <rect style="fill: #ffffff" x="88.35" y="49" width="85" height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 6; stroke: #778899"
+              x="88.35" y="49" width="85" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="94.35" y="63">T:Metadata</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="-45.6" y="152" width="279.5"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="-45.6" y="152" width="279.5" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:italic;font-weight:700"
+              x="94.15" y="171">Metadata</text>
+            <rect style="fill: #ffffff" x="-45.6" y="180" width="279.5"
+              height="20"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="-45.6" y="180" width="279.5" height="20"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-42.6" y="194">+key: String</text>
+            <rect style="fill: #ffffff" x="-45.6" y="200" width="279.5"
+              height="68"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="-45.6" y="200" width="279.5" height="68"></rect>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-42.6" y="214">+get(key:String): Option[Seq[Node]]</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-42.6" y="230">+remove(key:String): Metadata</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-42.6" y="246">+append(attr:Metadata): Metadata</text>
+            <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-42.6" y="262">+copy(next:Metadata): Metadata</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="-45.6,210 -106.9,210 -106.9,180 -45.6,180 -45.6,166 "></polyline>
+            <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-76.25" y="177">next</text>
+            <polygon style="fill: #000000" points="-58.85,177 -58.85,169 -50.85,173 "></polygon>
+            <text style="fill: #000000;text-anchor:end;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-49.6" y="207">1</text>
+            <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="-41.6" y="178">1</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="93.875,125.236 93.875,129.5 94.15,129.5 94.15,152 "></polyline>
+            <polygon style="fill: #ffffff" points="101.875,125.236 93.875,109.236 85.875,125.236 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="101.875,125.236 93.875,109.236 85.875,125.236 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="-55.6" y="388" width="45.8" height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="-55.6" y="388" width="45.8" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="-32.7" y="407">Null</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="94.15,286.236 94.15,326.301 -32.7,326.301 -32.7,388 "></polyline>
+            <polygon style="fill: #ffffff" points="102.15,286.236 94.15,270.236 86.15,286.236 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="102.15,286.236 94.15,270.236 86.15,286.236 "></polygon>
+          </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="344.1,306 342.1,306 342.1,206 300.1,206 300.1,206 259.072,206 "></polyline>
+            <polygon style="fill: #ffffff" points="233.9,206 247.9,201.2 261.9,206 247.9,210.8 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="233.9,206 247.9,201.2 261.9,206 247.9,210.8 "></polygon>
+            <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="321.1" y="203">attributes</text>
+            <polygon style="fill: #000000" points="278.6,203 278.6,195 270.6,199 "></polygon>
+            <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="265.9" y="194"> 1</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="76.4" y="386" width="92.05" height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="76.4" y="386" width="92.05" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:italic;font-weight:700"
+              x="122.425" y="405">Attribute</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="94.15,286.236 94.15,326.496 122.425,326.496 122.425,384.993 "></polyline>
+            <polygon style="fill: #ffffff" points="102.15,286.236 94.15,270.236 86.15,286.236 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="102.15,286.236 94.15,270.236 86.15,286.236 "></polygon>
+          </g>
+          <g>
+            <rect style="fill: #ffffff" x="-74.6" y="441" width="191.5"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="-74.6" y="441" width="191.5" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="21.15" y="460">UnprefixedAttribute</text> </g>
+          <g>
+            <rect style="fill: #ffffff" x="127.4" y="441" width="167.4"
+              height="28"></rect>
+            <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #778899"
+              x="127.4" y="441" width="167.4" height="28"></rect>
+            <text style="fill: #5d57ee;text-anchor:middle;font-size:16;font-family:sanserif;font-style:normal;font-weight:700"
+              x="211.1" y="460">PrefixedAttribute</text> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="186.686,400 211.1,400 211.1,441 "></polyline>
+            <polygon style="fill: #ffffff" points="186.686,392 170.686,400 186.686,408 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="186.686,392 170.686,400 186.686,408 "></polygon> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="58.1639,400 21.15,400 21.15,441 "></polyline>
+            <polygon style="fill: #ffffff" points="58.1639,408 74.1639,400 58.1639,392 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="58.1639,408 74.1639,400 58.1639,392 "></polygon> </g>
+          <g>
+            <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="323.828,185.9 235.1,185.9 235.1,190 233.9,190 "></polyline>
+            <polygon style="fill: #000000" points="349,185.9 335,190.7 321,185.9 335,181.1 "></polygon>
+            <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+              points="349,185.9 335,190.7 321,185.9 335,181.1 "></polygon>
+            <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="237.1" y="184.95">value</text>
+            <polygon style="fill: #000000" points="277.6,184.95 277.6,176.95 285.6,180.95 "></polygon>
+            <text style="fill: #000000;text-anchor:end;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="317" y="182.9">*</text>
+            <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
+              x="237.9" y="187"></text> </g></svg> <br>
+      </dt>
+    </dl>
+    <p><br>
+      <span style="font-style: italic;">Pour la petite histoire:</span><br
+        style="font-style: italic;">
+      <span style="font-style: italic;"> - je représente les trait par
+        un stéréotype de classe baptise &lt;&lt;trait&gt;&gt;</span><br
+        style="font-style: italic;">
+      <span style="font-style: italic;"> - je représente le lien entre
+        un companion et une classe par une dependency avec un stereotype
+        baptise &lt;&lt;companion&gt;&gt;</span><br style="font-style: italic;">
+      <span style="font-style: italic;"> - le companion lui-même est
+        représenté comme une instance de classe. Je dois avouer que j'ai
+        beaucoup hésité.</span><br style="font-style: italic;">
+      <span style="font-style: italic;"> Si tu aurais fait autrement, je
+        suis preneur de ta solution bien entendu.</span></p>
+    <p> </p>
+    <h3>NodeSeq<br>
+    </h3>
+    <p>Le papa de tout le monde, c'est <code>NodeSeq</code>. <code>NodeSeq</code>
+      étendant <code>Seq[Node]</code>, on peut dors et déjà affimer que
+      n'importe quel objet qu’on manipule est considéré comme une
+      collection ("je suis une bande de jeunes à moi tout seul").<br>
+      Il implémente deux opérateurs XPath <code>\</code> et <code>\\</code>
+      dont je te montrerai l'utilité dans la section Lecture d'un arbre
+      XML. <br>
+      Une propriété intéressante de <code>NodeSeq</code> est <code>text:String</code>
+      qui renvoie la valeur de l’élément :</p>
+    <p class="scala_code">scala&gt; &lt;i&gt;isei&lt;/i&gt;<br>
+      res0: scala.xml.Elem = &lt;i&gt;isei&lt;/i&gt;<br>
+      scala&gt; res0.text<br>
+      res1: String = isei<br>
+    </p>
+    <p>Cela fonctionne aussi pour d’autres types de nœuds XML, par
+      exemple les attributs :</p>
+    <p class="scala_code">scala&gt; &lt;i attr="ahah"/&gt;<br>
+      res3: scala.xml.Elem = &lt;i attr="ahah"&gt;&lt;/i&gt;<br>
+      scala&gt; res3.attributes("attr").text<br>
+      res10: String = ahah</p>
+    <h3>Node<br>
+    </h3>
+    <p>Node est une classe abstraite qui étend <code>NodeSeq</code>.
+      Cela signifie que n'importe quel méthode acceptant <code>Seq[Node]</code>
+      acceptera aussi un objet type <code>Node</code> (en revanche
+      l'inverse n'est pas vrai, évidemment). Cela est valable aussi pour
+      les types de retour. Cette propriété est importante lorsqu'on
+      utilise l'API XML de scala.<br>
+      <code>Node</code> définit les propriétés de base d'un nœud XML:<br>
+      - <code>label : String</code> est abstrait<br>
+      - <code>attributes: Metadata</code> contient la liste des
+      attributs<br>
+      - <code>child : Node *</code> un certain nombre d’enfants<br>
+      - <code>prefix : String</code> tout le monde sait ce qu'est un <a
+        target="_blank" href="http://www.w3.org/TR/xml-names/#ns-using">prefix</a>.<br>
+      - <code>scope : NamespaceBinding</code> TODO what is it?<br>
+      Une méthode intéressante est <code>attribute(key:String):Metadata</code>
+      qui renvoie l'attribut dont le nom est passé en paramètre.</p>
+    <h3>Elem<br>
+    </h3>
+    <p> Elem est une class concrête qui représente un noœud XML. Toutes
+      les classes héritant de Elem ont une méthode indispensable pour
+      copier un élément :<br>
+    </p>
+    <p><code>copy (prefix: String = this.prefix, label: String =
+        this.label, attributes: MetaData = this.attributes, scope:
+        NamespaceBinding = this.scope, child: Seq[Node] =
+        this.child.toSeq): Elem </code></p>
+    <p>Si on l'invoque sans argument, elle effectue une copie exacte de
+      l'objet d'origine, excepté pour les enfants où il s’agit d’une
+      copie par référence. <br>
+    </p>
+    <p>Mais on peut aussi l'invoquer en spécifiant le nom du paramètre à
+      modifier. Cet exemple montre comment supprimer tous les enfants
+      d'un <code>Node</code>:</p>
+    <p class="scala_code">scala&gt;
+      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
+      res0: scala.xml.Elem =
+      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
+      scala&gt; res0.copy(child=Nil)<br>
+      res4: scala.xml.Elem = &lt;ville&gt;&lt;/ville&gt;<span style="font-family: monospace;"></span></p>
+    <p>Celui ci-permet de changer le nom de la balise :</p>
+    <p class="scala_code">scala&gt;
+      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
+      res0: scala.xml.Elem =
+      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
+      scala&gt; res0.copy(label="pays")<br>
+      res5: scala.xml.Elem =
+      &lt;pays&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/pays&gt;<br>
+    </p>
+    <p> Elem a aussi un <cite>companion object</cite> qui définit:<br>
+    </p>
+    <p>— une méthode <code>apply</code> pour creer une instance de
+      Elem.</p>
+    <p class="scala_code">scala&gt;
+      Elem(null,"champignon",Null,TopScope)<br>
+      res12: scala.xml.Elem = &lt;champignon&gt;&lt;/champignon&gt;</p>
+    <p><code></code>On peut également spécifier un nombre arbitraire
+      d'enfants:</p>
+    <p class="scala_code">scala&gt; &lt;camarophyllopsisFetide/&gt;<br>
+      res0: scala.xml.Elem =
+      &lt;camarophyllopsisFetide&gt;&lt;/camarophyllopsisFetide&gt;<br>
+      scala&gt; &lt;amanitePhalloide/&gt;<br>
+      res1: scala.xml.Elem =
+      &lt;amanitePhalloide&gt;&lt;/amanitePhalloide&gt;<br>
+      scala&gt; Elem(null,"a",Null,TopScope,res0,res1)<br>
+      res3: scala.xml.Elem =
+&lt;a&gt;&lt;camarophyllopsisFetide&gt;&lt;/camarophyllopsisFetide&gt;&lt;amanitePhalloide&gt;&lt;/amanitePhalloide&gt;&lt;/a&gt;</p>
+    <p>— une méthode <code>unapply</code> (extracteur) pour pouvoir
+      matcher un élément par ses propriétés (voir plus loin).<br>
+    </p>
+    <p>Bref <code>Elem</code>, c'est la classe incontournable de ce
+      package.</p>
+    <h3>Nœud spéciaux<br>
+    </h3>
+    <p> Ensuite viennent les noeuds spéciaux regroupés sous la classe
+      abstraite <code>SpecialNode</code>. Elle regroupe tous les types
+      sans enfants, sans attributs et sans namespace.&nbsp;</p>
+    <p></p>
+    <h4>Atom</h4>
+    <p> On trouve la classe <code>Atom</code>, qui est une classe
+      paramètrée. <code>Atom</code> représente des classes qui ont
+      juste une valeur. Elle a 3 sous classes: <code>Text</code>, <code>PCData</code>
+      et <code>Unparsed</code>. Ces trois classes ont en commun, entre
+      autre, l'attribut label qui vaut <code>"#PCDATA"</code>.<br>
+    </p>
+    <h5>Text </h5>
+    <p><code>Text</code> est utilisé pour représenter du texte simple.
+      Par exemple:</p>
+    <p class="scala_code">scala&gt; &lt;dutexte&gt;{new
+      Text("blabla")}&lt;/dutexte&gt;<br>
+      res6: scala.xml.Elem = &lt;dutexte&gt;blabla&lt;/dutexte&gt;<br>
+      scala&gt; res6.child(0).getClass<br>
+      res9: java.lang.Class[_ &lt;: scala.xml.Node] = class
+      scala.xml.Text</p>
+    <p>Mais aussi comme valeur d'attibuts:</p>
+    <p class="scala_code">scala&gt; &lt;chaussette couleur="rouge et
+      jaune" /&gt;<br>
+      res10: scala.xml.Elem = &lt;chaussette couleur="rouge et
+      jaune"&gt;&lt;/chaussette&gt;<br>
+      scala&gt; res10.attribute("couleur")<br>
+      res11: Option[Seq[scala.xml.Node]] = Some(rouge et jaune)<br>
+      scala&gt; res10.attribute("couleur").get(0).getClass<br>
+      res12: java.lang.Class[_ &lt;: scala.xml.Node] = class
+      scala.xml.Text </p>
+    <p>Et comme élément de formatage (voir <a href="#text_as_format">ici</a>)<br>
+    </p>
+    <p>Il n'y a aucune différence entre <code>Atom[String]</code> et <code>Text</code>.</p>
+    <h5>Texte verbatim </h5>
+    <p> Les classes <code>PCData</code> et <code>Unparsed</code>
+      servent a écrire du texte verbatim (non interprété). La différence
+      est que <code>PCData</code> encapsule la valeur d'un <code>&lt;![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ]]&gt; </code></p>
+    <p class="scala_code">scala&gt; new
+      Unparsed(",.&lt;&gt;&amp;&amp;dfs;")<br>
+      res13: scala.xml.Unparsed = ,.&lt;&gt;&amp;&amp;dfs;<br>
+      scala&gt; new PCData(",.&lt;&gt;&amp;&amp;dfs;")<br>
+      res14: scala.xml.PCData =
+      &lt;![CDATA[,.&lt;&gt;&amp;&amp;dfs;]]&gt;</p>
+    <h5>Autres valeurs </h5>
+    <p> Si ta valeur est un nombre, ou n'importe quoi d'autre, tu peux
+      instancier <code>Atom</code> directement:</p>
+    <p class="scala_code">scala&gt; new Atom(45)<br>
+      res31: scala.xml.Atom[Int] = 45<br>
+      scala&gt; new Atom(3.4)<br>
+      res32: scala.xml.Atom[Double] = 3.4<br>
+    </p>
+    <h4> Commentaires, Entity Reference, Processing Instructions<br>
+    </h4>
+    <p> <code>SpecialNode</code> a trois autres sous-classes : <code>Comment</code>
+      sert a écrire du commentaire XML (exemple), <code>EntityRef</code>
+      (exemple) et ProcInstr (exemple) pour les processing instruction.</p>
+    <h3>Group<br>
+    </h3>
+    <p> La classe <code>Group</code> etend <code>Node</code>, sent le
+      moisi, et je ne comprends pas encore son utilité. <br>
+      Petite explication sur la Group issue de la Scaladoc: «A hack to
+      group XML nodes in one node for output». Limpide!</p>
+    <h3>Attributs</h3>
+    <h4>Metadata<br>
+    </h4>
+    <code>Metadata</code> est une classe abstraite heritant d'<code>Iterator[Metadata]</code>.
+    Sémantiquement, elle représente a la fois un attribut et une suite
+    d'attributs (tout comme <code>NodeSeq</code>, elle a le syndrome
+    «je suis une bande de jeunes a moi tout seul». Elle déclare 3
+    propriétés fondamentales:<br>
+    <p> – <code>key:String</code> est le nom de l'attribut.</p>
+    <p>– <code>value:Seq[Node]</code> représente la valeur de
+      l'attribut. A première vue, cela semble étrange que la valeur d'un
+      attribut soit une séquence. J'aurais plutôt utiliser <code>Atom</code>.
+      Ce lien (<a href="http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values"
+        title="http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values">http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values</a>)
+      ou la spec de l'auteur (<a href="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0"
+        title="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0">https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0</a>)&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      nous dit que cela sert à écrire des trucs comme ça:</p>
+    <p class="scala_code">scala&gt; &lt;foo name={List(Text("s"),
+      EntityRef("uuml"), Text("ss"))}/&gt; <br>
+      res1: scala.xml.Elem = &lt;foo
+      name="s&amp;uuml;ss"&gt;&lt;/foo&gt;<br>
+      scala&gt;
+      res1.attribute("name").get.foreach(v=&gt;println(v.getClass))<br>
+      class scala.xml.Text<br>
+      class scala.xml.EntityRef<br>
+      class scala.xml.Text</p>
+    <p>Puisque <code>Node</code> hérite de <code>Seq[Node]</code> on
+      peut également utiliser une valeur atomique:</p>
+    <p class="scala_code">scala&gt; &lt;foo name={new
+      Text("s&amp;uuml;ss")}/&gt;<br>
+      res21: scala.xml.Elem = &lt;foo
+      name="s&amp;amp;uuml;ss"&gt;&lt;/foo&gt;</p>
+    <p> Tu remarques comme moi que scala a échappé l’<a href="http://fr.wikipedia.org/wiki/Esperluette">esperluette</a>
+      par des Entity Refs…</p>
+    <p>Attention, scala ne sait pas relire la valeur comme une séquence
+      de <code>Node</code>, pour lui c'est juste une instance de <code>Text</code>:</p>
+    <p>scala&gt;
+      res21.attribute("name").foreach(v=&gt;println(v.getClass))<br>
+      class scala.xml.Text</p>
+    <p>– <code>next:Metadata</code> permet de chaîner sur l'attribut
+      suivant. XML est agnostique a l'ordre des attributs. L'API l'est
+      aussi. La propriété <code>next:Metadata</code> de chaque attribut
+      ne correspond pas forcément a l'attribut suivant de ton XML
+      source:</p>
+    <p class="scala_code">scala&gt; &lt;chaussette couleur1="rouge"
+      couleur2="jaune" motif="petit pois"/&gt; <br>
+      res5: scala.xml.Elem = &lt;chaussette couleur1="rouge"
+      motif="petit pois" couleur2="jaune"&gt;&lt;/chaussette&gt;</p>
+    <p> Les méthodes notables sont: <br>
+    </p>
+    <p>— <code>append(updates: MetaData, scope: NamespaceBinding =
+        TopScope): MetaData</code> pour ajouter un attribut :</p>
+    <p class="scala_code">scala&gt; res5.copy(attributes =
+      res5.attributes.append(new
+      UnprefixedAttribute("odeur","nc",Null)))<br>
+      res18: scala.xml.Elem = &lt;chaussette couleur2="jaune"
+      motif="petit pois" couleur1="rouge"
+      odeur="nc"&gt;&lt;/chaussette&gt;</p>
+    <p>— <code>remove(key: String): MetaData</code> pour en supprimer
+      un attribut :</p>
+    <p class="scala_code">scala&gt; res5.copy(attributes =
+      res5.attributes.remove("odeur"))<br>
+      res19: scala.xml.Elem = &lt;chaussette couleur1="rouge"
+      couleur2="jaune"&gt;&lt;/chaussette&gt;</p>
+    <p>— <code>copy (next: MetaData): MetaData</code> qui permet de
+      supprimer des attributs en certaines circonstances. L'exemple
+      suivant garde le premier et le dernier attribut de notre
+      chaussette:</p>
+    <p class="scala_code">scala&gt;
+      res5.attributes.head.copy(res5.attributes.last)<br>
+      res30: scala.xml.MetaData = couleur1="rouge" couleur2="jaune"</p>
+    <p>- <code>get(key: String): Option[Seq[Node]]</code> pour
+      récupérer la valeur d'un attribut (n'oublie pas que la valeur d'un
+      attribut est un <code>Seq[Node]</code>). Il existe aussi <code>apply(key:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        String): Seq[Node]</code>, mais puisque ca peut retourner <code>null</code>,
+      mieux vaut s'en méfier.</p>
+    <h4>Pas d’attribut<br>
+    </h4>
+    <p>La classe <code>Null</code> étend <code>Metadata</code> et
+      signifie "pas d'attributs".</p>
+    <p class="scala_code">scala&gt; &lt;rien/&gt;.attributes.getClass<br>
+      res25: java.lang.Class[_ &lt;: scala.xml.MetaData] = class
+      scala.xml.Null$<br>
+    </p>
+    <p></p>
+    <h4>Classes concrètes</h4>
+    <p>— La classe <code>Attribute</code> est abstraite et hérite de <code>Metadata</code>.
+      Concrètement, cette classe ne sert a rien, sauf a partager du code
+      commun a ses deux sous classes <code>UnprefixedAttribute</code>
+      et <code>PrefixedAttribute</code>.</p>
+    <p>— La classe<code> UnprefixedAttribute</code> a un constructeur
+      très simple pour construire un attribut sans préfix:</p>
+    <p class="scala_code">scala&gt; new
+      UnprefixedAttribute("constructeur","simplicime",Null)<br>
+      res27: scala.xml.UnprefixedAttribute = constructeur="simplicime"<br>
+    </p>
+    Le 3<sup>ème</sup> argument est <code>next:Metadata</code>, ici on
+    a choisi <code>Null</code>, on aurait pu mettre quelquechose, pour
+    chaîner d'autres attributs :<br>
+    <p class="scala_code">scala&gt; new
+UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
+      res28: scala.xml.UnprefixedAttribute = constructeur="simplicime"
+      couleur1="rouge" motif="petit pois" couleur2="jaune"</p>
+    <p>— La classe <code>PrefixedAttribute</code> sert à créer des
+      attributs préfixés:</p>
+    <p class="scala_code">scala&gt; new
+      PrefixedAttribute("scala","constructeur","simplicime",Null)<br>
+      res29: scala.xml.PrefixedAttribute =
+      scala:constructeur="simplicime"</p>
+    <h2> Ouverture d'un flux XML</h2>
+    <p> Le trait abstrait <code>XMLLoader</code> est un type paramétré
+      (le paramètre <code>T</code> doit être une sous–classe de <code>Node</code>)
+      qui dispose de méthodes <code>load…</code> permettant d'ouvrir
+      toute sorte de flux XML. Ces méthodes renvoient toutes un objet du
+      type <code>T</code>.</p>
+    <p><code>XML</code> est un objet tout prêt qui implémente <code>XMLLoader[Elem]</code>.
+      Cela permet d'ouvrir un fichier XML et d'être prêt à bosser dessus
+      en une simple ligne de code:</p>
+    <p class="scala_code">scala&gt; import scala.xml._<br>
+      import scala.xml._<br>
+      scala&gt; XML.loadString("&lt;ddd&gt;hihi&lt;/ddd&gt;")<br>
+      res3: scala.xml.Elem = &lt;ddd&gt;hihi&lt;/ddd&gt;</p>
+    Il est possible de charger a peu près n'importe quoi: <code>Reader</code>,
+    <code>Source</code>, nom d'un fichier, <code>String</code>, <code>InputStream</code>,
+    … en une seule ligne. <br>
+    <p></p>
+    <h3> Customiser le parser<br>
+    </h3>
+    <p> L'une des propriétés abstraite d'<code>XMLLoader</code> est <code>parser:SAXParser
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </code>qui définit le parser XML à utiliser pour parcourir le
+      flux. Par défaut l'objet XML utilise <code>javax.xml.parsers.SAXParserFactory</code>
+      pour créer le parser.<br>
+      Afin d'utiliser le parser de tes rêves, il suffit d'implémenter la
+      seule methode abstraite d'<code>XMLLoader</code>, <code>parser</code>.
+      Voici un exemple fictif:<br>
+    </p>
+    <p class="scala_code"> object IxAimeElle extends XMLLoader[Elem] {<br>
+      &nbsp; override def parser: SAXParser = {<br>
+      &nbsp;&nbsp;&nbsp;
+      javax.xml.parsers.SchtroumpfParserFactory.newInstance.newSAXParser()<br>
+      &nbsp; }<br>
+      } <br>
+    </p>
+    <p> Plus sérieusement, cet exemple permets de créer un parser qui ne
+      respecte pas les DTD :</p>
+    <p class="scala_code">object MyXML extends XMLLoader[Elem] {<br>
+      &nbsp;&nbsp; override def parser: SAXParser = {<br>
+      &nbsp;&nbsp; val f =
+      javax.xml.parsers.SAXParserFactory.newInstance()<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://xml.org/sax/features/validation"
+        title="http://xml.org/sax/features/validation">http://xml.org/sax/features/validation</a>",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      false)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/disallow-doctype-decl"
+        title="http://apache.org/xml/features/disallow-doctype-decl">http://apache.org/xml/features/disallow-doctype-decl</a>",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      false)<br>
+      &nbsp;&nbsp; &nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-dtd-grammar"
+        title="http://apache.org/xml/features/nonvalidating/load-dtd-grammar">http://apache.org/xml/features/nonvalidating/load-dtd-grammar</a>",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      false)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-external-dtd"
+        title="http://apache.org/xml/features/nonvalidating/load-external-dtd">http://apache.org/xml/features/nonvalidating/load-external-dtd</a>",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      false)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; f.newSAXParser()<br>
+      &nbsp;&nbsp; }<br>
+      }</p>
+    <p>On pourrait aussi utiliser l'une des 10000 implémentations de
+      SAXParser qui existe pour java. <a target="_blank" href="http://mercury.ccil.org/%7Ecowan/XML/tagsoup/"
+        title="TagSoup">TagSoup</a> par exemple.</p>
+    <p> </p>
+    <p></p>
+    <h2>Lecture d’un objet XML</h2>
+    <h3>Extraire des données avec l’API<br>
+    </h3>
+    <p>L’extraction de données peut se faire facilement avec les
+      méthodes et attributs que j’ai décrit dans la<a target="_top" href="#package">
+        présentation du package XML</a>. Ce document est truffé
+      d’exemples où je récupère le nom de la balise, les enfants, les
+      valeurs des attributs, …<br>
+    </p>
+    <p>La méthode <code>unapply</code> de la classe <code>Elem</code>
+      permet de récupérer des données facilement :</p>
+    <p class="scala_code">scala&gt; val x = &lt;a attr1="1"
+      attr2="2"&gt;foo&lt;/a&gt;<br>
+      x: scala.xml.Elem = &lt;a attr1="1" attr2="2"&gt;foo&lt;/a&gt;<br>
+      scala&gt; x match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
+      Elem(prefix, label, attribute, _, children) =&gt; {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("prefix = "+prefix)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("label = "+label)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("attribute = "+attribute)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      println("children = "+children)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      prefix = null<br>
+      label = a<br>
+      attribute =&nbsp; attr1="1" attr2="2"<br>
+      children = foo</p>
+    <h3>Les pseudos opérateurs XPATH</h3>
+    <p><code>\</code> et <code>\\</code> permettent de faire des
+      recherches dans l’arbre à la XPATH. Le plus simple est de montrer
+      quelques exemples :<code><br>
+      </code></p>
+    <p class="scala_code">scala&gt; &lt;a&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;c attr="abc"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;c
+      attr="ac"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; &lt;/a&gt;<br>
+      res57: scala.xml.Elem = <br>
+      &lt;a&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;c attr="ac"&gt;&lt;/c&gt;<br>
+      &nbsp; &lt;/a&gt;<br>
+    </p>
+    <p>Renvoie la liste des enfants directs de type <code>&lt;c&gt;</code>
+      :</p>
+    <p class="scala_code">scala&gt; res57 \ "c"<br>
+      res58: scala.xml.NodeSeq = NodeSeq(&lt;c attr="ac"&gt;&lt;/c&gt;)</p>
+    <p>Renvoie la liste des enfants directs de type <code>&lt;b&gt;</code>
+      :</p>
+    <p class="scala_code">scala&gt; res57 \ "b"<br>
+      res59: scala.xml.NodeSeq = <br>
+      NodeSeq(&lt;b&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;/b&gt;)</p>
+    <p>Renvoie la liste de tous les enfants de type <code>&lt;c&gt;</code>
+      :</p>
+    <p class="scala_code">scala&gt; res57 \\ "c"<br>
+      res60: scala.xml.NodeSeq = NodeSeq(&lt;c attr="abc"&gt;&lt;/c&gt;,
+      &lt;c attr="ac"&gt;&lt;/c&gt;)</p>
+    <p>Renvoie la liste des attributs <code>"attr"</code> de <code>&lt;c&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </code>:</p>
+    <p class="scala_code">scala&gt; res57 \ "c" \ "@attr"<br>
+      res61: scala.xml.NodeSeq = ac</p>
+    <p> Renvoie la liste des attributs <code>"attr" </code>de la
+      racine :</p>
+    <p class="scala_code">scala&gt; res57 \ "@attr"<br>
+      res62: scala.xml.NodeSeq = NodeSeq()</p>
+    <p> Renvoie la liste des attributs <code>"attr"</code> de tous les
+      éléments :</p>
+    <p class="scala_code">scala&gt; res57 \\ "@attr"<br>
+      res63: scala.xml.NodeSeq = NodeSeq(abc, ac)</p>
+    <p>Bon c’est sympa mais l’utilité du machin s’arrête là. Il n’est
+      pas possible d’appliquer des filtres sur les attributs, genre <code>c[@attr="ac"]</code>
+      par exemple. Mais puisque <code>\</code> et <code>\\</code>
+      renvoient du <code>NodeSeq</code>, on peut utiliser la méthode
+      filter de <code>Sequence</code> :</p>
+    <p class="scala_code">scala&gt; res57 \\ "@attr" filter(_.text ==
+      "ac")<br>
+      res67: scala.xml.NodeSeq = NodeSeq(ac)<span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;"></span>Pour plus
+      d’exemples, va voir le site de <a target="_blank" href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">Daniel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        Spiewak</a>.</p>
+    <h3>Extraire des données d’<code>Elem</code> avec le matcher<br>
+    </h3>
+    <p>Je définis une méthode qui va afficher une petite phrase selon ce
+      qui est passé en paramètre :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp; val
+      cestQuoi:(Node)=&gt;Unit =&nbsp; {x=&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; x match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case &lt;sac&gt;&lt;/sac&gt; =&gt; println("Ce sac est vide")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case &lt;sac&gt;{bonbon}&lt;/sac&gt; =&gt; println("Ce sac ne
+      contient que des " + bonbon)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case &lt;sac&gt;{dedans @ _*}&lt;/sac&gt; =&gt; {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; println("Ce sac
+      contient ")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      dedans.foreach(n=&gt;cestQuoi(n))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case _ =&gt; println("Ce n’est pas un sac")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      cestQuoi: scala.xml.Node =&gt; Unit = &lt;function1&gt;<span style="font-family: monospace;"><br>
+      </span></p>
+    <p><span style="font-family: monospace;"></span>On peut écrire le
+      pattern à matcher directement dans le <code>case</code>. Entre
+      accolade, on définit des variables que l’on peut réutiliser après
+      <code>=&gt;</code>.<br>
+      <code>&lt;sac&gt;{dedans @ _*}&lt;/sac&gt; </code>est un<cite>
+        Pattern Sequences</cite> (voir chapitre 8.1.9 de la <a target="_blank"
+        href="http://www.scala-lang.org/sites/default/files/linuxsoft_archives/docu/files/ScalaReference.pdf">Référence
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        Scala</a>). La variable <code>dedans</code> est une séquence
+      qui contient tous les enfants de <code>&lt;sac&gt;</code>.<br>
+    </p>
+    <p>J’applique cette méthode à un sac de nounours :</p>
+    <p class="scala_code">scala&gt; val sacDeNounours =
+      &lt;sac&gt;nounours&lt;/sac&gt;<br>
+      sacDeNounours: scala.xml.Elem = &lt;sac&gt;nounours&lt;/sac&gt;<br>
+      <br>
+      scala&gt; cestQuoi(sacDeNounours)<br>
+      Ce sac ne contient que des nounours<br>
+    </p>
+    <p>J’applique cette méthode à un sac vide :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp; val sacVide =
+      &lt;sac/&gt;<br>
+      sacVide: scala.xml.Elem = &lt;sac&gt;&lt;/sac&gt;<br>
+      <br>
+      scala&gt; cestQuoi(sacVide)<br>
+      Ce sac est vide</p>
+    <p>J’applique cette méthode à un sac d’assortiments :</p>
+    <p class="scala_code">scala&gt; sacAssortiment: scala.xml.Elem = <br>
+      &lt;sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;fraises&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;banane&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
+      scala&gt;&nbsp;&nbsp; val sacAssortiment =<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;sac&gt;fraises&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;sac&gt;banane&lt;/sac&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
+      <br>
+      scala&gt; cestQuoi(sacAssortiment)<br>
+      Ce sac contient <br>
+      Ce n’est pas un sac<br>
+      Ce sac ne contient que des fraises<br>
+      Ce n’est pas un sac<br>
+      Ce sac ne contient que des banane<br>
+      Ce n’est pas un sac</p>
+    <p> Et oui! N’oublions pas que les espaces de formattage sont
+      significatifs.<br>
+    </p>
+    <p><code></code>J’applique cette méthode à une frite :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp; val frite =
+      &lt;frite/&gt;<br>
+      frite: scala.xml.Elem = &lt;frite&gt;&lt;/frite&gt;<br>
+      <br>
+      scala&gt; cestQuoi(frite)<br>
+      Ce n’est pas un sac<br>
+    </p>
+    <p>L’erreur courante avec cette méthode est d’oublier que les
+      espaces et retours-chariots sont significatifs. Utiliser la
+      méthode <a target="_top" href="#trim"><code>trim</code></a> si ce
+      comportement n’est pas désirable.</p>
+    <p>Il est possible d’imbriquer les balises dans un <code>case</code>
+      :</p>
+    <p class="scala_code">scala&gt;&nbsp;&nbsp;
+      scala.xml.Utility.trim(sacAssortiment) match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
+      &lt;sac&gt;&lt;sac&gt;{assortiment1}&lt;/sac&gt;&lt;sac&gt;{assortiment2}&lt;/sac&gt;&lt;/sac&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      =&gt; println("Ce sac est un assortiment de " + assortiment1 + "
+      et de " + assortiment2)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      Ce sac est un assortiment de fraises et de bananes<br>
+    </p>
+    <p>Par contre <a target="_blank" href="http://stackoverflow.com/questions/2610191/scala-xml-pattern-matching-and-attributes">on
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ne peut pas matcher les attributs directement</a>, il faut
+      utiliser un opérateur <cite>XPATH</cite> après <code>=&gt;</code>,
+      dommage.<br>
+    </p>
+    <h2>Modifier un objet XML</h2>
+    <p> Afin de se conformer au standard d'immutabilité de Scala, tous
+      les objets du domaine XML que vous manipulez sont immutables. Donc
+      si on décide de modifier un élément, il faut le recopier en y
+      incorporant les modifications. Pour ça, il faut utiliser la
+      methode <code>apply</code> du <cite>companion</cite> pour créer
+      une nouvelle instance, ou bien invoquer la methode <code>copy</code>
+      d'une instance déjà existante.<br>
+    </p>
+    <p></p>
+    <h4> Un cas concrêt</h4>
+    <p> On dispose de quelques fichiers XHTML bien formés que l'on
+      souhaite afficher à l'utilisateur. Le problème, c'est que les
+      liens href sont des liens relatifs, il faudrait les transformer en
+      lien absolu. Par exemple il faut transformer <code>"</code><code>http://www.gargamel.com</code><code>/pages/foo.html"</code>
+      en <code>"http://www.azrael.com/pages/foo.html"</code>.<br>
+      L'autre soucis, c'est que ces documents ont des balises
+      &lt;script&gt; &lt;link&gt; et &lt;style&gt; dont on voudrait se
+      débarraser. Par exemple :<br>
+    </p>
+    <p class="scala_code"> &lt;html&gt;<br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
+      robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
+      href="../Styles/stylesheet.css" rel="stylesheet"
+      type="text/css"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
+      type="text/css"&gt;&lt;/style&gt;<br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;<br>
+      &lt;/html&gt;</p>
+    <p>doit être transformé en :</p>
+    <p class="scala_code">&lt;html&gt;<br>
+      &lt;head&gt;<br>
+      &nbsp; &lt;title&gt;The Hobbit&lt;/title&gt;<br>
+      &nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp; &lt;a
+      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;</p>
+    <p></p>
+    <h4> The « Scala way »</h4>
+    <p> Scala definit 3 classes sympatiques pour parcourir et modifier
+      un arbre XML.</p>
+    <p>— <code>BasicTransformer</code> est une classe marquée abstraite
+      qui définit 3 méthodes <code>transform</code>. Par défaut, elles
+      parcourent récursivement les enfants du/des nœuds passés en
+      paramètre en leur appliquant <code> transform</code>. Elle
+      définit une méthode <code>apply(n: Node): Node </code>qui sous
+      le capot appelle<code> transform(n: Node): Seq[Node]</code><br>
+    </p>
+    <p>— <code>RewriteRule</code> est aussi une classe abstraite qui
+      étend BasicTransformer. La différence entre <code>RewriteRule</code>
+      et <code>BasicTransformer</code> est que la méthode surchargée <code>transform(n:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        Node): Seq[Node] </code>renvoie toujours <code>n</code> alors
+      que la méthode parente applique <code>transform(n: Node):
+        Seq[Node]</code> récursivement sur chaque enfant. En pratique,
+      il faut étendre cette classe et surcharger <code>transform(n:
+        Node): Seq[Node]</code> où on effectue les transformations sur
+      le nœud. Il faut également veiller à retourner une <code>Seq[Node]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </code>contenant un et un seul nœud si on utilise la méthode <code>apply(n:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        Node): Node</code>.<br>
+    </p>
+    <p>— <code>RuleTransformer</code> est aussi marquée abstraite. Le
+      constructeur prend en paramètre un nombre variable de <code>RewriteRule</code>.
+      Elle surcharge<code> transform(n: Node): Seq[Node]</code> et
+      applique sur <code>n</code> chaque <code>RewriteRule</code>
+      passé en paramètre du constructeur au <code>RewriteRule</code>
+      suivant. En gros ca permet de composer les <code>RewriteRule </code>et
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      de les appliquer récursivement à tout l’arbre, y compris les
+      attributs et autres types de nœuds.</p>
+    <p>Pour en revenir à notre cas concrêt :</p>
+    <p class="scala_code">1) Définir un RewriteRule pour supprimer les
+      balises enfants de script :<br>
+      scala&gt; class RewriteNoScript extends RewriteRule {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; import scala.xml.Node<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val toDelete =
+      List("script","link","style")<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; override def transform(n:
+      Node): Seq[Node] = {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; import xml.Elem
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; n match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case e:Elem =&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; val
+      newChildren = e.child.filter { c =&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      !toDelete.contains(c.label)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      e.copy(child = newChildren)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      case o =&gt; o<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
+      defined class RewriteNoScript</p>
+    <p>Instanciation&nbsp;:</p>
+    <p class="scala_code">scala&gt; new RewriteNoScript<br>
+      res6: RewriteNoScript = &lt;function1&gt;</p>
+    <p>Création d’un jeu de données :</p>
+    <p class="scala_code">scala&gt; &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;title&gt;The Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;link type="text/css" rel="stylesheet"
+      href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;style type="text/css"&gt;&lt;/style&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
+      res9: scala.xml.Elem = <br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
+      robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
+      rel="stylesheet" href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
+      type="text/css"&gt;&lt;/style&gt;<br>
+      &lt;/head&gt;<br>
+    </p>
+    <p>Appliquer le jeu de données au <code>Transformer</code> :</p>
+    <p class="scala_code">scala&gt; res6(res9)<br>
+      res10: scala.xml.Node = <br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &lt;/head&gt;<br>
+    </p>
+    <p>2) Définir un <code>RewriteRule</code> pour modifier les liens</p>
+    <p class="scala_code">class RewriteLien extends RewriteRule {<br>
+      &nbsp; val oldPrefix = "http://www.gargamel.com"<br>
+      &nbsp; val newPrefix = "http://www.azrael.com"<br>
+      &nbsp; override def transform(node: Node): Seq[Node] = {<br>
+      &nbsp;&nbsp;&nbsp; node match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (e.label
+      == "a" &amp;&amp; e.attributes.get("href").isDefined){<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      val newValAttribute = e.attributes.get("href").get.map(_ match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      case Text(value) =&gt; Text(value.replaceAll(oldPrefix,newPrefix))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      case n =&gt; n<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      }) <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      e.copy(attributes = e.attributes.remove("href").append(new
+      UnprefixedAttribute("href", newValAttribute, Null)))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else e<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case other =&gt; other<br>
+      &nbsp;&nbsp;&nbsp; }<br>
+      &nbsp; }<br>
+      }<br>
+      defined class RewriteLien</p>
+    <p>Instantiation :</p>
+    <p class="scala_code">scala&gt; new RewriteLien<br>
+      res25: RewriteLien = &lt;function1&gt;<br>
+    </p>
+    <p>Jeu de test :</p>
+    <p class="scala_code">scala&gt; &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      res26: scala.xml.Elem = &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;</p>
+    <p>Test :</p>
+    <p class="scala_code">scala&gt; res25(res26)<br>
+      res27: scala.xml.Node = &lt;a
+      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+    </p>
+    <p>3) Composer les deux rewriters avec un transformer</p>
+    <p class="scala_code">scala&gt; val rwLien = new RewriteLien<br>
+      rwLien: RewriteLien = &lt;function1&gt;<br>
+      scala&gt; val rwNS = new RewriteNoScript<br>
+      rwNS: RewriteNoScript = &lt;function1&gt;<br>
+      scala&gt; val transformer = new RuleTransformer(rwLien,rwNS)<br>
+      transformer: scala.xml.transform.RuleTransformer =
+      &lt;function1&gt;<br>
+    </p>
+    <p>4) Passer notre XML à la moulinette</p>
+    <p class="scala_code">scala&gt; &lt;html&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;title&gt;The Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;link href="../Styles/stylesheet.css" rel="stylesheet"
+      type="text/css"/&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;style type="text/css"&gt;&lt;/style&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/html&gt;<br>
+      res28: scala.xml.Elem = <br>
+      &lt;html&gt;<br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
+      robot')&lt;/script&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
+      rel="stylesheet" href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
+      type="text/css"&gt;&lt;/style&gt;<br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
+      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;<br>
+      &lt;/html&gt;<br>
+      <br>
+      scala&gt; transformer(res28)<br>
+      res29: scala.xml.Node = <br>
+      &lt;html&gt;<br>
+      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
+      Hobbit&lt;/title&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
+      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+      &lt;/head&gt;<br>
+      &lt;body&gt;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
+      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
+      &lt;/body&gt;<br>
+      &lt;/html&gt;<br>
+    </p>
+    <p>Et voilà !</p>
+    <h4>Le hic du « Scala way »<br>
+    </h4>
+    <p>Personnellement, je n'utilise JAMAIS <code>RuleTransformer</code>,
+      parcequ'elle a un bug <a href="https://issues.scala-lang.org/browse/SI-3689"
+        title="https://issues.scala-lang.org/browse/SI-3689">https://issues.scala-lang.org/browse/SI-3689</a>.
+      Prenons ce simple exemple:</p>
+    <p>Tout d’abord, je crée un RewriteRule qui ajoute un attribut sur
+      un nœud, et affiche le nœud avant et après transformation :<br>
+    </p>
+    <p class="scala_code">scala&gt;class Rewrite(name:String) extends
+      RewriteRule {<br>
+      &nbsp; import scala.xml.Node<br>
+      &nbsp; override def transform(n: Node): Seq[Node] = {<br>
+      &nbsp;&nbsp;&nbsp; println("to transform " + name + " " + n)<br>
+      &nbsp;&nbsp;&nbsp; import scala.xml.{Elem, Null,
+      UnprefixedAttribute}<br>
+      &nbsp;&nbsp;&nbsp; val ret = n match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; e.copy(attributes
+      = new UnprefixedAttribute(name,"yes",e.attributes))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
+      &nbsp;&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp; println("transformed " + name + " " + ret)<br>
+      &nbsp;&nbsp;&nbsp; ret<br>
+      &nbsp;}<br>
+      }<br>
+      scala&gt; val xml =
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      xml: scala.xml.Elem =
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      scala&gt; val r1 = new Rewrite("r1")<br>
+      r1: Rewrite = &lt;function1&gt;<br>
+      scala&gt; r1(xml)<br>
+      to transform r1
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res14: scala.xml.Node = &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+    </p>
+    <p>Ensuite je le combine avec un <code> RuleTransformer</code> :</p>
+    <p class="scala_code">scala&gt; val t = new RuleTransformer(r1)<br>
+      t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
+      scala&gt; t(xml)<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res15: scala.xml.Node = &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+    </p>
+    <p> T’as pas un peu l'impression que ça mouline pour rien? Moi si.
+      En tous cas le résultat est correct. </p>
+    <p> Quand on combine deux RewriteRule, regarde bien c'est ignoble:</p>
+    <p class="scala_code">scala&gt; val r2 = new Rewrite("r2")<br>
+      r2: Rewrite = &lt;function1&gt;<br>
+      scala&gt; val t = new RuleTransformer(r1,r2)<br>
+      t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
+      <br>
+      scala&gt; t(xml)<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
+      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      res18: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</p>
+    <p> <span style="font-weight: bold;">58 appels pour modifier 3
+        nœuds</span>, mais le résultat est correct.<br>
+    </p>
+    <h4>Remède naïf<br>
+    </h4>
+    <p>Rien ne vaut une bonne méthode manuelle, en voici une qui pousse
+      la stack à son maximum :<br>
+    </p>
+    <p class="scala_code">scala&gt; class
+      MyRuleTransformer(rw:RewriteRule *) {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | def transform(n:Node):Node = {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val parent =
+      rw.foldLeft(n){<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; (node,rewrite)
+      =&gt; rewrite(node)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; parent match {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; &nbsp; case e:Elem =&gt;
+      e.copy(child=e.child.map(c=&gt;transform(c)))<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
+      defined class MyRuleTransformer<br>
+      scala&gt; val t = new MyRuleTransformer(r1,r2)<br>
+      t: MyRuleTransformer = MyRuleTransformer@9ff430</p>
+    <p class="scala_code"><code> </code>scala&gt; t.transform(xml)<br>
+      to transform r1
+      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r1 &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r2 &lt;a
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      transformed r2 &lt;a r2="yes"
+      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+      to transform r1 &lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r1 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r2 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      transformed r2 &lt;b r2="yes"
+      r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
+      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
+      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
+      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
+      res26: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
+      r1="yes"&gt;&lt;c r2="yes"
+      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
+    </p>
+    <p> « Seulement » 12 appels, mais avec par contre le gros
+      inconvenient de bouffer plein de mémoire (À chaque appel, chaque
+      sous-arbre est conservé dans la stack, donc en extrapolant ça
+      prend en mémoire : taille de l'arbre d'origine * nb d'imbrication)</p>
+    <h2>Conclusion<br>
+    </h2>
+    <p> Beaucoup de gens écrivent regretter le support d’XML au sein du
+      langage. Moi je pense plutôt que c'est une excellente idée et que
+      c'est très <span style="font-weight: bold;">pratique</span> et
+      bien <span style="font-weight: bold;">lisible</span>. Pouvoir
+      composer, et lire du XML nativement et rapidement c'est plutôt
+      génial. <br>
+    </p>
+    <p>En revanche, l'API est parfois mal foutue. Je n'ai pas la
+      prétention de pouvoir faire mieux, mais je pense que les points
+      suivants sont à améliorer:<br>
+      — Il est inutile que la valeur d'un attribut soit une <code>Seq[Node]</code>.
+      Cela rajoute une boucle dans le code pour pas grand chose puisque
+      Scala relira la valeur de l’attribut sous la forme d’un seul
+      élément <code>Text</code>.<br>
+      — Il n’y a pas de matcher pour les attributs, récupérer la valeur
+      d’un attribut c’est définitivement casse-couille.<br>
+      — Le package <code>scala.xml.transform</code> est brouillon. Il
+      faudrait réécrire <code>RuleTransformer</code> qui fait son
+      boulot vraiment n'importe comment.<br>
+      — Toute les fonctionnalités d’XML ne sont pas implémentées. Par
+      exemple, on ne peut pas définir d’<a href="http://www.w3.org/TR/REC-xml/#sec-entity-decl">entity</a>.<br>
+      — Il n'y a pas de pointeur sur le nœud parent. Cette fontionnalité
+      n'est pas vraiment utile quand on parcours l'arbre du tronc vers
+      les branches, mais est parfois pratique pour pouvoir traiter le
+      resultat de requêtes XPATH.<br>
+    </p>
+    <p> Certains réfractaires a l'API XML de Scala ont écrit une
+      nouvelle API baptisée <a target="_blank" href="http://anti-xml.org/"><cite>anti-xml</cite></a>
+      (ils en avaient gros sur la patate). On peut voir une chouette
+      présentation en <a target="_blank" href="http://days2011.scala-lang.org/node/138/273">vidéo</a>
+      (et les <a target="_blank" href="http://days2011.scala-lang.org/sites/days2011/files/32.%20Anti-XML.pdf">diapositives</a>)
+      sur le site des scaladays 2011. Il existe aussi la librairie
+      scalates. Mais pour être honnête, je n’ai pas encore fouiner de ce
+      côté.<br>
+    </p>
+    
+    <h2> Resources et Références</h2>
+    <p>Chapitres 1.5 et 10 de la <a target="_blank" href="http://www.scala-lang.org/sites/default/files/linuxsoft_archives/docu/files/ScalaReference.pdf">Référence Scala&nbsp;</a></p>
+    <p><a target="_blank" href="www.scala-lang.org/sites/default/files/pdfs/Scala%20Quick%20Reference.pdf">Scala
+        quick reference</a><br>
+    </p>
+    <p> <a href="http://blog.markfeeney.com/2011/03/scala-xml-gotchas.html"
+        title="http://blog.markfeeney.com/2011/03/scala-xml-gotchas.html">http://blog.markfeeney.com/2011/03/scala-xml-gotchas.html</a></p>
+    <p><a href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support"
+        title="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">http://www.codecommit.com/blog/scala/working-with-scalas-xml-support</a></p>
+    <p>La doc d'Émir Burak, le gars qui a implémenté cette partie de
+      l'API: <a href="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0"
+        title="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0">https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0</a></p>
+    <p><a target="_blank" href="http://www.ibm.com/developerworks/library/x-scalaxml/">Article</a>
+      de Michel Galbin sur l’IBM Developer Network.</p>
+    <p>Un petit dernier un peu succint a mon goût: <a href="https://wiki.scala-lang.org/display/SW/XML"
+        title="https://wiki.scala-lang.org/display/SW/XML">https://wiki.scala-lang.org/display/SW/XML</a></p>
+  </div>

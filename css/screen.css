@@ -1,0 +1,114 @@
+body {
+  background-color: #000;
+  color: #FFF;
+  font-size: 18px;
+  font-family: palatino,georgia,garamond,serif;
+  line-height: 1.4;
+  text-align: justify;
+}
+
+h2 {
+    border-bottom: 1px solid #E0E0DC;
+    font-size: 2em;
+    font-variant: small-caps;
+    margin-bottom: 1em;
+    margin-top: 1em;
+}
+
+h3 {
+  border-bottom: 1px dotted #E0E0DC;
+  font-size: 1.5em;
+  font-variant: small-caps;
+  margin-left:1em;
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+
+h4 {
+  border-bottom: 1px dotted #E0E0DC;
+  font-size: 1.1em;
+  font-variant: small-caps;
+  margin-left:2em;
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+
+h5 {
+  border-bottom: 1px dotted #E0E0DC;
+  font-size: 1em;
+  font-variant: small-caps;
+  margin-left:3em;
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+
+a {
+    color: #333399;
+    text-decoration: none;
+}
+
+ul {
+    list-style: disc outside none;
+}
+
+li {
+  margin-left: 2em;
+}
+
+.header {
+  border-bottom: 0.3em solid #FB9500;
+  padding-bottom: 0.3em;
+}
+
+.header .title {
+    color: #FB9500;
+    font-family: "Segoe UI",Candara,"Bitstream Vera Sans","DejaVu Sans","Trebuchet MS",Verdana,sans-serif;
+    font-size: 40px;
+    font-style: italic;
+    margin-left: 0.5em;
+    text-decoration: none;
+    text-transform: capitalize;
+    text-shadow: 1px 1px 0 black, 2px 2px 0 #476871, 3px 3px 0 #476871, 4px 4px 0 #476871, 5px 5px 0 #476871, 6px 6px 0 #476871, 7px 7px 0 #476871;
+}
+
+.main {
+  padding: 0.3em;
+  min-height: 15em;
+  background-color: #4B0082;
+  min-height: 15em;
+  padding: 0.3em;
+}
+
+.section {
+    background-color: #FFFFFF;
+    border-radius: 0.4em 0.4em 0.4em 0.4em;
+    color: #000000;
+    margin: 1em auto;
+    padding: 1em;
+    width: 90%;
+}
+
+.section p {
+  margin-bottom: 0.5em;
+}
+
+.footer {
+  border-top: 0.3em solid #FB9500;
+  padding-top: 0.3em;
+}
+
+code, .scala_code {
+  background-color: #EEEEEE;
+  font-family: Monaco,
+	             "Bitstream Vera Sans Mono",
+             "Lucida Console",
+             Terminal,
+             monospace;
+  font-size: 0.8em;
+}
+.scala_code {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  text-align: left;
+  overflow: auto;
+}
