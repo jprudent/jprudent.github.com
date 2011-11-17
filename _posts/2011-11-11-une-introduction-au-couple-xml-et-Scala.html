@@ -22,94 +22,34 @@ categories:
       <cite>trait</cite>, et <cite> object</cite>).</p>
     <p>Si tes yeux se mettent à pisser le sang en lisant cet article, 
       pour une quelconque raison, je te serais extrêmement reconnaissant
-       de bien vouloir me signaler mes erreurs.<br>
+       de bien vouloir me signaler mes erreurs.
     </p>
     <p>Les exemples sont écrits dans la console Scala. J'utilise la
       version 2.9.1 du langage.</p>
     <h2>Écrire du XML</h2>
-    <h3>Mise en jambe<br>
-    </h3>
-    <p>Avant de te présenter tout le reste, regarde cet exemple <br>
-    </p>
-    <pre class="scala_code">
-      scala&gt;&nbsp;val&nbsp;artiste="Didier&nbsp;super"<br>
-      artiste:&nbsp;java.lang.String&nbsp;=&nbsp;Didier&nbsp;super<br>
-      <br>
-      scala&gt;&nbsp;val&nbsp;titre="on&nbsp;va&nbsp;tous&nbsp;crever"<br>
-titre:&nbsp;java.lang.String&nbsp;=&nbsp;on&nbsp;va&nbsp;tous&nbsp;crever<br>
-      <br>
-scala&gt;&nbsp;val&nbsp;url&nbsp;=&nbsp;"http://www.didiersuper.com/diskonvatous.htm"<br>
-url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.htm<br>
-      <br>
-      scala&gt;&nbsp;val&nbsp;duXML&nbsp;=&nbsp;&lt;musique&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&lt;chanson&nbsp;artiste={artiste.toUpperCase}&nbsp;titre={titre.split("&nbsp;").mkString("","_","")}&gt;{/*à
+    <h3>Mise en jambe</h3>
+    <p>Avant de te présenter tout le reste, regarde cet exemple :</p>
+    {% highlight scala %}
+scala> val artiste="Didier super"
+artiste: java.lang.String = Didier super
 
+scala> val titre="on va tous crever"
+titre: java.lang.String = on va tous crever
 
+scala> val url = "http://www.didiersuper.com/diskonvatous.htm"
+url: java.lang.String = http://www.didiersuper.com/diskonvatous.htm
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      l'envers&nbsp;*/url.reverse}&lt;/chanson&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&lt;/musique&gt;<br>
-      duXML:&nbsp;scala.xml.Elem&nbsp;=&nbsp;<br>
-      &lt;musique&gt;<br>
-&lt;chanson&nbsp;artiste="DIDIER&nbsp;SUPER"&nbsp;titre="on_va_tous_crever"&gt;mth.suotavnoksid/moc.repusreidid.www//:ptth&lt;/chanson&gt;<br>
-      &lt;/musique&gt;<br>
+scala> val duXML = <musique>
+     | <chanson artiste={artiste.toUpperCase} titre={titre.split(" ").mkString("","_","")}>{/*à l'envers */url.reverse}</chanson>
+     | </musique>
+duXML: scala.xml.Elem = 
+<musique>
+<chanson artiste="DIDIER SUPER" titre="on_va_tous_crever">mth.suotavnoksid/moc.repusreidid.www//:ptth</chanson>
+</musique>
+    {% endhighlight %}
     </pre>
     <p>Oui, on peut <span style="font-weight: bold;">écrire directement
-        du XML</span> et y incorporer <span style="font-weight: bold;">du
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        du XML</span>, y incorporer <span style="font-weight: bold;">du
         code scala commenté</span>, et obtenir un objet <code>Node</code>
       en une seule ligne. Pas de concaténation de chaînes, pas de
       dépendances à une librairie de template, tout est déjà là. De plus
@@ -117,85 +57,34 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
       fermant requis, deux fois le même attribut sur un marqueur
       interdit…).</p>
     <p>Outre des balises et des attributs, on peut utiliser les autres
-      fonctionalités d’XML<span style="text-decoration: line-through;"></span>
-      (j’explique les types de retour un peu plus loin dans
-      l’article)&nbsp;:</p>
-    <h3><a id="procinst" name="procinst"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-pi">processing
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        instructions</a></h3>
-    <div class="code scala_code"> scala&gt; &lt;?name foo?&gt;<br>
-      res7: scala.xml.ProcInstr = &lt;?name foo?&gt; </div>
+      fonctionalités d’XML&nbsp;:</p>
+    <h3><a id="procinst" name="procinst"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-pi">processing instructions</a></h3>
+{% highlight scala %}
+scala> <?name foo?>
+res7: scala.xml.ProcInstr = <?name foo?> 
+{% endhighlight %}
     <h3><a id="comment" name="comment"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-comments">commentaires</a></h3>
-    <p class="scala_code">scala&gt; &lt;!-- dskf --&gt;<br>
-      res8: scala.xml.Comment = &lt;!-- dskf --&lt;</p>
-    <h3><a id="entityref" name="entityref"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-references">characters
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        et entity refs</a></h3>
-    <p class="scala_code"> scala&gt; &lt;a&gt;&amp;nbsp;&lt;/a&gt;<br>
-      res10: scala.xml.Elem = &lt;a&gt;&amp;nbsp;&lt;/a&gt;<br>
-      scala&gt; res10.child.head.getClass<br>
-      res12: java.lang.Class[_ &lt;: scala.xml.Node] = class
-      scala.xml.EntityRef scala&gt; &lt;a&gt;&amp;#xaa;&lt;/a&gt;<br>
-      res30: scala.xml.Elem = &lt;a&gt;ª&lt;/a&gt;<br>
-    </p>
-    <h3><a id="cdata" target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-cdata-sect">CDATA</a><br>
-    </h3>
+{% highlight scala %}
+scala> <!-- dskf -->
+res8: scala.xml.Comment = <!-- dskf -->
+{% endhighlight %}
+    <h3><a id="entityref" name="entityref"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-references">characters et entity refs</a></h3>
+    {% highlight scala %}
+scala> <a>&nbsp;</a>
+res10: scala.xml.Elem = <a>&nbsp;</a>
+scala> res10.child.head.getClass
+res12: java.lang.Class[_ <: scala.xml.Node] = class scala.xml.EntityRef 
+scala> <a>&#xaa;</a>
+res30: scala.xml.Elem = <a>ª</a>
+    {% endhighlight %}
+    
+    <h3><a id="cdata" target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-cdata-sect">CDATA</a></h3>
     On ne peut pas utiliser les sections <code>CDATA</code>
     directement:
-    <p class="scala_code"> scala&gt; &lt;div&gt;&lt;![CDATA[starting tag
-      &lt;song&gt; and end stag &lt;/song&gt;]]&gt;&lt;/div&gt;<br>
-      res0: scala.xml.Elem = &lt;div&gt;starting tag
-      &amp;lt;song&amp;gt; and end stag
-      &amp;lt;/song&amp;gt;&lt;/div&gt;</p>
+    {% highlight scala %}
+scala> <div><![CDATA[starting tag <song> and end stag </song>]]></div>
+res0: scala.xml.Elem = <div>starting tag &lt;song&gt; and end stag &lt;/song&gt;</div>
+    {% endhighlight %}
     <p>Pfiou! Disparu le <code>CDATA</code>! Ça veut dire que si je
       décide d’écrire <code>res0</code> dans un fichier, le <code>CDATA</code>
       est perdu.<br>
@@ -203,205 +92,108 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
     </p>
     <p>On peut aisément palier cette disparition en instanciant la
       classe <code>PCData</code>:</p>
-    <p class="scala_code">scala&gt; &lt;div&gt;{new PCData("starting tag
-      &lt;song&gt; and end stag &lt;/song&gt;")}&lt;/div&gt;<br>
-      res3: scala.xml.Elem = &lt;div&gt;&lt;![CDATA[starting tag
-      &lt;song&gt; and end stag &lt;/song&gt;]]&gt;&lt;/div&gt;</p>
-    <p>L’autre solution que j'ai trouvée <a href="http://blog.markfeeney.com/2011/03/scala-xml-gotchas.html">là</a>
-      :</p>
-    <p class="scala_code">scala&gt; val xml2 =
-      ConstructingParser.fromSource(Source.fromString("&lt;xml&gt;&lt;test&gt;&lt;![CDATA[a
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      &lt; b]]&gt;&lt;/test&gt;&lt;/xml&gt;"), preserveWS =
-      true).document.docElem<br>
-      xml2: scala.xml.Node = &lt;xml&gt;&lt;test&gt;&lt;![CDATA[a &lt;
-      b]]&gt;&lt;/test&gt;&lt;/xml&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> <div>{new PCData("starting tag <song> and end stag </song>")}</div>
+res3: scala.xml.Elem = <div><![CDATA[starting tag <song> and end stag </song>]]></div>
+    {% endhighlight %}
+    <p>L’autre solution que j'ai trouvée <a href="http://blog.markfeeney.com/2011/03/scala-xml-gotchas.html">là</a> :</p>
+    {% highlight scala %}
+scala> val xml2 = ConstructingParser.fromSource(Source.fromString("<xml><test><![CDATA[a < b]]></test></xml>"), preserveWS = true).document.docElem
+xml2: scala.xml.Node = <xml><test><![CDATA[a < b]]></test></xml>
+    {% endhighlight %}
     <div class="code"> <xml><test><!--[CDATA[a < b]]--></test></xml> </div>
     <p>Le soucis, c'est qu’on passe par une <code>String</code> et que
       le compilateur ne nous avertira pas si c’est malformé.</p>
-    <h3>Des &#x7B; et des &#x7D; à condition de les doubler</h3>
-    <p class="scala_code">scala&gt; &lt;accolade&gt;ceci &#x7B;&#x7B; est une
-      accolade, ceux la &#x7D;&#x7D;&#x7D;&#x7D; sont deux accolades&lt;/accolade&gt;<br>
-      res31: scala.xml.Elem = &lt;accolade&gt;ceci &#x7B; est une accolade,
-      ceux la &#x7D;&#x7D; sont deux accolades&lt;/accolade&gt;<br>
-    </p>
+      
+    <h3>Des « &#x7B; » et des « &#x7D; » à condition de les doubler</h3>
+    {% highlight scala %}
+scala> <accolade>ceci {{ '{{' }} est une accolade, ceux la }}}} sont deux accolades</accolade>
+res31: scala.xml.Elem = <accolade>ceci { est une accolade, ceux la }} sont deux accolades</accolade>
+    {% endhighlight %}    
+    
     <h3> Passer du XML en paramètre de méthodes </h3>
     <p>Attention à bien mettre un espace avant le chevron <code>&lt;</code>,
       sinon vous passerez comme moi pour un boulet (<a href="http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala"
         title="http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala">http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala</a>):</p>
-    <p class="scala_code">scala&gt; Elem(null, "a", Null, TopScope,
-      &lt;b/&gt;)<br>
-      resN: scala.xml.Elem = &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;<br>
-    </p>
-    <p></p>
+    {% highlight scala %}
+scala> Elem(null, "a", Null, TopScope, <b/>)
+resN: scala.xml.Elem = <a><b></b></a>
+    {% endhighlight %} 
     <h3>Conservation du formatage</h3>
     <p>Quand on écrit du XML, scala conserve le formatage :</p>
-    <p class="scala_code">scala&gt; &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      res16: scala.xml.Elem = &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      scala&gt; res16<br>
-      res17: scala.xml.Elem = &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-    </p>
-    <p><a id="text_as_format" name="text_as_format"></a>Scala crée des
+    {% highlight scala %}
+scala> <a> <b>     </b> </a>
+res16: scala.xml.Elem = <a> <b>     </b> </a>
+    {% endhighlight %} 
+    <p id="text_as_format">Scala crée des
       nœuds pour chaque chaîne de séparateurs ( espace, tabulation,
       retour chariot, … )</p>
-    <p class="scala_code">scala&gt; &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      res16: scala.xml.Elem = &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      scala&gt; res16<br>
-      res17: scala.xml.Elem = &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      scala&gt; res17.child.foreach(c=&gt;println(c.getClass))<br>
-      class scala.xml.Text<br>
-      class scala.xml.Elem<br>
-      class scala.xml.Text</p>
+    {% highlight scala %}
+scala> res16.child.foreach(c=>println(c.getClass))
+class scala.xml.Text
+class scala.xml.Elem
+class scala.xml.Text
+    {% endhighlight %} 
     <p>Ce qui signifie que <code>&lt;a&gt;
         &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;</code>
       n’est pas égal à <code>&lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;</code>
       :</p>
-    <p class="scala_code">scala&gt; &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      res40: scala.xml.Elem = &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      <br>
-      scala&gt; &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      res41: scala.xml.Elem = &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      <br>
-      scala&gt; &lt;a&gt; &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt;
-      &lt;/a&gt;<br>
-      res42: scala.xml.Elem = &lt;a&gt;
-      &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;<br>
-      <br>
-      scala&gt; res40 == res41<br>
-      res43: Boolean = false<br>
-      <br>
-      scala&gt; res40 == res42<br>
-      res44: Boolean = true<br>
-    </p>
+    {% highlight scala %}
+scala> <a> <b>     </b> </a>
+res40: scala.xml.Elem = <a> <b>     </b> </a>
+
+scala> <a><b></b></a>
+res41: scala.xml.Elem = <a><b></b></a>
+
+scala> <a> <b>     </b> </a>
+res42: scala.xml.Elem = <a> <b>     </b> </a>
+
+scala> res40 == res41
+res43: Boolean = false
+
+scala> res40 == res42
+res44: Boolean = true
+    {% endhighlight %} 
     <p> <a id="trim" name="trim"></a>Il est possible de supprimer tous
       les blancs avec la méthode <code>trim</code> :</p>
-    <p class="scala_code">scala&gt; scala.xml.Utility.trim(res42)<br>
-      res45: scala.xml.Node = &lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;</p>
-    <p>Pense à utiliser trim avant de comparer deux arbres<span style="font-family: monospace;">
-        :</span></p>
-    <p class="scala_code"><span style="font-family: monospace;"></span>scala&gt;
+    {% highlight scala %}
+scala> scala.xml.Utility.trim(res42)
+res45: scala.xml.Node = <a><b></b></a>
+    {% endhighlight %} 
+    <p>Pense à utiliser trim avant de comparer deux arbres :</p>
+    {% highlight scala %}
+scala> scala.xml.Utility.trim(res40) == scala.xml.Utility.trim(res41)
+res45: Boolean = true
+    {% endhighlight %}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      scala.xml.Utility.trim(res40) == scala.xml.Utility.trim(res41)<br>
-      res45: Boolean = true</p>
     <h2>Afficher du XML</h2>
-    <p> </p>
     <p> Cet exemple nous crache une belle représentation d'un nœud XML
       qui tient sur une ligne de 80 colonnes et dont l'indentation est
       de 10 colonnes:</p>
-    <p class="scala_code">scala&gt;
-      &lt;j&gt;&lt;k&gt;&lt;/k&gt;&lt;/j&gt;<br>
-      res31: scala.xml.Elem = &lt;j&gt;&lt;k&gt;&lt;/k&gt;&lt;/j&gt;<br>
-      scala&gt; new PrettyPrinter(80,10).formatNodes(res31)<br>
-      res32: String = <br>
-      &lt;j&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;k&gt;&lt;/k&gt;<br>
-      &lt;/j&gt;</p>
+    {% highlight scala %}
+scala> <j><k></k></j>
+res31: scala.xml.Elem = <j><k></k></j>
+scala> new PrettyPrinter(80,10).formatNodes(res31)
+res32: String =
+<j>
+           <k></k>
+</j>
+    {% endhighlight %}
+    
     <h2><a id="package" name="package"></a>Le package scala.xml</h2>
-    <p> </p>
     <p> <code>scala.xml</code> contient une floppée d'objets et de
-      classes qui représentent le "domaine métier" d'XML. Tous les
+      classes qui représentent le « domaine métier » d'XML. Tous les
       composants d'un document XML ont un pendant sous forme d’une
       classe dans ce package.</p>
     <p> Dans le SDK de Java, on manipule les objets métier definis dans
-      le package org.w3c.dom. Scala definit son propre modele métier.
+      le package <code>org.w3c.dom</code>. Scala définit son propre modèle métier.
       Par conséquent, un <code>Node</code> scala n'est pas
-      interopérable avec un <code>Node</code> java. Tous les objets
-      présentés ici sont immutables.</p>
-    <p> </p>
+      interopérable avec un <code>Node</code> java</p>
     <h3>Un dessin avec des boîtes et des flêches<br>
     </h3>
     <p>Tout d'abord un petit dessin avec du faux UML.&nbsp;</p>
-    <dl>
-      <dt>
-        <svg width="800px" viewBox="-108 47 875 680" xmlns="http://www.w3.org/2000/svg"
+        <svg width="100%" viewBox="-108 47 875 680" xmlns="http://www.w3.org/2000/svg"
           xlink="http://www.w3.org/1999/xlink">
           <g>
             <rect style="fill: #ffffff" x="410" y="63" width="79.3" height="44"></rect>
@@ -494,52 +286,6 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
               x="74.1" y="591.401" width="379.6" height="20"></rect>
             <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
               x="77.1" y="605.401">+copy(prefix,label,attributes,scope,child):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               Elem</text> </g>
           <g>
             <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
@@ -561,52 +307,6 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
               x="69" y="706.301" width="387.3" height="20"></rect>
             <text style="fill: #5d57ee;text-anchor:start;font-size:12.8;font-family:monospace;font-style:normal;font-weight:normal"
               x="72" y="720.301">+apply(prefix,label,attributes,scope,child):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               Elem</text> </g>
           <g>
             <rect style="fill: #ffffff" x="644.3" y="366.499" width="121.8"
@@ -878,9 +578,7 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
               x="317" y="182.9">*</text>
             <text style="fill: #000000;text-anchor:start;font-size:12.7998;font-family:monospace;font-style:normal;font-weight:normal"
               x="237.9" y="187"></text> </g></svg> <br>
-      </dt>
-    </dl>
-    <p><br>
+    <p>
       <span style="font-style: italic;">Pour la petite histoire:</span><br
         style="font-style: italic;">
       <span style="font-style: italic;"> - je représente les trait par
@@ -894,29 +592,30 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
         beaucoup hésité.</span><br style="font-style: italic;">
       <span style="font-style: italic;"> Si tu aurais fait autrement, je
         suis preneur de ta solution bien entendu.</span></p>
-    <p> </p>
-    <h3>NodeSeq<br>
-    </h3>
+    
+    <h3>NodeSeq</h3>
     <p>Le papa de tout le monde, c'est <code>NodeSeq</code>. <code>NodeSeq</code>
       étendant <code>Seq[Node]</code>, on peut dors et déjà affimer que
       n'importe quel objet qu’on manipule est considéré comme une
-      collection ("je suis une bande de jeunes à moi tout seul").<br>
+      collection (« je suis une bande de jeunes à moi tout seul »).<br>
       Il implémente deux opérateurs XPath <code>\</code> et <code>\\</code>
-      dont je te montrerai l'utilité dans la section Lecture d'un arbre
-      XML. <br>
+      dont je te montrerai l'utilité plus tard<br>
       Une propriété intéressante de <code>NodeSeq</code> est <code>text:String</code>
       qui renvoie la valeur de l’élément :</p>
-    <p class="scala_code">scala&gt; &lt;i&gt;isei&lt;/i&gt;<br>
-      res0: scala.xml.Elem = &lt;i&gt;isei&lt;/i&gt;<br>
-      scala&gt; res0.text<br>
-      res1: String = isei<br>
-    </p>
+    {% highlight scala %}
+scala> <i>isei</i>
+res0: scala.xml.Elem = <i>isei</i>
+scala> res0.text
+res1: String = isei
+    {% endhighlight %}
     <p>Cela fonctionne aussi pour d’autres types de nœuds XML, par
       exemple les attributs :</p>
-    <p class="scala_code">scala&gt; &lt;i attr="ahah"/&gt;<br>
-      res3: scala.xml.Elem = &lt;i attr="ahah"&gt;&lt;/i&gt;<br>
-      scala&gt; res3.attributes("attr").text<br>
-      res10: String = ahah</p>
+    {% highlight scala %}
+scala> <i attr="ahah"/>
+res3: scala.xml.Elem = <i attr="ahah"></i>
+scala> res3.attributes("attr").text
+res10: String = ahah
+    {% endhighlight %}
     <h3>Node<br>
     </h3>
     <p>Node est une classe abstraite qui étend <code>NodeSeq</code>.
@@ -926,19 +625,19 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
       les types de retour. Cette propriété est importante lorsqu'on
       utilise l'API XML de scala.<br>
       <code>Node</code> définit les propriétés de base d'un nœud XML:<br>
-      - <code>label : String</code> est abstrait<br>
-      - <code>attributes: Metadata</code> contient la liste des
+      — <code>label : String</code> est abstrait<br>
+      — <code>attributes: Metadata</code> contient la liste des
       attributs<br>
-      - <code>child : Node *</code> un certain nombre d’enfants<br>
-      - <code>prefix : String</code> tout le monde sait ce qu'est un <a
+      — <code>child : Node *</code> un certain nombre d’enfants<br>
+      — <code>prefix : String</code> tout le monde sait ce qu'est un <a
         target="_blank" href="http://www.w3.org/TR/xml-names/#ns-using">prefix</a>.<br>
-      - <code>scope : NamespaceBinding</code> TODO what is it?<br>
+      — <code>scope : NamespaceBinding</code> (TODO traiter du scope plus tard)<br>
       Une méthode intéressante est <code>attribute(key:String):Metadata</code>
       qui renvoie l'attribut dont le nom est passé en paramètre.</p>
     <h3>Elem<br>
     </h3>
-    <p> Elem est une class concrête qui représente un noœud XML. Toutes
-      les classes héritant de Elem ont une méthode indispensable pour
+    <p><code>Elem</code> est une class concrête qui représente un noœud XML. Toutes
+      les classes héritant de <code>Elem</code> ont une méthode indispensable pour
       copier un élément :<br>
     </p>
     <p><code>copy (prefix: String = this.prefix, label: String =
@@ -946,47 +645,44 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
         NamespaceBinding = this.scope, child: Seq[Node] =
         this.child.toSeq): Elem </code></p>
     <p>Si on l'invoque sans argument, elle effectue une copie exacte de
-      l'objet d'origine, excepté pour les enfants où il s’agit d’une
-      copie par référence. <br>
+      l'objet d'origine, exceptés pour les enfants où il s’agit d’une
+      copie par référence.
     </p>
     <p>Mais on peut aussi l'invoquer en spécifiant le nom du paramètre à
       modifier. Cet exemple montre comment supprimer tous les enfants
       d'un <code>Node</code>:</p>
-    <p class="scala_code">scala&gt;
-      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
-      res0: scala.xml.Elem =
-      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
-      scala&gt; res0.copy(child=Nil)<br>
-      res4: scala.xml.Elem = &lt;ville&gt;&lt;/ville&gt;<span style="font-family: monospace;"></span></p>
+    {% highlight scala %}
+scala> <ville><prison>prisonier</prison></ville>
+res0: scala.xml.Elem = <ville><prison>prisonier</prison></ville>
+scala> res0.copy(child=Nil)
+res4: scala.xml.Elem = <ville></ville>
+    {% endhighlight %}
     <p>Celui ci-permet de changer le nom de la balise :</p>
-    <p class="scala_code">scala&gt;
-      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
-      res0: scala.xml.Elem =
-      &lt;ville&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/ville&gt;<br>
-      scala&gt; res0.copy(label="pays")<br>
-      res5: scala.xml.Elem =
-      &lt;pays&gt;&lt;prison&gt;prisonier&lt;/prison&gt;&lt;/pays&gt;<br>
-    </p>
-    <p> Elem a aussi un <cite>companion object</cite> qui définit:<br>
-    </p>
-    <p>— une méthode <code>apply</code> pour creer une instance de
-      Elem.</p>
-    <p class="scala_code">scala&gt;
-      Elem(null,"champignon",Null,TopScope)<br>
-      res12: scala.xml.Elem = &lt;champignon&gt;&lt;/champignon&gt;</p>
-    <p><code></code>On peut également spécifier un nombre arbitraire
+    {% highlight scala %}
+scala> <ville><prison>prisonier</prison></ville>
+res0: scala.xml.Elem = <ville><prison>prisonier</prison></ville>
+scala> res0.copy(label="pays")
+res5: scala.xml.Elem = <pays><prison>prisonier</prison></pays>
+    {% endhighlight %}
+    <p><code>Elem</code> a aussi un <cite>companion object</cite> qui définit:</p>
+    <p>— une méthode <code>apply</code> pour créer une instance de
+      <code>Elem</code>.</p>
+    {% highlight scala %}
+scala> Elem(null,"champignon",Null,TopScope)
+res12: scala.xml.Elem = <champignon></champignon>
+    {% endhighlight %}
+    <p>On peut également spécifier un nombre arbitraire
       d'enfants:</p>
-    <p class="scala_code">scala&gt; &lt;camarophyllopsisFetide/&gt;<br>
-      res0: scala.xml.Elem =
-      &lt;camarophyllopsisFetide&gt;&lt;/camarophyllopsisFetide&gt;<br>
-      scala&gt; &lt;amanitePhalloide/&gt;<br>
-      res1: scala.xml.Elem =
-      &lt;amanitePhalloide&gt;&lt;/amanitePhalloide&gt;<br>
-      scala&gt; Elem(null,"a",Null,TopScope,res0,res1)<br>
-      res3: scala.xml.Elem =
-&lt;a&gt;&lt;camarophyllopsisFetide&gt;&lt;/camarophyllopsisFetide&gt;&lt;amanitePhalloide&gt;&lt;/amanitePhalloide&gt;&lt;/a&gt;</p>
+    {% highlight scala %}
+scala> <camarophyllopsisFetide/>
+res0: scala.xml.Elem = <camarophyllopsisFetide></camarophyllopsisFetide>
+scala> <amanitePhalloide/>
+res1: scala.xml.Elem = <amanitePhalloide></amanitePhalloide>
+scala> Elem(null,"a",Null,TopScope,res0,res1)
+res3: scala.xml.Elem = <a><camarophyllopsisFetide></camarophyllopsisFetide><amanitePhalloide></amanitePhalloide></a>
+    {% endhighlight %}
     <p>— une méthode <code>unapply</code> (extracteur) pour pouvoir
-      matcher un élément par ses propriétés (voir plus loin).<br>
+      matcher un élément par ses propriétés (j’explique les matchers plus loin).<br>
     </p>
     <p>Bref <code>Elem</code>, c'est la classe incontournable de ce
       package.</p>
@@ -1006,114 +702,61 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
     <h5>Text </h5>
     <p><code>Text</code> est utilisé pour représenter du texte simple.
       Par exemple:</p>
-    <p class="scala_code">scala&gt; &lt;dutexte&gt;{new
-      Text("blabla")}&lt;/dutexte&gt;<br>
-      res6: scala.xml.Elem = &lt;dutexte&gt;blabla&lt;/dutexte&gt;<br>
-      scala&gt; res6.child(0).getClass<br>
-      res9: java.lang.Class[_ &lt;: scala.xml.Node] = class
-      scala.xml.Text</p>
+    {% highlight scala %}
+scala> <dutexte>{new Text("blabla")}</dutexte>
+res6: scala.xml.Elem = <dutexte>blabla</dutexte>
+scala> res6.child(0).getClass
+res9: java.lang.Class[_ <: scala.xml.Node] = class scala.xml.Text
+    {% endhighlight %}
     <p>Mais aussi comme valeur d'attibuts:</p>
-    <p class="scala_code">scala&gt; &lt;chaussette couleur="rouge et
-      jaune" /&gt;<br>
-      res10: scala.xml.Elem = &lt;chaussette couleur="rouge et
-      jaune"&gt;&lt;/chaussette&gt;<br>
-      scala&gt; res10.attribute("couleur")<br>
-      res11: Option[Seq[scala.xml.Node]] = Some(rouge et jaune)<br>
-      scala&gt; res10.attribute("couleur").get(0).getClass<br>
-      res12: java.lang.Class[_ &lt;: scala.xml.Node] = class
-      scala.xml.Text </p>
+    {% highlight scala %}
+scala> <chaussette couleur="rouge et jaune" />
+res10: scala.xml.Elem = <chaussette couleur="rouge et jaune"></chaussette>
+scala> res10.attribute("couleur")
+res11: Option[Seq[scala.xml.Node]] = Some(rouge et jaune)
+scala> res10.attribute("couleur").get(0).getClass
+res12: java.lang.Class[_ <: scala.xml.Node] = class scala.xml.Text
+    {% endhighlight %}
     <p>Et comme élément de formatage (voir <a href="#text_as_format">ici</a>)<br>
     </p>
     <p>Il n'y a aucune différence entre <code>Atom[String]</code> et <code>Text</code>.</p>
     <h5>Texte verbatim </h5>
     <p> Les classes <code>PCData</code> et <code>Unparsed</code>
       servent a écrire du texte verbatim (non interprété). La différence
-      est que <code>PCData</code> encapsule la valeur d'un <code>&lt;![CDATA[
+      entre les deux est que <code>PCData</code> encapsule la valeur d'un <code>&lt;![CDATA[ ]]&gt; </code></p>
+    {% highlight scala %}
+scala> new Unparsed(",.<>&&dfs;")
+res13: scala.xml.Unparsed = ,.<>&&dfs;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        ]]&gt; </code></p>
-    <p class="scala_code">scala&gt; new
-      Unparsed(",.&lt;&gt;&amp;&amp;dfs;")<br>
-      res13: scala.xml.Unparsed = ,.&lt;&gt;&amp;&amp;dfs;<br>
-      scala&gt; new PCData(",.&lt;&gt;&amp;&amp;dfs;")<br>
-      res14: scala.xml.PCData =
-      &lt;![CDATA[,.&lt;&gt;&amp;&amp;dfs;]]&gt;</p>
+scala> new PCData(",.<>&&dfs;")
+res14: scala.xml.PCData = <![CDATA[,.<>&&dfs;]]>
+    {% endhighlight %}
     <h5>Autres valeurs </h5>
-    <p> Si ta valeur est un nombre, ou n'importe quoi d'autre, tu peux
-      instancier <code>Atom</code> directement:</p>
-    <p class="scala_code">scala&gt; new Atom(45)<br>
-      res31: scala.xml.Atom[Int] = 45<br>
-      scala&gt; new Atom(3.4)<br>
-      res32: scala.xml.Atom[Double] = 3.4<br>
-    </p>
-    <h4> Commentaires, Entity Reference, Processing Instructions<br>
-    </h4>
+    {% highlight scala %}
+scala> new Atom(45)
+res31: scala.xml.Atom[Int] = 45
+
+scala> new Atom(3.4)
+res32: scala.xml.Atom[Double] = 3.4
+    {% endhighlight %}
+    <h4> Commentaires, Entity Reference, Processing Instructions</h4>
     <p> <code>SpecialNode</code> a trois autres sous-classes : <code>Comment</code>
-      sert a écrire du commentaire XML (exemple), <code>EntityRef</code>
-      (exemple) et ProcInstr (exemple) pour les processing instruction.</p>
+      sert a écrire du commentaire XML (<a href="#comment">exemple</a>), 
+      <code>EntityRef</code>
+      (<a href="#entityref">exemple</a>) et ProcInstr (<a href="#procinst">exemple</a>) pour les processing instruction.</p>
     <h3>Group<br>
     </h3>
     <p> La classe <code>Group</code> etend <code>Node</code>, sent le
       moisi, et je ne comprends pas encore son utilité. <br>
-      Petite explication sur la Group issue de la Scaladoc: «A hack to
+      Petite explication sur la classe <code>Group</code> issue de la Scaladoc: «A hack to
       group XML nodes in one node for output». Limpide!</p>
     <h3>Attributs</h3>
     <h4>Metadata<br>
     </h4>
-    <code>Metadata</code> est une classe abstraite heritant d'<code>Iterator[Metadata]</code>.
+    <code>Metadata</code> est une classe abstraite héritant d'<code>Iterator[Metadata]</code>.
     Sémantiquement, elle représente a la fois un attribut et une suite
     d'attributs (tout comme <code>NodeSeq</code>, elle a le syndrome
-    «je suis une bande de jeunes a moi tout seul». Elle déclare 3
+    « je suis une bande de jeunes a moi tout seul ». Elle déclare 3
     propriétés fondamentales:<br>
     <p> – <code>key:String</code> est le nom de l'attribut.</p>
     <p>– <code>value:Seq[Node]</code> représente la valeur de
@@ -1122,179 +765,73 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
       Ce lien (<a href="http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values"
         title="http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values">http://stackoverflow.com/questions/4622218/scala-xml-api-why-allow-nodeseq-as-attribute-values</a>)
       ou la spec de l'auteur (<a href="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0"
-        title="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0">https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0</a>)&nbsp;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      nous dit que cela sert à écrire des trucs comme ça:</p>
-    <p class="scala_code">scala&gt; &lt;foo name={List(Text("s"),
-      EntityRef("uuml"), Text("ss"))}/&gt; <br>
-      res1: scala.xml.Elem = &lt;foo
-      name="s&amp;uuml;ss"&gt;&lt;/foo&gt;<br>
-      scala&gt;
-      res1.attribute("name").get.foreach(v=&gt;println(v.getClass))<br>
-      class scala.xml.Text<br>
-      class scala.xml.EntityRef<br>
-      class scala.xml.Text</p>
+        title="https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0">https://sites.google.com/site/burakemir/scalaxbook.docbk.html?attredirects=0</a>)&nbsp; nous dit que cela sert à écrire des trucs comme ça:</p>
+    {% highlight scala %}
+scala> <foo name={List(Text("s"), EntityRef("uuml"), Text("ss"))}/>
+res1: scala.xml.Elem = <foo name="s&uuml;ss"></foo>
+scala> res1.attribute("name").get.foreach(v=>println(v.getClass))
+class scala.xml.Text
+class scala.xml.EntityRef
+class scala.xml.Text
+    {% endhighlight %}
     <p>Puisque <code>Node</code> hérite de <code>Seq[Node]</code> on
-      peut également utiliser une valeur atomique:</p>
-    <p class="scala_code">scala&gt; &lt;foo name={new
-      Text("s&amp;uuml;ss")}/&gt;<br>
-      res21: scala.xml.Elem = &lt;foo
-      name="s&amp;amp;uuml;ss"&gt;&lt;/foo&gt;</p>
+      peut également utiliser une valeur atomique comme valeur d’attribut :</p>
+    {% highlight scala %}
+scala> <foo name={new Text("s&uuml;ss")}/>
+res21: scala.xml.Elem = <foo name="s&amp;uuml;ss"></foo>
+    {% endhighlight %}
     <p> Tu remarques comme moi que scala a échappé l’<a href="http://fr.wikipedia.org/wiki/Esperluette">esperluette</a>
       par des Entity Refs…</p>
     <p>Attention, scala ne sait pas relire la valeur comme une séquence
       de <code>Node</code>, pour lui c'est juste une instance de <code>Text</code>:</p>
-    <p>scala&gt;
-      res21.attribute("name").foreach(v=&gt;println(v.getClass))<br>
-      class scala.xml.Text</p>
+    {% highlight scala %}
+scala> res21.attribute("name").foreach(v=>println(v.getClass))
+class scala.xml.Text
+    {% endhighlight %}
     <p>– <code>next:Metadata</code> permet de chaîner sur l'attribut
       suivant. XML est agnostique a l'ordre des attributs. L'API l'est
       aussi. La propriété <code>next:Metadata</code> de chaque attribut
       ne correspond pas forcément a l'attribut suivant de ton XML
       source:</p>
-    <p class="scala_code">scala&gt; &lt;chaussette couleur1="rouge"
-      couleur2="jaune" motif="petit pois"/&gt; <br>
-      res5: scala.xml.Elem = &lt;chaussette couleur1="rouge"
-      motif="petit pois" couleur2="jaune"&gt;&lt;/chaussette&gt;</p>
+    {% highlight scala %}
+scala> <chaussette couleur1="rouge" couleur2="jaune" motif="petit pois"/>
+res5: scala.xml.Elem = <chaussette couleur1="rouge" motif="petit pois" couleur2="jaune"></chaussette>
+    {% endhighlight %}
     <p> Les méthodes notables sont: <br>
     </p>
     <p>— <code>append(updates: MetaData, scope: NamespaceBinding =
         TopScope): MetaData</code> pour ajouter un attribut :</p>
-    <p class="scala_code">scala&gt; res5.copy(attributes =
-      res5.attributes.append(new
-      UnprefixedAttribute("odeur","nc",Null)))<br>
-      res18: scala.xml.Elem = &lt;chaussette couleur2="jaune"
-      motif="petit pois" couleur1="rouge"
-      odeur="nc"&gt;&lt;/chaussette&gt;</p>
+    {% highlight scala %}
+scala> res5.copy(attributes = res5.attributes.append(new UnprefixedAttribute("odeur","nc",Null)))
+res18: scala.xml.Elem = <chaussette couleur2="jaune" motif="petit pois" couleur1="rouge" odeur="nc"></chaussette>
+    {% endhighlight %}
     <p>— <code>remove(key: String): MetaData</code> pour en supprimer
       un attribut :</p>
-    <p class="scala_code">scala&gt; res5.copy(attributes =
-      res5.attributes.remove("odeur"))<br>
-      res19: scala.xml.Elem = &lt;chaussette couleur1="rouge"
-      couleur2="jaune"&gt;&lt;/chaussette&gt;</p>
+    {% highlight scala %}
+scala> res5.copy(attributes = res5.attributes.remove("odeur"))
+res19: scala.xml.Elem = <chaussette couleur1="rouge" couleur2="jaune"></chaussette>
+    {% endhighlight %}
     <p>— <code>copy (next: MetaData): MetaData</code> qui permet de
       supprimer des attributs en certaines circonstances. L'exemple
       suivant garde le premier et le dernier attribut de notre
       chaussette:</p>
-    <p class="scala_code">scala&gt;
-      res5.attributes.head.copy(res5.attributes.last)<br>
-      res30: scala.xml.MetaData = couleur1="rouge" couleur2="jaune"</p>
+    {% highlight scala %}
+scala> res5.attributes.head.copy(res5.attributes.last)
+res30: scala.xml.MetaData = couleur1="rouge" couleur2="jaune"
+    {% endhighlight %}
     <p>- <code>get(key: String): Option[Seq[Node]]</code> pour
       récupérer la valeur d'un attribut (n'oublie pas que la valeur d'un
-      attribut est un <code>Seq[Node]</code>). Il existe aussi <code>apply(key:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        String): Seq[Node]</code>, mais puisque ca peut retourner <code>null</code>,
+      attribut est un <code>Seq[Node]</code>). Il existe aussi <code>apply(key:String): Seq[Node]</code>, mais puisque ca peut retourner <code>null</code>,
       mieux vaut s'en méfier.</p>
     <h4>Pas d’attribut<br>
     </h4>
     <p>La classe <code>Null</code> étend <code>Metadata</code> et
       signifie "pas d'attributs".</p>
-    <p class="scala_code">scala&gt; &lt;rien/&gt;.attributes.getClass<br>
-      res25: java.lang.Class[_ &lt;: scala.xml.MetaData] = class
-      scala.xml.Null$<br>
-    </p>
-    <p></p>
+    {% highlight scala %}
+scala> <rien/>.attributes.getClass
+res25: java.lang.Class[_ <: scala.xml.MetaData] = class scala.xml.Null$
+    {% endhighlight %}
+
     <h4>Classes concrètes</h4>
     <p>— La classe <code>Attribute</code> est abstraite et hérite de <code>Metadata</code>.
       Concrètement, cette classe ne sert a rien, sauf a partager du code
@@ -1302,23 +839,24 @@ url:&nbsp;java.lang.String&nbsp;=&nbsp;http://www.didiersuper.com/diskonvatous.h
       et <code>PrefixedAttribute</code>.</p>
     <p>— La classe<code> UnprefixedAttribute</code> a un constructeur
       très simple pour construire un attribut sans préfix:</p>
-    <p class="scala_code">scala&gt; new
-      UnprefixedAttribute("constructeur","simplicime",Null)<br>
-      res27: scala.xml.UnprefixedAttribute = constructeur="simplicime"<br>
-    </p>
+    {% highlight scala %}
+scala> new UnprefixedAttribute("constructeur","simplicime",Null)
+res27: scala.xml.UnprefixedAttribute = constructeur="simplicime"
+    {% endhighlight %}
     Le 3<sup>ème</sup> argument est <code>next:Metadata</code>, ici on
     a choisi <code>Null</code>, on aurait pu mettre quelquechose, pour
     chaîner d'autres attributs :<br>
-    <p class="scala_code">scala&gt; new
-UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
-      res28: scala.xml.UnprefixedAttribute = constructeur="simplicime"
-      couleur1="rouge" motif="petit pois" couleur2="jaune"</p>
+    {% highlight scala %}
+scala> new UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)
+res28: scala.xml.UnprefixedAttribute = constructeur="simplicime" couleur1="rouge" motif="petit pois" couleur2="jaune"
+    {% endhighlight %}
     <p>— La classe <code>PrefixedAttribute</code> sert à créer des
       attributs préfixés:</p>
-    <p class="scala_code">scala&gt; new
-      PrefixedAttribute("scala","constructeur","simplicime",Null)<br>
-      res29: scala.xml.PrefixedAttribute =
-      scala:constructeur="simplicime"</p>
+    {% highlight scala %}
+scala> new PrefixedAttribute("scala","constructeur","simplicime",Null)
+res29: scala.xml.PrefixedAttribute = scala:constructeur="simplicime"
+    {% endhighlight %}
+    
     <h2> Ouverture d'un flux XML</h2>
     <p> Le trait abstrait <code>XMLLoader</code> est un type paramétré
       (le paramètre <code>T</code> doit être une sous–classe de <code>Node</code>)
@@ -1327,313 +865,48 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
       type <code>T</code>.</p>
     <p><code>XML</code> est un objet tout prêt qui implémente <code>XMLLoader[Elem]</code>.
       Cela permet d'ouvrir un fichier XML et d'être prêt à bosser dessus
-      en une simple ligne de code:</p>
-    <p class="scala_code">scala&gt; import scala.xml._<br>
-      import scala.xml._<br>
-      scala&gt; XML.loadString("&lt;ddd&gt;hihi&lt;/ddd&gt;")<br>
-      res3: scala.xml.Elem = &lt;ddd&gt;hihi&lt;/ddd&gt;</p>
+      en une simple ligne de code :</p>
+    {% highlight scala %}
+scala> XML.loadString("<ddd>hihi</ddd>")
+res3: scala.xml.Elem = <ddd>hihi</ddd>
+    {% endhighlight %}
     Il est possible de charger a peu près n'importe quoi: <code>Reader</code>,
     <code>Source</code>, nom d'un fichier, <code>String</code>, <code>InputStream</code>,
     … en une seule ligne. <br>
     <p></p>
     <h3> Customiser le parser<br>
     </h3>
-    <p> L'une des propriétés abstraite d'<code>XMLLoader</code> est <code>parser:SAXParser
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      </code>qui définit le parser XML à utiliser pour parcourir le
+    <p> L'une des propriétés abstraite d'<code>XMLLoader</code> est <code>parser:SAXParser</code>qui définit le parser XML à utiliser pour parcourir le
       flux. Par défaut l'objet XML utilise <code>javax.xml.parsers.SAXParserFactory</code>
       pour créer le parser.<br>
       Afin d'utiliser le parser de tes rêves, il suffit d'implémenter la
       seule methode abstraite d'<code>XMLLoader</code>, <code>parser</code>.
-      Voici un exemple fictif:<br>
+      Voici un exemple fictif :<br>
     </p>
-    <p class="scala_code"> object IxAimeElle extends XMLLoader[Elem] {<br>
-      &nbsp; override def parser: SAXParser = {<br>
-      &nbsp;&nbsp;&nbsp;
-      javax.xml.parsers.SchtroumpfParserFactory.newInstance.newSAXParser()<br>
-      &nbsp; }<br>
-      } <br>
-    </p>
-    <p> Plus sérieusement, cet exemple permets de créer un parser qui ne
-      respecte pas les DTD :</p>
-    <p class="scala_code">object MyXML extends XMLLoader[Elem] {<br>
-      &nbsp;&nbsp; override def parser: SAXParser = {<br>
-      &nbsp;&nbsp; val f =
-      javax.xml.parsers.SAXParserFactory.newInstance()<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://xml.org/sax/features/validation"
-        title="http://xml.org/sax/features/validation">http://xml.org/sax/features/validation</a>",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      false)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/disallow-doctype-decl"
-        title="http://apache.org/xml/features/disallow-doctype-decl">http://apache.org/xml/features/disallow-doctype-decl</a>",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      false)<br>
-      &nbsp;&nbsp; &nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-dtd-grammar"
-        title="http://apache.org/xml/features/nonvalidating/load-dtd-grammar">http://apache.org/xml/features/nonvalidating/load-dtd-grammar</a>",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      false)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; f.setFeature("<a href="http://apache.org/xml/features/nonvalidating/load-external-dtd"
-        title="http://apache.org/xml/features/nonvalidating/load-external-dtd">http://apache.org/xml/features/nonvalidating/load-external-dtd</a>",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      false)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; f.newSAXParser()<br>
-      &nbsp;&nbsp; }<br>
-      }</p>
-    <p>On pourrait aussi utiliser l'une des 10000 implémentations de
-      SAXParser qui existe pour java. <a target="_blank" href="http://mercury.ccil.org/%7Ecowan/XML/tagsoup/"
+    {% highlight scala %}
+object MyXML extends XMLLoader[Elem] {
+  override def parser: SAXParser = {
+    javax.xml.parsers.SchtroumpfParserFactory.newInstance.newSAXParser()
+  }
+} 
+    {% endhighlight %}
+    <p> Désolé, je ne pouvait laisser passer ça… Plus sérieusement, cet exemple permets de créer un parser qui ne
+      respecte pas les DTD (sic):</p>
+    {% highlight scala %}
+object MyXML extends XMLLoader[Elem] {
+   override def parser: SAXParser = {
+   val f = javax.xml.parsers.SAXParserFactory.newInstance()
+     f.setFeature("http://xml.org/sax/features/validation", false)
+     f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+     f.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false)
+     f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+     f.newSAXParser()
+   }
+}
+    {% endhighlight %}
+    <p>Cette objet s’utilise comme l’objet <code>XML</code>, il suffit d’appeler les méthodes <code>load…</code> pour charger un document. On pourrait aussi utiliser l'une des 10000 implémentations de
+      <code>SAXParser</code> qui existe pour java. <a target="_blank" href="http://mercury.ccil.org/%7Ecowan/XML/tagsoup/"
         title="TagSoup">TagSoup</a> par exemple.</p>
-    <p> </p>
-    <p></p>
     <h2>Lecture d’un objet XML</h2>
     <h3>Extraire des données avec l’API<br>
     </h3>
@@ -1644,379 +917,181 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
       valeurs des attributs, …<br>
     </p>
     <p>La méthode <code>unapply</code> de la classe <code>Elem</code>
-      permet de récupérer des données facilement :</p>
-    <p class="scala_code">scala&gt; val x = &lt;a attr1="1"
-      attr2="2"&gt;foo&lt;/a&gt;<br>
-      x: scala.xml.Elem = &lt;a attr1="1" attr2="2"&gt;foo&lt;/a&gt;<br>
-      scala&gt; x match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
-      Elem(prefix, label, attribute, _, children) =&gt; {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      println("prefix = "+prefix)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      println("label = "+label)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      println("attribute = "+attribute)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      println("children = "+children)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-      prefix = null<br>
-      label = a<br>
-      attribute =&nbsp; attr1="1" attr2="2"<br>
-      children = foo</p>
+      permet aussi de récupérer des données facilement :</p>
+    {% highlight scala %}
+scala> val x = <a attr1="1" attr2="2">foo</a>
+x: scala.xml.Elem = <a attr1="1" attr2="2">foo</a>
+scala> x match {
+     |     case Elem(prefix, label, attribute, _, children) => {
+     |       println("prefix = "+prefix)
+     |       println("label = "+label)
+     |       println("attribute = "+attribute)
+     |       println("children = "+children)
+     |     }
+     |   }
+prefix = null
+label = a
+attribute =  attr1="1" attr2="2"
+children = foo
+    {% endhighlight %}
     <h3>Les pseudos opérateurs XPATH</h3>
     <p><code>\</code> et <code>\\</code> permettent de faire des
       recherches dans l’arbre à la XPATH. Le plus simple est de montrer
-      quelques exemples :<code><br>
-      </code></p>
-    <p class="scala_code">scala&gt; &lt;a&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;c attr="abc"/&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;c
-      attr="ac"/&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; &lt;/a&gt;<br>
-      res57: scala.xml.Elem = <br>
-      &lt;a&gt;<br>
-      &nbsp;&nbsp;&nbsp; &lt;b&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
-      &nbsp;&nbsp;&nbsp; &lt;/b&gt;<br>
-      &nbsp;&nbsp;&nbsp; &lt;c attr="ac"&gt;&lt;/c&gt;<br>
-      &nbsp; &lt;/a&gt;<br>
-    </p>
-    <p>Renvoie la liste des enfants directs de type <code>&lt;c&gt;</code>
+      quelques exemples :</p>
+        {% highlight scala %}
+scala> <a>
+     |     <b>
+     |       <c attr="abc"/>
+     |     </b>
+     |     <c attr="ac"/>
+     |   </a>
+res57: scala.xml.Elem =
+<a>
+    <b>
+      <c attr="abc"></c>
+    </b>
+    <c attr="ac"></c>
+  </a>
+    {% endhighlight %}
+    <p>Cet exemple renvoie la liste des enfants directs de type <code>&lt;c&gt;</code> :</p>
+    {% highlight scala %}
+scala> res57 \ "c"
+res58: scala.xml.NodeSeq = NodeSeq(<c attr="ac"></c>)
+    {% endhighlight %}
+    <p>Cet exemple renvoie la liste des enfants directs de type <code>&lt;b&gt;</code>
       :</p>
-    <p class="scala_code">scala&gt; res57 \ "c"<br>
-      res58: scala.xml.NodeSeq = NodeSeq(&lt;c attr="ac"&gt;&lt;/c&gt;)</p>
-    <p>Renvoie la liste des enfants directs de type <code>&lt;b&gt;</code>
+    {% highlight scala %}
+scala> res57 \ "b"
+res59: scala.xml.NodeSeq =
+NodeSeq(<b>
+      <c attr="abc"></c>
+    </b>)
+    {% endhighlight %}
+    
+    <p>Cet exemple renvoie la liste de tous les enfants de type <code>&lt;c&gt;</code>
       :</p>
-    <p class="scala_code">scala&gt; res57 \ "b"<br>
-      res59: scala.xml.NodeSeq = <br>
-      NodeSeq(&lt;b&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;c attr="abc"&gt;&lt;/c&gt;<br>
-      &nbsp;&nbsp;&nbsp; &lt;/b&gt;)</p>
-    <p>Renvoie la liste de tous les enfants de type <code>&lt;c&gt;</code>
-      :</p>
-    <p class="scala_code">scala&gt; res57 \\ "c"<br>
-      res60: scala.xml.NodeSeq = NodeSeq(&lt;c attr="abc"&gt;&lt;/c&gt;,
-      &lt;c attr="ac"&gt;&lt;/c&gt;)</p>
-    <p>Renvoie la liste des attributs <code>"attr"</code> de <code>&lt;c&gt;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      </code>:</p>
-    <p class="scala_code">scala&gt; res57 \ "c" \ "@attr"<br>
-      res61: scala.xml.NodeSeq = ac</p>
-    <p> Renvoie la liste des attributs <code>"attr" </code>de la
+    {% highlight scala %}
+scala> res57 \\ "c"
+res60: scala.xml.NodeSeq = NodeSeq(<c attr="abc"></c>, <c attr="ac"></c>)
+    {% endhighlight %}
+    
+    <p>Cet exemple renvoie la liste des attributs <code>"attr"</code> de <code>&lt;c&gt;</code> :</p>
+    {% highlight scala %}
+scala> res57 \ "c" \ "@attr"
+res61: scala.xml.NodeSeq = ac
+    {% endhighlight %}
+    
+    <p>Cet exemple renvoie la liste des attributs <code>"attr" </code>de la
       racine :</p>
-    <p class="scala_code">scala&gt; res57 \ "@attr"<br>
-      res62: scala.xml.NodeSeq = NodeSeq()</p>
-    <p> Renvoie la liste des attributs <code>"attr"</code> de tous les
+    {% highlight scala %}
+scala> res57 \ "@attr"
+res62: scala.xml.NodeSeq = NodeSeq()
+    {% endhighlight %}
+    
+    <p>Cet exemple renvoie la liste des attributs <code>"attr"</code> de tous les
       éléments :</p>
-    <p class="scala_code">scala&gt; res57 \\ "@attr"<br>
-      res63: scala.xml.NodeSeq = NodeSeq(abc, ac)</p>
+    {% highlight scala %}
+scala> res57 \\ "@attr"
+res63: scala.xml.NodeSeq = NodeSeq(abc, ac)
+    {% endhighlight %}
+    
     <p>Bon c’est sympa mais l’utilité du machin s’arrête là. Il n’est
       pas possible d’appliquer des filtres sur les attributs, genre <code>c[@attr="ac"]</code>
       par exemple. Mais puisque <code>\</code> et <code>\\</code>
       renvoient du <code>NodeSeq</code>, on peut utiliser la méthode
-      filter de <code>Sequence</code> :</p>
-    <p class="scala_code">scala&gt; res57 \\ "@attr" filter(_.text ==
-      "ac")<br>
-      res67: scala.xml.NodeSeq = NodeSeq(ac)<span style="font-family: monospace;"><br>
-      </span></p>
+      <code>filter</code> de <code>Sequence</code> :</p>
+    {% highlight scala %}
+scala> res57 \\ "@attr" filter(_.text == "ac")
+res67: scala.xml.NodeSeq = NodeSeq(ac)
+    {% endhighlight %}
     <p><span style="font-family: monospace;"></span>Pour plus
-      d’exemples, va voir le site de <a target="_blank" href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">Daniel
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Spiewak</a>.</p>
-    <h3>Extraire des données d’<code>Elem</code> avec le matcher<br>
-    </h3>
+      d’exemples, va voir le site de <a target="_blank" href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">Daniel Spiewak</a>.</p>
+      
+    <h3>Extraire des données d’<code>Elem</code> avec le matcher</h3>
     <p>Je définis une méthode qui va afficher une petite phrase selon ce
       qui est passé en paramètre :</p>
-    <p class="scala_code">scala&gt;&nbsp;&nbsp; val
-      cestQuoi:(Node)=&gt;Unit =&nbsp; {x=&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; x match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      case &lt;sac&gt;&lt;/sac&gt; =&gt; println("Ce sac est vide")<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      case &lt;sac&gt;{bonbon}&lt;/sac&gt; =&gt; println("Ce sac ne
-      contient que des " + bonbon)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      case &lt;sac&gt;{dedans @ _*}&lt;/sac&gt; =&gt; {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; println("Ce sac
-      contient ")<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      dedans.foreach(n=&gt;cestQuoi(n))<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      case _ =&gt; println("Ce n’est pas un sac")<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-      cestQuoi: scala.xml.Node =&gt; Unit = &lt;function1&gt;<span style="font-family: monospace;"><br>
-      </span></p>
-    <p><span style="font-family: monospace;"></span>On peut écrire le
+    {% highlight scala %}
+scala>   val cestQuoi:(Node)=>Unit =  {x=>
+     |     x match {
+     |       case <sac></sac> => println("Ce sac est vide")
+     |       case <sac>{bonbon}</sac> => println("Ce sac ne contient que des " + bonbon)
+     |       case <sac>{dedans @ _*}</sac> => {
+     |         println("Ce sac contient ")
+     |         dedans.foreach(n=>cestQuoi(n))
+     |       }
+     |       case _ => println("Ce n’est pas un sac")
+     |     }
+     |   }
+cestQuoi: scala.xml.Node => Unit = <function1>
+    {% endhighlight %}
+    <p>On peut écrire le
       pattern à matcher directement dans le <code>case</code>. Entre
       accolade, on définit des variables que l’on peut réutiliser après
       <code>=&gt;</code>.<br>
       <code>&lt;sac&gt;{dedans @ _*}&lt;/sac&gt; </code>est un<cite>
         Pattern Sequences</cite> (voir chapitre 8.1.9 de la <a target="_blank"
-        href="http://www.scala-lang.org/sites/default/files/linuxsoft_archives/docu/files/ScalaReference.pdf">Référence
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Scala</a>). La variable <code>dedans</code> est une séquence
+        href="http://www.scala-lang.org/sites/default/files/linuxsoft_archives/docu/files/ScalaReference.pdf">Référence Scala</a>). La variable <code>dedans</code> est une séquence
       qui contient tous les enfants de <code>&lt;sac&gt;</code>.<br>
     </p>
     <p>J’applique cette méthode à un sac de nounours :</p>
-    <p class="scala_code">scala&gt; val sacDeNounours =
-      &lt;sac&gt;nounours&lt;/sac&gt;<br>
-      sacDeNounours: scala.xml.Elem = &lt;sac&gt;nounours&lt;/sac&gt;<br>
-      <br>
-      scala&gt; cestQuoi(sacDeNounours)<br>
-      Ce sac ne contient que des nounours<br>
-    </p>
+    {% highlight scala %}
+scala> val sacDeNounours = <sac>nounours</sac>
+sacDeNounours: scala.xml.Elem = <sac>nounours</sac>
+
+scala> cestQuoi(sacDeNounours)
+Ce sac ne contient que des nounours
+    {% endhighlight %}
     <p>J’applique cette méthode à un sac vide :</p>
-    <p class="scala_code">scala&gt;&nbsp;&nbsp; val sacVide =
-      &lt;sac/&gt;<br>
-      sacVide: scala.xml.Elem = &lt;sac&gt;&lt;/sac&gt;<br>
-      <br>
-      scala&gt; cestQuoi(sacVide)<br>
-      Ce sac est vide</p>
+    {% highlight scala %}
+scala> val sacVide = <sac/>
+sacVide: scala.xml.Elem = <sac></sac>
+
+scala> cestQuoi(sacVide)
+Ce sac est vide
+    {% endhighlight %}
     <p>J’applique cette méthode à un sac d’assortiments :</p>
-    <p class="scala_code">scala&gt; sacAssortiment: scala.xml.Elem = <br>
-      &lt;sac&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;fraises&lt;/sac&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;banane&lt;/sac&gt;<br>
-      &nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
-      scala&gt;&nbsp;&nbsp; val sacAssortiment =<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;sac&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;sac&gt;fraises&lt;/sac&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;sac&gt;banane&lt;/sac&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; &lt;/sac&gt;<br>
-      <br>
-      scala&gt; cestQuoi(sacAssortiment)<br>
-      Ce sac contient <br>
-      Ce n’est pas un sac<br>
-      Ce sac ne contient que des fraises<br>
-      Ce n’est pas un sac<br>
-      Ce sac ne contient que des banane<br>
-      Ce n’est pas un sac</p>
-    <p> Et oui! N’oublions pas que les espaces de formattage sont
-      significatifs.<br>
+    {% highlight scala %}
+scala> sacAssortiment: scala.xml.Elem =
+<sac>
+      <sac>fraises</sac>
+      <sac>banane</sac>
+    </sac>
+scala>   val sacAssortiment =
+     |     <sac>
+     |       <sac>fraises</sac>
+     |       <sac>banane</sac>
+     |     </sac>
+
+scala> cestQuoi(sacAssortiment)
+Ce sac contient
+Ce n’est pas un sac
+Ce sac ne contient que des fraises
+Ce n’est pas un sac
+Ce sac ne contient que des banane
+Ce n’est pas un sac
+    {% endhighlight %}
+    <p>Si tu te demandes d’où sortent tous ces sacs vides, n’oublie pas que les espaces de formattage sont significatifs !<br>
     </p>
-    <p><code></code>J’applique cette méthode à une frite :</p>
-    <p class="scala_code">scala&gt;&nbsp;&nbsp; val frite =
-      &lt;frite/&gt;<br>
-      frite: scala.xml.Elem = &lt;frite&gt;&lt;/frite&gt;<br>
-      <br>
-      scala&gt; cestQuoi(frite)<br>
-      Ce n’est pas un sac<br>
-    </p>
-    <p>L’erreur courante avec cette méthode est d’oublier que les
+    <p>J’applique cette méthode à une frite :</p>
+    {% highlight scala %}
+scala>   val frite = <frite/>
+frite: scala.xml.Elem = <frite></frite>
+
+scala> cestQuoi(frite)
+Ce n’est pas un sac
+    {% endhighlight %}
+    <p>Trucs & Astuces : l’erreur courante avec cette méthode est d’oublier que les
       espaces et retours-chariots sont significatifs. Utiliser la
       méthode <a target="_top" href="#trim"><code>trim</code></a> si ce
       comportement n’est pas désirable.</p>
-    <p>Il est possible d’imbriquer les balises dans un <code>case</code>
-      :</p>
-    <p class="scala_code">scala&gt;&nbsp;&nbsp;
-      scala.xml.Utility.trim(sacAssortiment) match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case
-      &lt;sac&gt;&lt;sac&gt;{assortiment1}&lt;/sac&gt;&lt;sac&gt;{assortiment2}&lt;/sac&gt;&lt;/sac&gt;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      =&gt; println("Ce sac est un assortiment de " + assortiment1 + "
-      et de " + assortiment2)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-      Ce sac est un assortiment de fraises et de bananes<br>
-    </p>
-    <p>Par contre <a target="_blank" href="http://stackoverflow.com/questions/2610191/scala-xml-pattern-matching-and-attributes">on
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        ne peut pas matcher les attributs directement</a>, il faut
+    <p>Il est possible d’imbriquer les balises dans un <code>case</code> :</p>
+    {% highlight scala %}
+scala>   scala.xml.Utility.trim(sacAssortiment) match {
+     |     case <sac><sac>{assortiment1}</sac><sac>{assortiment2}</sac></sac> => println("Ce sac est un assortiment de " + assortiment1 + " et de " + assortiment2)
+     |   }
+Ce sac est un assortiment de fraises et de bananes
+    {% endhighlight %}
+    <p>Par contre <a target="_blank" href="http://stackoverflow.com/questions/2610191/scala-xml-pattern-matching-and-attributes">on ne peut pas matcher les attributs directement</a>, il faut
       utiliser un opérateur <cite>XPATH</cite> après <code>=&gt;</code>,
       dommage.<br>
     </p>
@@ -2033,49 +1108,42 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
     <h4> Un cas concrêt</h4>
     <p> On dispose de quelques fichiers XHTML bien formés que l'on
       souhaite afficher à l'utilisateur. Le problème, c'est que les
-      liens href sont des liens relatifs, il faudrait les transformer en
-      lien absolu. Par exemple il faut transformer <code>"</code><code>http://www.gargamel.com</code><code>/pages/foo.html"</code>
+      liens <code>href</code> sont erronés, il faut transformer <code>"</code><code>http://www.gargamel.com</code><code>/pages/foo.html"</code>
       en <code>"http://www.azrael.com/pages/foo.html"</code>.<br>
       L'autre soucis, c'est que ces documents ont des balises
-      &lt;script&gt; &lt;link&gt; et &lt;style&gt; dont on voudrait se
-      débarraser. Par exemple :<br>
-    </p>
-    <p class="scala_code"> &lt;html&gt;<br>
-      &lt;head&gt;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
-      robot')&lt;/script&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-      Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link
-      href="../Styles/stylesheet.css" rel="stylesheet"
-      type="text/css"/&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
-      type="text/css"&gt;&lt;/style&gt;<br>
-      &lt;/head&gt;<br>
-      &lt;body&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
-      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-      &lt;/body&gt;<br>
-      &lt;/html&gt;</p>
+      <code>&lt;script&gt;</code>, <code>&lt;link&gt;</code> et <code>&lt;style&gt;</code> dont on voudrait se
+      débarraser. Par exemple :</p>
+    {% highlight xml %}
+<html>
+<head>    
+      <script>alert('nono le robot')</script>
+      <title>The Hobbit</title>
+      <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/>
+      <link href="../Styles/stylesheet.css" rel="stylesheet" type="text/css"/>
+      <style type="text/css"></style>
+</head>
+<body>
+      <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
+</body>
+</html>
+    {% endhighlight %}
     <p>doit être transformé en :</p>
-    <p class="scala_code">&lt;html&gt;<br>
-      &lt;head&gt;<br>
-      &nbsp; &lt;title&gt;The Hobbit&lt;/title&gt;<br>
-      &nbsp; &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
-      &lt;/head&gt;<br>
-      &lt;body&gt;<br>
-      &nbsp;&nbsp; &lt;a
-      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-      &lt;/body&gt;</p>
-    <p></p>
+    {% highlight xml %}
+<html>
+<head>
+  <title>The Hobbit</title>
+  <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/>
+</head>
+<body>
+   <a href="http://www.azrael.com/pages/foo.html">Bar</a>
+</body>
+    {% endhighlight %}
+
     <h4> The « Scala way »</h4>
-    <p> Scala definit 3 classes sympatiques pour parcourir et modifier
+    <p> Scala définit 3 classes sympatiques pour parcourir et modifier
       un arbre XML.</p>
     <p>— <code>BasicTransformer</code> est une classe marquée abstraite
-      qui définit 3 méthodes <code>transform</code>. Par défaut, elles
+      qui définit 3 méthodes <code>transform…</code>. Par défaut, elles
       parcourent récursivement les enfants du/des nœuds passés en
       paramètre en leur appliquant <code> transform</code>. Elle
       définit une méthode <code>apply(n: Node): Node </code>qui sous
@@ -2083,541 +1151,170 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
     </p>
     <p>— <code>RewriteRule</code> est aussi une classe abstraite qui
       étend BasicTransformer. La différence entre <code>RewriteRule</code>
-      et <code>BasicTransformer</code> est que la méthode surchargée <code>transform(n:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Node): Seq[Node] </code>renvoie toujours <code>n</code> alors
+      et <code>BasicTransformer</code> est que la méthode surchargée <code>transform(n: Node): Seq[Node] </code>renvoie toujours <code>n</code> alors
       que la méthode parente applique <code>transform(n: Node):
         Seq[Node]</code> récursivement sur chaque enfant. En pratique,
       il faut étendre cette classe et surcharger <code>transform(n:
         Node): Seq[Node]</code> où on effectue les transformations sur
-      le nœud. Il faut également veiller à retourner une <code>Seq[Node]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      </code>contenant un et un seul nœud si on utilise la méthode <code>apply(n:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        Node): Node</code>.<br>
+      le nœud. Il faut également veiller à retourner une <code>Seq[Node]</code>contenant un et un seul nœud si on utilise la méthode <code>apply(n:Node): Node</code>.<br>
     </p>
     <p>— <code>RuleTransformer</code> est aussi marquée abstraite. Le
       constructeur prend en paramètre un nombre variable de <code>RewriteRule</code>.
       Elle surcharge<code> transform(n: Node): Seq[Node]</code> et
       applique sur <code>n</code> chaque <code>RewriteRule</code>
       passé en paramètre du constructeur au <code>RewriteRule</code>
-      suivant. En gros ca permet de composer les <code>RewriteRule </code>et
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      de les appliquer récursivement à tout l’arbre, y compris les
+      suivant. En gros ca permet de composer les <code>RewriteRule</code> et de les appliquer récursivement à tout l’arbre, y compris les
       attributs et autres types de nœuds.</p>
-    <p>Pour en revenir à notre cas concrêt :</p>
-    <p class="scala_code">1) Définir un RewriteRule pour supprimer les
-      balises enfants de script :<br>
-      scala&gt; class RewriteNoScript extends RewriteRule {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; import scala.xml.Node<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val toDelete =
-      List("script","link","style")<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; override def transform(n:
-      Node): Seq[Node] = {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; import xml.Elem
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; n match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      case e:Elem =&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; val
-      newChildren = e.child.filter { c =&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      !toDelete.contains(c.label)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      e.copy(child = newChildren)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      case o =&gt; o<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
-      defined class RewriteNoScript</p>
+    <p>Pour en revenir à notre cas concrêt, voici une solution :</p>
+    1) Définir un RewriteRule pour supprimer les balises enfants de script :<br>
+    {% highlight scala %}
+      scala> class RewriteNoScript extends RewriteRule {
+     |   import scala.xml.Node
+     |   val toDelete = List("script","link","style")
+     |   override def transform(n: Node): Seq[Node] = {
+     |     import xml.Elem
+     |     n match {
+     |       case e:Elem =>
+     |           val newChildren = e.child.filter { c =>
+     |             !toDelete.contains(c.label)
+     |           }
+     |           e.copy(child = newChildren)
+     |       case o => o
+     |     }
+     |   }
+     | }
+defined class RewriteNoScript
+    {% endhighlight %}
     <p>Instanciation&nbsp;:</p>
-    <p class="scala_code">scala&gt; new RewriteNoScript<br>
-      res6: RewriteNoScript = &lt;function1&gt;</p>
+    {% highlight scala %}
+scala> new RewriteNoScript
+res6: RewriteNoScript = <function1>
+    {% endhighlight %}
+    
     <p>Création d’un jeu de données :</p>
-    <p class="scala_code">scala&gt; &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;title&gt;The Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;link type="text/css" rel="stylesheet"
-      href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;style type="text/css"&gt;&lt;/style&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
-      res9: scala.xml.Elem = <br>
-      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
-      robot')&lt;/script&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-      Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
-      rel="stylesheet" href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
-      type="text/css"&gt;&lt;/style&gt;<br>
-      &lt;/head&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> <head>   
+     |       <script>alert('nono le robot')</script>
+     |       <title>The Hobbit</title>
+     |       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
+     |       <link type="text/css" rel="stylesheet" href="../Styles/stylesheet.css"></link>
+     |       <style type="text/css"></style>
+     | </head>
+res9: scala.xml.Elem =
+<head>   
+      <script>alert('nono le robot')</script>
+      <title>The Hobbit</title>
+      <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
+      <link type="text/css" rel="stylesheet" href="../Styles/stylesheet.css"></link>
+      <style type="text/css"></style>
+</head>
+    {% endhighlight %}
+    
     <p>Appliquer le jeu de données au <code>Transformer</code> :</p>
-    <p class="scala_code">scala&gt; res6(res9)<br>
-      res10: scala.xml.Node = <br>
-      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-      Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &lt;/head&gt;<br>
-    </p>
-    <p>2) Définir un <code>RewriteRule</code> pour modifier les liens</p>
-    <p class="scala_code">class RewriteLien extends RewriteRule {<br>
-      &nbsp; val oldPrefix = "http://www.gargamel.com"<br>
-      &nbsp; val newPrefix = "http://www.azrael.com"<br>
-      &nbsp; override def transform(node: Node): Seq[Node] = {<br>
-      &nbsp;&nbsp;&nbsp; node match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (e.label
-      == "a" &amp;&amp; e.attributes.get("href").isDefined){<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      val newValAttribute = e.attributes.get("href").get.map(_ match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      case Text(value) =&gt; Text(value.replaceAll(oldPrefix,newPrefix))<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      case n =&gt; n<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      }) <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      e.copy(attributes = e.attributes.remove("href").append(new
-      UnprefixedAttribute("href", newValAttribute, Null)))<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; else e<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case other =&gt; other<br>
-      &nbsp;&nbsp;&nbsp; }<br>
-      &nbsp; }<br>
-      }<br>
-      defined class RewriteLien</p>
+    {% highlight scala %}
+scala> res6(res9)
+res10: scala.xml.Node =
+<head>   
+     
+      <title>The Hobbit</title>
+      <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
+     
+     
+</head>
+    {% endhighlight %}
+    <p>2) Définir un <code>RewriteRule</code> pour modifier les liens :</p>
+    {% highlight scala %}
+scala> class RewriteLien extends RewriteRule {
+  val oldPrefix = "http://www.gargamel.com"
+  val newPrefix = "http://www.azrael.com"
+  override def transform(node: Node): Seq[Node] = {
+    node match {
+      case e:Elem => {
+          if (e.label == "a" && e.attributes.get("href").isDefined){
+            val newValAttribute = e.attributes.get("href").get.map(_ match {
+                case Text(value) => Text(value.replaceAll(oldPrefix,newPrefix))
+                case n => n
+            })
+            e.copy(attributes = e.attributes.remove("href").append(new UnprefixedAttribute("href", newValAttribute, Null)))
+          }
+          else e
+      }
+      case other => other
+    }
+  }
+}
+defined class RewriteLien
+    {% endhighlight %}
+    
     <p>Instantiation :</p>
-    <p class="scala_code">scala&gt; new RewriteLien<br>
-      res25: RewriteLien = &lt;function1&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> new RewriteLien
+res25: RewriteLien = <function1>
+    {% endhighlight %}
+    
     <p>Jeu de test :</p>
-    <p class="scala_code">scala&gt; &lt;a
-      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-      res26: scala.xml.Elem = &lt;a
-      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;</p>
+scala> <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
+res26: scala.xml.Elem = <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
+    {% endhighlight %}
+    
     <p>Test :</p>
-    <p class="scala_code">scala&gt; res25(res26)<br>
-      res27: scala.xml.Node = &lt;a
-      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> res25(res26)
+res27: scala.xml.Node = <a href="http://www.azrael.com/pages/foo.html">Bar</a>
+    {% endhighlight %}
+    
     <p>3) Composer les deux rewriters avec un transformer</p>
-    <p class="scala_code">scala&gt; val rwLien = new RewriteLien<br>
-      rwLien: RewriteLien = &lt;function1&gt;<br>
-      scala&gt; val rwNS = new RewriteNoScript<br>
-      rwNS: RewriteNoScript = &lt;function1&gt;<br>
-      scala&gt; val transformer = new RuleTransformer(rwLien,rwNS)<br>
-      transformer: scala.xml.transform.RuleTransformer =
-      &lt;function1&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> val rwLien = new RewriteLien
+rwLien: RewriteLien = <function1>
+scala> val rwNS = new RewriteNoScript
+rwNS: RewriteNoScript = <function1>
+scala> val transformer = new RuleTransformer(rwLien,rwNS)
+transformer: scala.xml.transform.RuleTransformer = <function1>
+    {% endhighlight %}
     <p>4) Passer notre XML à la moulinette</p>
-    <p class="scala_code">scala&gt; &lt;html&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;script&gt;alert('nono le robot')&lt;/script&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;title&gt;The Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;link href="../Styles/stylesheet.css" rel="stylesheet"
-      type="text/css"/&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;style type="text/css"&gt;&lt;/style&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/head&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;body&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;a
-      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/body&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &lt;/html&gt;<br>
-      res28: scala.xml.Elem = <br>
-      &lt;html&gt;<br>
-      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;script&gt;alert('nono le
-      robot')&lt;/script&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-      Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;link type="text/css"
-      rel="stylesheet" href="../Styles/stylesheet.css"&gt;&lt;/link&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;style
-      type="text/css"&gt;&lt;/style&gt;<br>
-      &lt;/head&gt;<br>
-      &lt;body&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
-      href="http://www.gargamel.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-      &lt;/body&gt;<br>
-      &lt;/html&gt;<br>
-      <br>
-      scala&gt; transformer(res28)<br>
-      res29: scala.xml.Node = <br>
-      &lt;html&gt;<br>
-      &lt;head&gt;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;title&gt;The
-      Hobbit&lt;/title&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;meta name="Adept.resource"
-      value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"&gt;&lt;/meta&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
-      &lt;/head&gt;<br>
-      &lt;body&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;a
-      href="http://www.azrael.com/pages/foo.html"&gt;Bar&lt;/a&gt;<br>
-      &lt;/body&gt;<br>
-      &lt;/html&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> <html>
+     | <head>   
+     |       <script>alert('nono le robot')</script>
+     |       <title>The Hobbit</title>
+     |       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/>
+     |       <link href="../Styles/stylesheet.css" rel="stylesheet" type="text/css"/>
+     |       <style type="text/css"></style>
+     | </head>
+     | <body>
+     |       <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
+     | </body>
+     | </html>
+res28: scala.xml.Elem =
+<html>
+<head>   
+      <script>alert('nono le robot')</script>
+      <title>The Hobbit</title>
+      <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
+      <link type="text/css" rel="stylesheet" href="../Styles/stylesheet.css"></link>
+      <style type="text/css"></style>
+</head>
+<body>
+      <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
+</body>
+</html>
+
+scala> transformer(res28)
+res29: scala.xml.Node =
+<html>
+<head>   
+     
+      <title>The Hobbit</title>
+      <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
+     
+     
+</head>
+<body>
+      <a href="http://www.azrael.com/pages/foo.html">Bar</a>
+</body>
+</html>
+    {% endhighlight %}
     <p>Et voilà !</p>
     <h4>Le hic du « Scala way »<br>
     </h4>
@@ -2626,223 +1323,173 @@ UnprefixedAttribute("constructeur","simplicime",res5.attributes.head)<br>
         title="https://issues.scala-lang.org/browse/SI-3689">https://issues.scala-lang.org/browse/SI-3689</a>.
       Prenons ce simple exemple:</p>
     <p>Tout d’abord, je crée un RewriteRule qui ajoute un attribut sur
-      un nœud, et affiche le nœud avant et après transformation :<br>
+      un nœud, et affiche le nœud avant et après transformation :
     </p>
-    <p class="scala_code">scala&gt;class Rewrite(name:String) extends
-      RewriteRule {<br>
-      &nbsp; import scala.xml.Node<br>
-      &nbsp; override def transform(n: Node): Seq[Node] = {<br>
-      &nbsp;&nbsp;&nbsp; println("to transform " + name + " " + n)<br>
-      &nbsp;&nbsp;&nbsp; import scala.xml.{Elem, Null,
-      UnprefixedAttribute}<br>
-      &nbsp;&nbsp;&nbsp; val ret = n match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case e:Elem =&gt; e.copy(attributes
-      = new UnprefixedAttribute(name,"yes",e.attributes))<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
-      &nbsp;&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp; println("transformed " + name + " " + ret)<br>
-      &nbsp;&nbsp;&nbsp; ret<br>
-      &nbsp;}<br>
-      }<br>
-      scala&gt; val xml =
-      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      xml: scala.xml.Elem =
-      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      scala&gt; val r1 = new Rewrite("r1")<br>
-      r1: Rewrite = &lt;function1&gt;<br>
-      scala&gt; r1(xml)<br>
-      to transform r1
-      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r1 &lt;a
-      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      res14: scala.xml.Node = &lt;a
-      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-    </p>
+    {% highlight scala %}
+scala>class Rewrite(name:String) extends RewriteRule {
+  import scala.xml.Node
+  override def transform(n: Node): Seq[Node] = {
+    println("to transform " + name + " " + n)
+    import scala.xml.{Elem, Null, UnprefixedAttribute}
+    val ret = n match {
+      case e:Elem => e.copy(attributes = new UnprefixedAttribute(name,"yes",e.attributes))
+      case o => o
+    }
+    println("transformed " + name + " " + ret)
+    ret
+ }
+}
+scala> val xml = <a><b><c></c></b></a>
+xml: scala.xml.Elem = <a><b><c></c></b></a>
+scala> val r1 = new Rewrite("r1")
+r1: Rewrite = <function1>
+scala> r1(xml)
+to transform r1 <a><b><c></c></b></a>
+transformed r1 <a r1="yes"><b><c></c></b></a>
+res14: scala.xml.Node = <a r1="yes"><b><c></c></b></a>
+    {% endhighlight %}
     <p>Ensuite je le combine avec un <code> RuleTransformer</code> :</p>
-    <p class="scala_code">scala&gt; val t = new RuleTransformer(r1)<br>
-      t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
-      scala&gt; t(xml)<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      to transform r1 &lt;a&gt;&lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r1 &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      res15: scala.xml.Node = &lt;a r1="yes"&gt;&lt;b r1="yes"&gt;&lt;c
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> val t = new RuleTransformer(r1)
+t: scala.xml.transform.RuleTransformer = <function1>
+scala> t(xml)
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <b><c r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r1="yes"></c></b>
+to transform r1 <b><c r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r1="yes"></c></b>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <b><c r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r1="yes"></c></b>
+to transform r1 <b><c r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r1="yes"></c></b>
+to transform r1 <a><b r1="yes"><c r1="yes"></c></b></a>
+transformed r1 <a r1="yes"><b r1="yes"><c r1="yes"></c></b></a>
+to transform r1 <a><b r1="yes"><c r1="yes"></c></b></a>
+transformed r1 <a r1="yes"><b r1="yes"><c r1="yes"></c></b></a>
+res15: scala.xml.Node = <a r1="yes"><b r1="yes"><c r1="yes"></c></b></a>
+    {% endhighlight %}
     <p> T’as pas un peu l'impression que ça mouline pour rien? Moi si.
       En tous cas le résultat est correct. </p>
-    <p> Quand on combine deux RewriteRule, regarde bien c'est ignoble:</p>
-    <p class="scala_code">scala&gt; val r2 = new Rewrite("r2")<br>
-      r2: Rewrite = &lt;function1&gt;<br>
-      scala&gt; val t = new RuleTransformer(r1,r2)<br>
-      t: scala.xml.transform.RuleTransformer = &lt;function1&gt;<br>
-      <br>
-      scala&gt; t(xml)<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r2 &lt;b r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r2 &lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
-      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      to transform r1 &lt;a&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r1 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
-      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
-      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
-      r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      to transform r2 &lt;a r1="yes"&gt;&lt;b r2="yes" r1="yes"&gt;&lt;c
-      r2="yes" r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r2 &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
-      r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      res18: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
-      r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;</p>
+    <p> Quand on combine deux <code>RewriteRule</code>, regarde bien c'est ignoble:</p>
+    {% highlight scala %}
+scala> val r2 = new Rewrite("r2")
+r2: Rewrite = <function1>
+scala> val t = new RuleTransformer(r1,r2)
+t: scala.xml.transform.RuleTransformer = <function1>
+
+scala> t(xml)
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r1 <b><c r2="yes" r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r1 <b><c r2="yes" r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r2 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+transformed r2 <b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r2 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+transformed r2 <b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+to transform r1 <b><c r2="yes" r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r1 <b><c r2="yes" r1="yes"></c></b>
+transformed r1 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r2 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+transformed r2 <b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r2 <b r1="yes"><c r2="yes" r1="yes"></c></b>
+transformed r2 <b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b>
+to transform r1 <a><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+transformed r1 <a r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+to transform r1 <a><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+transformed r1 <a r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+to transform r2 <a r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+transformed r2 <a r2="yes" r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+to transform r2 <a r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+transformed r2 <a r2="yes" r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+res18: scala.xml.Node = <a r2="yes" r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+    {% endhighlight %}
     <p> <span style="font-weight: bold;">58 appels pour modifier 3
-        nœuds</span>, mais le résultat est correct.<br>
+        nœuds</span>, au moins le résultat est correct…<br>
     </p>
     <h4>Remède naïf<br>
     </h4>
     <p>Rien ne vaut une bonne méthode manuelle, en voici une qui pousse
-      la stack à son maximum :<br>
+      la stack à son maximum :
     </p>
-    <p class="scala_code">scala&gt; class
-      MyRuleTransformer(rw:RewriteRule *) {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | def transform(n:Node):Node = {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; val parent =
-      rw.foldLeft(n){<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; (node,rewrite)
-      =&gt; rewrite(node)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; parent match {<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | &nbsp; &nbsp; case e:Elem =&gt;
-      e.copy(child=e.child.map(c=&gt;transform(c)))<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp; case o =&gt; o<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp; }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
-      &nbsp;&nbsp;&nbsp;&nbsp; | }<br>
-      defined class MyRuleTransformer<br>
-      scala&gt; val t = new MyRuleTransformer(r1,r2)<br>
-      t: MyRuleTransformer = MyRuleTransformer@9ff430</p>
-    <p class="scala_code"><code> </code>scala&gt; t.transform(xml)<br>
-      to transform r1
-      &lt;a&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r1 &lt;a
-      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      to transform r2 &lt;a
-      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      transformed r2 &lt;a r2="yes"
-      r1="yes"&gt;&lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-      to transform r1 &lt;b&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r1 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r2 &lt;b r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      transformed r2 &lt;b r2="yes"
-      r1="yes"&gt;&lt;c&gt;&lt;/c&gt;&lt;/b&gt;<br>
-      to transform r1 &lt;c&gt;&lt;/c&gt;<br>
-      transformed r1 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      to transform r2 &lt;c r1="yes"&gt;&lt;/c&gt;<br>
-      transformed r2 &lt;c r2="yes" r1="yes"&gt;&lt;/c&gt;<br>
-      res26: scala.xml.Node = &lt;a r2="yes" r1="yes"&gt;&lt;b r2="yes"
-      r1="yes"&gt;&lt;c r2="yes"
-      r1="yes"&gt;&lt;/c&gt;&lt;/b&gt;&lt;/a&gt;<br>
-    </p>
+    {% highlight scala %}
+scala> class MyRuleTransformer(rw:RewriteRule *) {
+     | def transform(n:Node):Node = {
+     |   val parent = rw.foldLeft(n){
+     |     (node,rewrite) => rewrite(node)
+     |   }
+     |   parent match {
+     |     case e:Elem => e.copy(child=e.child.map(c=>transform(c)))
+     |     case o => o
+     |   }
+     | }
+     | }
+defined class MyRuleTransformer
+scala> val t = new MyRuleTransformer(r1,r2)
+t: MyRuleTransformer = MyRuleTransformer@9ff430
+
+scala> t.transform(xml)
+to transform r1 <a><b><c></c></b></a>
+transformed r1 <a r1="yes"><b><c></c></b></a>
+to transform r2 <a r1="yes"><b><c></c></b></a>
+transformed r2 <a r2="yes" r1="yes"><b><c></c></b></a>
+to transform r1 <b><c></c></b>
+transformed r1 <b r1="yes"><c></c></b>
+to transform r2 <b r1="yes"><c></c></b>
+transformed r2 <b r2="yes" r1="yes"><c></c></b>
+to transform r1 <c></c>
+transformed r1 <c r1="yes"></c>
+to transform r2 <c r1="yes"></c>
+transformed r2 <c r2="yes" r1="yes"></c>
+res26: scala.xml.Node = <a r2="yes" r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1="yes"></c></b></a>
+    {% endhighlight %}
     <p> « Seulement » 12 appels, mais avec par contre le gros
       inconvenient de bouffer plein de mémoire (À chaque appel, chaque
       sous-arbre est conservé dans la stack, donc en extrapolant ça

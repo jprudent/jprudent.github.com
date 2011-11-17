@@ -97,7 +97,7 @@ li {
   padding-top: 0.3em;
 }
 
-code, .scala_code {
+.highlight, code {
   background-color: #EEEEEE;
   font-family: Monaco,
 	             "Bitstream Vera Sans Mono",
@@ -105,7 +105,10 @@ code, .scala_code {
              Terminal,
              monospace;
   font-size: 0.8em;
+  line-height: 1;
 }
+
+
 .scala_code {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
