@@ -86,11 +86,7 @@ res30: scala.xml.Elem = <a>ª</a>
 scala> <div><![CDATA[starting tag <song> and end stag </song>]]></div>
 res0: scala.xml.Elem = <div>starting tag &lt;song&gt; and end stag &lt;/song&gt;</div>
     {% endhighlight %}
-    <p>Pfiou! Disparu le <code>CDATA</code>! Ça veut dire que si je
-      décide d’écrire <code>res0</code> dans un fichier, le <code>CDATA</code>
-      est perdu.<br>
-      Par contre nos chevrons ont bien été remplacés comme attendu. <br>
-    </p>
+    <p>Pfiou! Disparu le <code>CDATA</code> et remplacés nos chevrons! Vraiment contre-intuitif ça…</p>
     <p>On peut aisément palier cette disparition en instanciant la
       classe <code>PCData</code>:</p>
     {% highlight scala %}
@@ -155,7 +151,7 @@ res43: Boolean = false
 scala> res40 == res42
 res44: Boolean = true
     {% endhighlight %} 
-    <p> <a id="trim" name="trim"></a>Il est possible de supprimer tous
+    <p>Il est possible de supprimer tous
       les blancs avec la méthode <code>trim</code> :</p>
     {% highlight scala %}
 scala> scala.xml.Utility.trim(res42)
@@ -626,15 +622,17 @@ res10: String = ahah
       les types de retour. Cette propriété est importante lorsqu'on
       utilise l'API XML de scala.<br>
       <code>Node</code> définit les propriétés de base d'un nœud XML:<br>
-      — <code>label : String</code> est abstrait<br>
+      — <code>label : String</code> est abstrait. Pour une balise, cela correspond au nom de cette balise.<br>
       — <code>attributes: Metadata</code> contient la liste des
       attributs<br>
       — <code>child : Node *</code> un certain nombre d’enfants<br>
       — <code>prefix : String</code> tout le monde sait ce qu'est un <a
         target="_blank" href="http://www.w3.org/TR/xml-names/#ns-using">prefix</a>.<br>
       — <code>scope : NamespaceBinding</code> (TODO traiter du scope plus tard)<br>
-      Une méthode intéressante est <code>attribute(key:String):Metadata</code>
-      qui renvoie l'attribut dont le nom est passé en paramètre.</p>
+      — Une méthode intéressante est <code>attribute(key:String):Metadata</code>
+      qui renvoie l'attribut dont le nom est passé en paramètre.
+      L’autre indispensable est <code>toString(): String</code> qui renvoit la représentation XML de l’élément. Sous le capot de cette méthode se cache un appel à <code>Utility.toXML</code> que tu peux utiliser indépendamment.
+    </p>
     <h3>Elem<br>
     </h3>
     <p><code>Elem</code> est une class concrête qui représente un noœud XML. Toutes
@@ -687,7 +685,7 @@ res3: scala.xml.Elem = <a><camarophyllopsisFetide></camarophyllopsisFetide><aman
     </p>
     <p>Bref <code>Elem</code>, c'est la classe incontournable de ce
       package.</p>
-    <h3>Nœud spéciaux<br>
+    <h3>Nœuds spéciaux<br>
     </h3>
     <p> Ensuite viennent les noeuds spéciaux regroupés sous la classe
       abstraite <code>SpecialNode</code>. Elle regroupe tous les types
@@ -700,7 +698,7 @@ res3: scala.xml.Elem = <a><camarophyllopsisFetide></camarophyllopsisFetide><aman
       et <code>Unparsed</code>. Ces trois classes ont en commun, entre
       autre, l'attribut label qui vaut <code>"#PCDATA"</code>.<br>
     </p>
-    <h5>Text </h5>
+    <h5>Text</h5>
     <p><code>Text</code> est utilisé pour représenter du texte simple.
       Par exemple:</p>
     {% highlight scala %}
@@ -747,10 +745,27 @@ res32: scala.xml.Atom[Double] = 3.4
       (<a href="#entityref">exemple</a>) et ProcInstr (<a href="#procinst">exemple</a>) pour les processing instruction.</p>
     <h3>Group<br>
     </h3>
-    <p> La classe <code>Group</code> etend <code>Node</code>, sent le
-      moisi, et je ne comprends pas encore son utilité. <br>
+    <p> La classe <code>Group</code> étend <code>Node</code> et sert à grouper des éléments dans un conteneur sans consistance (je sais…, wtf, tout ça…). <br>
       Petite explication sur la classe <code>Group</code> issue de la Scaladoc: «A hack to
       group XML nodes in one node for output». Limpide!</p>
+    <p>En fait cela prend du sens quand on essaye d’afficher les enfants d’un élément sans vouloir afficher cet élément. Cela mérite bien un exemple :</p>
+    {% highlight scala %}
+scala> <b>s<br/>alut</b>
+res0: scala.xml.Elem = <b>s<br></br>alut</b>
+
+scala> res0.toString
+res5: String = <b>s<br></br>alut</b> // <- on ne veut pas afficher <b></b>
+
+scala> res0.child.toString
+res6: String = ArrayBuffer(s, <br></br>, alut) // <- pourri
+
+scala> new Group(res0.child).toString
+res4: String = s<br></br>alut // <- c’est ça !
+
+scala> res0.child.mkString
+res7: String = s<br></br>alut <- ça marche aussi
+
+    {% endhighlight %}
     <h3>Attributs</h3>
     <h4>Metadata<br>
     </h4>
