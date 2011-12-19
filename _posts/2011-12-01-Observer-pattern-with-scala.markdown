@@ -147,7 +147,6 @@ Tout d’abord nos deux interfaces `Observer` et `Subject`
 trait Observer {
   def notify(s:Subject, n:Any):Unit
 }
-
 trait Subject {
   private var observers = List[Observer]()
   def register(o:Observer):Unit = {
@@ -177,13 +176,11 @@ class Joueur(val nom:String) extends  Subject {
     nbCoup = (nbCoup + 1) % 2
   }
 }
-
 class Arbitre extends  Observer {
   def verifierCoup(nom:String, coup:String) = {
     if(coup contains ("P23")) println("— Arbitre: Le coup de " + nom + " est invalide.")
     else println("— Arbitre: Le coup de " + nom + " est validé")
   }
-
   def notify(s:Subject, n:Any) {
     s match {
       case s:Joueur => n match {
@@ -194,7 +191,6 @@ class Arbitre extends  Observer {
     }
   }
 }
-
 class Spectateur extends  Observer {
   def commenter(nom:String, coup:String) {
     if (nom contains ("Norris"))
@@ -202,7 +198,6 @@ class Spectateur extends  Observer {
     else
       println("— Spectateur: Joli déplacement de " + coup)
   }
-
   def notify(s:Subject, n:Any) {
     s match {
       case s:Joueur => n match {
@@ -227,15 +222,12 @@ object Observer1Test {
   def main(args: Array[String]) {
     val chuck = new Joueur("Chuck Norris")
     val kaspa = new Joueur("Kasparov")
-
     val jerome = new Spectateur
     chuck.register(jerome)
     kaspa.register(jerome)
-
     val capello = new Arbitre
     chuck.register(capello)
     kaspa.register(capello)
-
     0.until(3).foreach{i=>
       chuck.jouer
       kaspa.jouer
