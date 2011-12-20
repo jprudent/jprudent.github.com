@@ -30,7 +30,7 @@ h1 {
 .main_title_box {
 	text-align: center;
 	font-size: 20px;
-	-moz-box-shadow: 1px 1px 10px black;
+	box-shadow: 1px 1px 10px black;
 	margin-top: 10px;
 	 letter-spacing: 1px;
 	 padding-bottom: 5px;
@@ -166,7 +166,7 @@ h1 {
 
 
 .expert {
-  -moz-box-shadow: 1px 1px 10px black;
+  box-shadow: 1px 1px 10px black;
     padding: 10px;
 }
 
