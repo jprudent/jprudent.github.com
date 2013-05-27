@@ -10,16 +10,111 @@ body {
   color: #FFF;
   font-family: Arial;
   line-height: 1.5em;
+  margin:0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	text-rendering: optimizeLegibility;
+	line-height: 1;
+	margin-top: 0;
+  color: #444444;
+  position: relative;
+}
+
+h1,
+.alpha {
+	font-size: 60px;
+	font-size: 3.33333rem;
+	margin-bottom: 0.495rem;
+	margin-top: 0.495rem;
+}
+
+h2,
+.beta {
+	font-size: 48px;
+	font-size: 2.66667rem;
+	margin-bottom: 0.61875rem;
+	margin-top: 0.61875rem;
+}
+
+h3,
+.gamma {
+	font-size: 36px;
+	font-size: 2rem;
+	margin-bottom: 0.825rem;
+	margin-top: 0.825rem;
+}
+
+h4,
+.delta {
+	font-size: 24px;
+	font-size: 1.33333rem;
+	margin-bottom: 1.2375rem;
+	margin-top: 1.2375rem;
+}
+
+h5,
+.epsilon {
+	font-size: 21px;
+	font-size: 1.16667rem;
+	margin-bottom: 1.41429rem;
+	margin-top: 1.41429rem;
+}
+
+h6,
+.zeta {
+	font-size: 18px;
+	font-size: 1rem;
+	margin-bottom: 1.65rem;
+	margin-top: 1.65rem;
+}
+
+p {
+	text-indent: 0.5em;
+	margin: 0 0 0;
+}
+
+p + p {
+  text-indent : 0;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.header {
+  position:relative;
+  height: 3em; /* 2x header-line */
+}
+
+.header-line {
+  height: 1.5em;
 }
 
 .header .blog-title {
+  position:absolute;
+  left: 0;
+  
   font-family : "Topaz-8";
   font-size : 1em;
+  text-decoration: none;
+  text-shadow: 0 0 0.2em #87F, 0 0 0.2em #87F;
   color: #FB9500; 
 }
 
+
 .header ul.menu {
-  float:right;
+  position:absolute;
+  right: 0;
+  width:40%;
+    
   overflow:hidden;
   margin:0;
   padding:0;
@@ -28,16 +123,14 @@ body {
 
 .header ul.menu li{
   float:left;
+  width: 33%;
 }
 
 .header ul.menu li a{
     display: block;
-    width: 140px;
-    margin-left: 5px;
+    width: 100%;
   
-    border-left: 1px solid #FFF;
-    border-right: 1px solid #FFF;
-    border-top: 1px solid #FFF;
+    border-left: 0.2em dashed #FFF;
   
     font-family:"Topaz-8";
     font-size: 1em;
@@ -47,44 +140,81 @@ body {
     text-align: center;
 }
 
-.blog-abstract {
-    border-right: 1px solid;
-    border-top: 1px solid;
+.header .blog-abstract {
+  
+    position:absolute;
+    top: 1.5em; /* espace utilisé par le blog-title et le menu */
+    width: 100%;
+  
+    border-top: 0.2em dashed;
     font-family: Topaz-8; 
+    text-shadow : 0 0 0.2em #FB9500, 0 0 0.2em #FB9500
 }
 
 .header ul.menu li a:hover{
   background-color: #DB9500;
 }
 
+
 .body {
-  
+  width: 100%;
+  margin: auto;
+  padding: 3em 10% 3em 10%;
+  background-color: #FFF; 
+  color: #000;
+  border: 1em dashed #AAA;
 }
 
-.main {
-  padding: 0.3em;
-  min-height: 15em;
-  background-color: #4B0082;
-  padding: 0.3em;
+.body h2.index-page {
+  font-family: Topaz-8;
+  text-shadow : 0 0 0.4em #8F7;
 }
 
-.section {
-    background-color: #FFFFFF;
-    border-radius: 0.4em 0.4em 0.4em 0.4em;
-    color: #000000;
-    margin: 1em auto;
-    padding: 1em;
-    width: 90%;
+.body h2.index-page:before {
+  content: '[*]';
+  margin-right: 1em;
 }
 
 .footer {
-  border-top: 0.3em solid #FB9500;
-  padding-top: 0.3em;
+  position:relative;
 }
 
 
-.footer .section {
+.footer .items {
     float: left;
-    width: 20%;
-    margin-left: 5%;
+}
+
+.footer ul.items {
+  list-style-type: none;
+}
+
+.footer ul.items li:before {
+  content : '[*]';
+  font-family: Topaz-8;
+  margin-right: 0.5em;
+}
+
+.footer .avatar {
+  position: absolute;
+  top: -102px;
+  right: 0;
+  background-color:#FFF;  
+}
+
+.highlight {
+  background-color: #EEEEEE;
+  overflow: auto;
+  padding-left: 1em;
+}
+
+a.genetoc-toc-backlink {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size:1rem;
+}
+
+#toc-js li a{
+  font-size: 1rem;
+  color: #444444;
 }

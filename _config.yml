@@ -1,2 +1,4 @@
 server: true
-pygments: false
+pygments: true
+markdown: rdiscount
+

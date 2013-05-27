@@ -3,11 +3,9 @@ layout: default
 title: Blog de Jérôme Prudent
 ---
 
-<div class="section">
-  <h2>Articles</h2>
-  <ul>
+  <h2 class="index-page">Articles</h2>
+  <ul style="list-style-type: binary;">
   {% for post in site.categories['articles_prog'] %}
   <li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
   {% endfor %}
   </ul> 
-</div>

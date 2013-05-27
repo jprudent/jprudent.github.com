@@ -6,16 +6,22 @@ categories:
 Agents Java - Partie 1
 ======================
 
-Mise en situation
------------------
-Vous travaillez pour un client qui exerce une activité en ligne. 
-Cette activité est très réglementée et le gouvernement vous impose de lui communiquer certains détails propres à cette activité. 
+<div id="toc-js">
+</div>
 
-Concrêtement, on vous fournit un Logger compilé (.class).
+Mise en situation fictive
+-------------------------
+ 
+Vous exercez une activité lucrative très réglementée et le gouvernement vous impose de lui communiquer
+certaines informations. 
+
+Concrêtement, le gouvernement fournit une classe Logger compilée (.class).
 Vous devez appeler ce Logger de temps en temps.
 
-La société _SSII Corp_, société à taille humaine, a sous traité le projet de développement du Logger.
-Malheureusement, cette classe est buggée : vous ne pouvez pas la déployer sur votre environnement UNIX car le chemin du fichier de log est codé en dur et est de type Windows.
+La société _SSII Corp_ a développé le Logger.
+Malheureusement, cette classe est buggée.
+Vous ne pouvez pas l'utiliser sur votre environnement Linux car le logger 
+utilise un chemin codé en dur de type Windows.
 
 Admettons que toute votre activité se résume à cette simple classe Java:
 
@@ -34,7 +40,7 @@ Admettons que toute votre activité se résume à cette simple classe Java:
 	public static void main(String[] args) throws IOException {
 			
 			System.out.println("Je fais des affaires sur internet");
-			
+      
 			System.out.println("Je transmets des informations au gouvernement");
 			Map<String, Object> infos = new HashMap<String,Object>();
 			infos.put("cafe", 0xCAFE);
@@ -64,40 +70,39 @@ Ce programme produit sur la console :
 		at fr.arolla.Foo.main(Foo.java:19)
 
 
-C'est embêtant, vous ne pouvez pas terminer votre sprint sans cette fonctionnalité très importante. Vous n'avez pas le code source 
-et le traitement fait à l'intérieur est inintelligible après décompilation. De plus, il est imposé d'utiliser ce jar sans l'altérer. Comment faire ?    
-Avec un agent java et un peu de manipulation de bytecode.
+C'est embêtant! Vous n'avez pas le code source et vous ne savez pas vraiment ce que fait cette grosse boîte noire. 
+De plus, il est imposé d'utiliser cette classe sans l'altérer. Comment faire ?
+... on va bricoler en instrumentant le Logger avec un agent java
 
-Avant de commencer, sachez que ce que je propose est un petit bricolage histoire de s'amuser un peu. La solution proposée ici est à base d'agents java et d'instrumentation du bytecode.
-
-Attention, certains bouts de code sont écrits en Scala car Java c'est vintage mais pas très rock n'roll.
+Certains bouts de code sont écrits en Scala car Java c'est vintage mais pas très rock n'roll.
 
 Si vous voulez, vous pouvez cloner le code [ici](https://github.com/jprudent/java-agent.git)
 
 Si vous voulez vous lancer dans les travaux pratiques, munissez vous de :
-* [SBT](https://github.com/harrah/xsbt) (j'utilise 0.11.3-2)
-* [Scala](http://www.scala-lang.org/downloads/) (j'utilise la 2.9.1)
-* JRE (j'utilise IcedTea7)
+* [SBT](https://github.com/harrah/xsbt)
+* [Scala](http://www.scala-lang.org/downloads/)
+* JDK (of course)
 
 
-Lancer un agent au démarrage de l'appli
----------------------------------------
+Le package java.lang.instrument
+-------------------------------
 
-# java.lang.instrument
 Ce package mal connu existe depuis la version 5 de java. Que nous dit la [dernière javadoc](http://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html#package_description "javadoc") ?
 
 > Provides services that allow Java programming language agents to instrument programs running on the JVM. The mechanism for instrumentation is modification of the byte-codes of methods. 
 
-Cool ! C'est pile ce qui fallait.
+Cool ! C'est pile ce qui fallait et c'est ce qu'on va utiliser.
 
-# Lancement d'un agent au démarrage de la JVM
-## Créer un agent en 3 étapes.
+
+Création d'un agent en 3 étapes
+-------------------------------
+
 ### 1. Ecrire l'agent
 Tout d'abord, il faut un agent. Un agent est une simple classe qui "implémente" : 
 
-soit `public static void premain(String agentArgs, Instrumentation inst)` 
+* soit `public static void premain(String agentArgs, Instrumentation inst)` 
+* soit `public static void premain(String agentArgs)`
 
-soit `public static void premain(String agentArgs)`
 
 Concrêtement voici à quoi ressemble un agent simplissime :
 
@@ -117,8 +122,6 @@ Un agent est une classe normale, sa seule spécificité est d'implémenter la m�
 
 D'après la javadoc, cette classe est chargée par le même classloader que les autres classes. Les mêmes contraintes de sécurité (policy) s'y appliquent donc.
 
-TODO : si c'est le même classloader, peut on instrumenter du code que l'on modifie ?
-
 ### 2. Packaging
 L'agent doit obligatoirement être packagé dans un jar. A ma connaissance, il n'existe aucun moyen d'attacher un agent sous la forme d'un simple .class.
 
@@ -126,11 +129,11 @@ Le manifest du jar doit contenir un attribut `Premain-Class` dont la valeur est 
 
 {% highlight properties %}
 
-	Premain-Class: fr.arolla.SimplAgent
+	Premain-Class: fr.arolla.SimpleAgent
 
 {% endhighlight %}
 
-Le jar et son `MANIFEST.MF` peuvent être générés à la main comme le faisait ma grand-mère ou via un outil de build. J'utilise logiquement _sbt_ mais c'est aussi possible avec _maven_ (TODO mettre un lien). Voici le contenu de mon _build.sbt_:
+Le jar et son `MANIFEST.MF` peuvent être générés à la main comme le faisait ma grand-mère ou via un outil de build. J'utilise logiquement _sbt_ mais c'est aussi possible avec _maven_. Voici le contenu de mon _build.sbt_:
 
 {% highlight scala %}
 
@@ -148,8 +151,8 @@ Le jar et son `MANIFEST.MF` peuvent être générés à la main comme le faisait
 
 La commande `sbt package` construit le jar dans `target/scala-2.9.1/arollagent_2.9.1-1.jar`
 
-### 3. Lancer la JVM
-Il suffit d'ajouter l'option javaagent à la JVM:
+### 3. Attacher l'agent à la JVM
+Il suffit d'ajouter l'option _javaagent_ à la JVM:
     
 `-javaagent:jarpath[=options]`
  
@@ -157,11 +160,16 @@ _jarpath_ est le chemin du jar contenant l'agent.
 
 _options_ sont les arguments passés à l'agent.
 
-## Tester l'agent:
-	
+Voyons cela de plus près ...
+
+#### Cas nominal
+Lancer les commandes:
+
 	$ sbt package
 	$ export CLASSPATH=target/scala-2.9.1/classes:/home/stup3fait/.sbt/boot/scala-2.9.1/lib/scala-library.jar:lib/logger.jar:/home/stup3fait/.ivy2/cache/org.ow2.asm/asm/jars/asm-4.0.jar
 	$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar fr.arolla.Foo
+
+Cela affiche :
 
 	Un simple agent appelé avec les arguments null
 	Je fais des affaires sur internet
@@ -174,17 +182,17 @@ _options_ sont les arguments passés à l'agent.
 	        at fr.gouv.france.Logger.log(Logger.java:13)
 	        at fr.arolla.Foo.main(Foo.java:19)
 
-`sbt package` package l'agent dans le jar avec le Manifest qui va bien
+-   `sbt package` package l'agent dans le jar avec le Manifest qui va bien
+-   `export CLASSPATH ...` met dans le classpath:
+    *   notre classe Foo à exécuter
+    *   la librairie scala (dont dépend l'agent)
+    *   le jar qui contient le logger buggé  (dont dépend Foo)
+    *   la librairie de manipulation de bytecode (dont dépendra l'agent)
+-   `java -javaagent:...` exécute la classe Foo avec notre agent
 
-`export CLASSPATH ...` met dans le classpath:
-- notre classe Foo à exécuter
-- la librairie scala (dont dépend l'agent)
-- le jar qui contient le logger buggé  (dont dépend Foo)
-- la librairie de manipulation de bytecode (dont dépendra l'agent)
+On voit que l'agent s'est exécuté avant le `main()`.
 
-`java -javaagent:...` exécute la classe Foo avec notre agent
-
-## Passer des arguments à l'agent
+#### Passer des arguments à l'agent
 En fait on ne passe qu'un seul argument à l'agent. Libre à lui de découper au besoin.
 
 	$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar=cafe\ babe fr.arolla.Foo
@@ -195,8 +203,8 @@ En fait on ne passe qu'un seul argument à l'agent. Libre à lui de découper au
 	Exception in thread "main" java.io.FileNotFoundException: C:/Windows/USers/SSIICorp/Mes documenst/pariLogger.log (No such file or directory)
 
 
-## Plusieurs agents à la fois
-On peu lancer une compagnie d'agents en chaînant les -javaagent:
+#### Plusieurs agents à la fois
+On peu lancer une compagnie d'agents en chaînant les `-javaagent`:
 
 	$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar=AGENT\ 1 -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar=AGENT\ 2 fr.arolla.Foo
 	Un simple agent appelé avec les arguments AGENT 1
@@ -208,9 +216,9 @@ On peu lancer une compagnie d'agents en chaînant les -javaagent:
 
 Anatomie du Logger
 ------------------
-Bon, nous avons un peu dégrossit un peu ce qu'était un agent. Attaquons nous maintenant au Logger buggé.
+Bon, nous avons un peu dégrossi un peu ce qu'était un agent. Attaquons nous maintenant au Logger buggé.
 
-On dézippe le jar et on regarde son bytecode avec javap.
+On dézippe le jar et on regarde son bytecode avec `javap`.
 
 	javap -c -s -p fr/gouv/france/Logger.class
 
@@ -227,20 +235,17 @@ La méthode log commence ainsi:
 	       8: iconst_1                                                                                                                                                                                                                                                             
 	       9: invokespecial #25                 // Method java/io/FileWriter."<init>":(Ljava/lang/String;Z)V   
 
-A la ligne 6, l'instruction ldc charge sur la stack la constante #23 qui contient le chemin du fichier de log. Cette 
-constante sert de paramètre au constructeur de la class FileWriter à la ligne 9.
+A la ligne 6, l'instruction `ldc` charge sur la stack la constante #23 qui contient le chemin du fichier de log. Cette 
+constante sert de paramètre au constructeur de la class `FileWriter` à la ligne 9.
 
-Pour corriger le bug, on peut soit :
-- modifier la constante dans le constant pool de la classe. Toutes les constantes qu'utilise une classe sont dans une zone
-spéciale de la classe appelée constant pool.
-- générer un code qui lit le chemin depuis un fichier, une variable d'environnement ou un paramètre. Mais c'est plus balèze.
+Pour corriger le bug, il suffit de charger un bon chemin à la ligne 23.
 
 Instrumentation et agents
 -------------------------
 
 Jusqu'ici on a créé un agent qui ne servait à rien et on a trouvé l'endroit où réside le bug.
 
-L'agent que nous avons écrit ne permet pas d'instrumenter du code. Pour avoir cette capacité, il faut "implémenter"
+L'agent que nous avons écrit s'exécute avant `main` mais ne permet pas d'instrumenter du code. Pour avoir cette capacité, il faut "implémenter"
 `public static void premain(String agentArgs, Instrumentation inst);`
 
 Allons y:
@@ -268,7 +273,7 @@ Allons y:
 
 {% endhighlight %}
 
-On voit que la clé c'est le paramètre [inst](http://docs.oracle.com/javase/6/docs/api/java/lang/instrument/Instrumentation.html). 
+La nouveauté c'est le paramètre [inst](http://docs.oracle.com/javase/6/docs/api/java/lang/instrument/Instrumentation.html). 
 Dans le cadre de cet article, seule la méthode addTransformer nous intéresse:
 
 `void addTransformer(ClassFileTransformer transformer)`
@@ -335,9 +340,11 @@ Et relançons le programme
 	Nom de la classe: java/lang/Shutdown
 	Nom de la classe: java/lang/Shutdown$Lock
 
-On remarque que le transformer est appelé *avant* d'utiliser une classe pour la première fois.
+On remarque deux choses:
+* que le transformer est appelé *avant* d'utiliser une classe *pour la première fois*.
+* que certaines classes du runtime ne sont apparemment pas instrumentables (où est `HashMap`)
 
-TODO: cela correcpond au chargement du classloader ou à la première utilisation ?
+
  
 Instrumentation du Logger
 -------------------------
@@ -396,7 +403,7 @@ Et voilà la version finale de l'agent:
 
 {% endhighlight %}
 
-Bon je ne veux pas trop m'attarder sur le code mais en gros ça prend le `ldc #23` qu'on avait repérer et ça le remplace par
+Bon, je ne veux pas trop m'attarder sur l'utilisation d'ASM, mais en gros ça prend le `ldc #23` qu'on avait repéré et ça le remplace par
 un `ldc #XX`, où XX est le numéro de constante qu'ASM nous a créé dans le constant pool et qui contient "/tmp/log".
 
 Si on relance l'appli avec le nouvel agent:
@@ -418,24 +425,26 @@ et dans /tmp/log on a un truc du genre:
 Conclusion
 ----------
 
-- vous avez des beaux logs
-- vous avez utilisé la librairie presqu'originale :)
-- vous n'avez écrit que 30 lignes de code supplémentaires :)
+Résultat
+- des beaux logs
+- on a utilisé la librairie presqu'originale :)
+- on n'a écrit que 30 lignes de code supplémentaires :)
 
-Pour réaliser cela, il a suffit de décompiler le Logger et créer un agent qui utilise ASM.
+Pour réaliser cela, il a suffit de décompiler/analyser le Logger et de créer un agent qui utilise ASM pour l'instrumenter.
 
-Bon, comme je l'ai dit en haut de cet article, c'est vraiment pour se faire plaisir tout ça, juste histoire de se tenir au courant. 
+Les agents offre une ultime interface, au plus bas niveau, avec le code à lancer sur la JVM. Plutôt pratique pour altérer des comportements ...
 
-Ca m'a aussi donné des idées non pas pour corriger des bugs mais plutôt pour en créer. En effet, on pourrait facilement simuler des connexions foireuses, des pannes, des problèmes de filesystem sans modifier le code,
+D'ailleurs, ça m'a aussi donné des idées non pas pour corriger des bugs mais plutôt pour en créer. En effet, on pourrait facilement simuler des connexions foireuses, des pannes, des problèmes de filesystem sans modifier le code,
 sur un environnement iso-prod pour voir comment se débrouille l'appli et sans avoir besoin de relivrer.
 
-Dans un prochain article, il y au moins deux points que j'aimerais approfondir concernant les agents:
-* le lien avec les classloader
+
+Dans un prochain article sur le sujet, il y aura au moins deux points que j'approfondirai :
 * l'instrumentation à chaud avec la méthode redefine
+* le lien avec les classloader
+
  
-Ressources autours de ce thème:
--------------------------------
+Ressources
+----------
 
-http://www.javalobby.org/java/forums/t19309.html
-
-http://blog.gorillalogic.com/2009/05/15/java-profiling-with-the-java-lang-instrument-package/ 
+-   [http://www.javalobby.org/java/forums/t19309.html](http://www.javalobby.org/java/forums/t19309.html)
+-   [http://blog.gorillalogic.com/2009/05/15/java-profiling-with-the-java-lang-instrument-package/](http://blog.gorillalogic.com/2009/05/15/java-profiling-with-the-java-lang-instrument-package/)

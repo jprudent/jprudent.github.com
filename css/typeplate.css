@@ -95,6 +95,7 @@ h1,
 	font-size: 60px;
 	font-size: 3.33333rem;
 	margin-bottom: 0.495rem;
+	margin-top: 0.495rem;
 }
 
 h2,
@@ -102,6 +103,7 @@ h2,
 	font-size: 48px;
 	font-size: 2.66667rem;
 	margin-bottom: 0.61875rem;
+	margin-top: 0.61875rem;
 }
 
 h3,
@@ -109,6 +111,7 @@ h3,
 	font-size: 36px;
 	font-size: 2rem;
 	margin-bottom: 0.825rem;
+	margin-top: 0.825rem;
 }
 
 h4,
@@ -116,6 +119,7 @@ h4,
 	font-size: 24px;
 	font-size: 1.33333rem;
 	margin-bottom: 1.2375rem;
+	margin-top: 1.2375rem;
 }
 
 h5,
@@ -123,6 +127,7 @@ h5,
 	font-size: 21px;
 	font-size: 1.16667rem;
 	margin-bottom: 1.41429rem;
+	margin-top: 1.41429rem;
 }
 
 h6,
@@ -130,6 +135,7 @@ h6,
 	font-size: 18px;
 	font-size: 1rem;
 	margin-bottom: 1.65rem;
+	margin-top: 1.65rem;
 }
 
 /**
@@ -165,12 +171,13 @@ xmp {
  */
 
 p {
-	margin: 0 0 1.5em;
+	text-indent: 1.5em;
+	margin: 0 0 0;
 }
 
 p + p {
-	text-indent: 1.5em;
-	margin-top: -1.5em;
+  
+  text-indent : 0;
 }
 
 /**
