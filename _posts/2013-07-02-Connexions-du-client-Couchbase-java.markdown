@@ -28,6 +28,7 @@ Haute performance
 Modèle flexible 
 : pas de shéma, on stocke ce que l'on veut.
 
+
 Nous allons voir comment ces avantages sont mis en oeuvre côté client.
 
 ## Création du client ##
@@ -60,6 +61,7 @@ du cluster et d'initier une connexion vers un bucket.
 
 La `baseList` doit contenir l'URL d'au moins un des noeuds du cluster.
 
+
 Côté serveur, 
 
 chaque _bucket_ est dans une liste de buckets,
@@ -68,11 +70,12 @@ cette liste appartient à une _pool_,
 
 et il existe plusieurs _pools_.  
 
+
 Le client va récupérer successivement ces informations du plus 
 gros grain, la liste de pools, jusqu'au bucket qu'on lui a 
 spécifié.
 
-La récupération de la liste des pools se fait sur http://node1:8091/pools
+La récupération de la liste des pools se fait sur `http://node1:8091/pools`
 
 {% highlight json %}
 
@@ -89,7 +92,7 @@ La récupération de la liste des pools se fait sur http://node1:8091/pools
 {% endhighlight %}
 
 On voit qu'il existe une seule pool, appelée _default_. On récupère 
-ses informations sur http://node1:8091/pools/default?uuid=b7e59676b22aecc10425b23507368662
+ses informations sur `http://node1:8091/pools/default?uuid=b7e59676b22aecc10425b23507368662`
 
 {% highlight json %}
 
@@ -99,7 +102,7 @@ ses informations sur http://node1:8091/pools/default?uuid=b7e59676b22aecc10425b2
     "name": "default",
     "alerts": [ ],
     "alertsSilenceURL": "/controller/resetAlerts?token=0&uuid=e9909bc948c7ad5a9358db43e0f1d32f",
-    "nodes": [ … ], // infos sur les noeuds
+    "nodes": [ … ],
     "buckets": {
         "uri": "/pools/default/buckets?v=125187379&uuid=e9909bc948c7ad5a9358db43e0f1d32f"
     },
@@ -127,13 +130,13 @@ ses informations sur http://node1:8091/pools/default?uuid=b7e59676b22aecc10425b2
 {% endhighlight %}
 
 Ensuite le client récupère la liste des buckets sur
-http://node1:8091/pools/default/buckets?v=125187379&uuid=e9909bc948c7ad5a9358db43e0f1d32f
+`http://node1:8091/pools/default/buckets?v=125187379&uuid=e9909bc948c7ad5a9358db43e0f1d32f`
 
 {% highlight json %}
 	
 	[
 		{ ... }, // infos bucket sso
-		{ ....}  // infos bucket cache
+		{ ... }  // infos bucket cache
 	]
 		
 {% endhighlight %}
@@ -147,9 +150,12 @@ travailler dessus. Je détaillerai ces informations plus tard.
 ![Les 3 types de connexion du client](/images/articles/couchbase/connexions.svg)
 
 Le client a 3 types de connexion :
+
+
 - En vert, le _bucket monitor_, un canal par lequel le cluster informe le client de sa topologie.
 - En jaune, le canal par lequel transite le protocol couchbase (set, get, delete, ...)
 - En rouge, le canal par lequel le client peut interroger les vues
+
 
 Le client __doit__ ouvrir un canal jaune et rouge sur __chacun__ des noeuds. 
 Le canal vert est ouvert sur l'un des noeuds seulement.
@@ -157,7 +163,7 @@ Le canal vert est ouvert sur l'un des noeuds seulement.
 ### Le bucket monitor ###
 
 Le _bucket monitor_ permet au client de découvrit et d'être averti des
-modifications de topologie du réseau. 
+modifications de topologie du cluster. 
 
 A la phase de bootstrap le client avait finalement récupéré la liste
 des buckets. En détail cela contient les noeuds auxquels il est rattaché,
@@ -273,7 +279,7 @@ Quand une modification survient, le client se reconfigure automatiquement.
 
 ### Communication avec couchbase (jaune) ###
 
-Couchbase promet des temps d'accès aux données constant. Cela est
+Couchbase promet des temps d'accès aux données constants. Cela est
 notamment dû au fait que la charge de travail est répartie équitablement 
 sur chaque noeud du cluster. En effet, une clé est sous la responsabilité 
 d'un seul noeud et d'un seul. 
@@ -284,18 +290,22 @@ Par conséquence, le client doit se connecter à tous les noeuds du cluster
 afin de travailler avec n'importe quel clé.
 
 A la phase de bootstrap, couchbase récupère l'intégralité des 
-généralement sur le port 11210.
-adresses des noeuds du cluster et y ouvre une connexion TCP permanente,
+généralement adresses des noeuds du cluster et y ouvre une connexion 
+TCP permanente, généralement sur le port 11210.
 
 #### Répartition des clés ####
 
 A la phase de bootstrap le client récupère la `vBucketServerMap`.
 Elle est constituée de 4 informations :
+
+
 * `hashAlgorithm` : l'algorithme de hashage utilisé pour répartir 
 les clés sur les noeuds. Ici, un simple [CRC](http://fr.wikipedia.org/wiki/Contr%C3%B4le_de_redondance_cyclique)	
 * `numReplica` : le nombre de fois que la clé est répliquée.
 * `serverList` : le tableau des noeuds du cluster. L'ordre est important
 * `vBucketMap` : la répartition des clés dans les noeuds du cluster.
+
+
 C'est un tableau de 1024 éléments. Chaque élément est appelé _virtual 
 bucket_. Cela permet de simuler un cluster de 1024 noeuds.
 Un _virtual bucket_ est un tableau. Le nombre à l'indice 0 est le noeud
@@ -361,6 +371,7 @@ valeur est un `Object` sérialisable. Bref, c'est libre.
 
 Couchbase réussit à tenir ses promesses en délégant pas mal 
 d'intelligence au client: localisation des noeuds, réplication, ...
+
 
 Ce qu'on retient aussi c'est la lourdeur d'initialisation du client.
 Plus les noeuds du cluster sont nombreux, plus la phase d'initialisation 
