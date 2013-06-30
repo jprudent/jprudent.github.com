@@ -1,3 +1,9 @@
+---
+layout: default
+categories:
+- articles_prog
+---
+
 ## Avant propos ##
 
 Dans les exemples de ce billet, je travaille avec
@@ -138,7 +144,7 @@ travailler dessus. Je détaillerai ces informations plus tard.
 
 ## Les 3 types de connexion du client ##
 
-1 client est connecté au bucket _sso_.
+![Les 3 types de connexion du client](/images/articles/couchbase/connexions.svg)
 
 Le client a 3 types de connexion :
 - En vert, le _bucket monitor_, un canal par lequel le cluster informe le client de sa topologie.
