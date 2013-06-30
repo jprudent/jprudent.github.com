@@ -33,6 +33,7 @@ Modèle flexible
 : pas de shéma, on stocke ce que l'on veut.
 
 
+
 Nous allons voir comment ces avantages sont mis en oeuvre côté client.
 
 ## Création du client ##
@@ -66,6 +67,7 @@ du cluster et d'initier une connexion vers un bucket.
 La `baseList` doit contenir l'URL d'au moins un des noeuds du cluster.
 
 
+
 Côté serveur, 
 
 chaque _bucket_ est dans une liste de buckets,
@@ -73,6 +75,7 @@ chaque _bucket_ est dans une liste de buckets,
 cette liste appartient à une _pool_, 
 
 et il existe plusieurs _pools_.  
+
 
 
 Le client va récupérer successivement ces informations du plus 
