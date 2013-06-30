@@ -344,7 +344,7 @@ noeud _master_ pour une clé :
 
 {% endhighlight %}
 
-## Canal des vues ##
+### Canal des vues ###
 
 Bien que l'interrogation d'une vue puisse se faire sur n'importe quel
 noeud, un canal dédié aux vues est ouvert sur chaque noeud du cluster.
