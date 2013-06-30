@@ -3,7 +3,7 @@ layout: default
 categories:
 - articles_prog
 ---
-# Les connexion du client couchbase java #
+# Les 3 connexions du client couchbase java #
 
 <div id="toc-js">
 </div>  
