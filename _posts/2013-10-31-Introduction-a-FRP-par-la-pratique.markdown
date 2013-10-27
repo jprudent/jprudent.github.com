@@ -63,7 +63,7 @@ Quand vous reviendrez, on commencera notre application :)
 
 ### Objectif
 
-Dans ce tutoriel on va implémenter un formulaire qui permet de choisir son pays, son code postal et sa ville. Simple ? Oui, dans sa finalité, mais c'est truffé d'embûches ...
+Dans ce tutoriel on va implémenter un formulaire qui permet de choisir son pays. La liste des pays est récupérée d'un service qui cause en JSON. Il faudra gérer un spinner et la gestion des erreurs. Simple ? Oui, dans sa finalité, mais c'est truffé d'embûches ...
 
 TODO screenshot
 
@@ -92,10 +92,10 @@ en cas d'erreur.
       return v === "ERROR";
     };
 
-    var isAjaxError = ajaxCountries
-      .map(isError)
-      .toProperty(false) // convertit en Property pour avoir une valeur initiale
-      .skipDuplicates(); // si la Property vaut 2 fois false, inutile de cacher 2 fois le message d'erreur
+    var isErrorAjaxCountries = ajaxCountries
+        .map(isError)
+        .toProperty(false)
+        .skipDuplicates();
 
 `map` permet de transformer une valeur en une autre valeur. Ici, si la valeur vaut `"ERROR"` on map à `true` sinon `false`.
 `map` et `mapError` renvoient un nouvel `EventStream` et prennent normalement une fonction en paramètre. Cette fonction prend en
@@ -122,13 +122,13 @@ Nous n'avons que des variables immutables. Aucun _side effect_.
 Ajax ----------------> 200
 ajaxCountries --> [Event({...json...})]
                        map
-isAjaxError -------> [false]
+isErrorAjaxCountries -------> [false]
 
 
 Ajax ----------------> 500
 ajaxCountries --> [Event.error]
                      mapError
-isAjaxError -------> [true]
+isErrorAjaxCountries -------> [true]
 
 Attaquons nous maintenant aux side effects.
 
@@ -157,21 +157,21 @@ Un `span` contient l'erreur. Le reste du document est de la machinerie.
       else $(".error").hide();
     }
 
-    isAjaxError.onValue(showOrHideErrorMessage);
+    isErrorAjaxCountries.onValue(showOrHideErrorMessage);
 
-A chaque fois qu'une nouvelle valeur arrive dans la `Property` `isAjaxError`, on appelle la fonction chargée d'exécuter le _side effect_, ici `showOrHideErrorMessage`.
+A chaque fois qu'une nouvelle valeur arrive dans la `Property` `isErrorAjaxCountries`, on appelle la fonction chargée d'exécuter le _side effect_, ici `showOrHideErrorMessage`.
 Cette fonction peut faire n'importe quoi. Ici elle cache le span si la valeur est `false`, sinon elle l'affiche.
 
 Nous avons géré un appel ajax en traitant le cas d'erreur avec 2 vars et 2 fonction.
 
 ### Ajout du spinner de chargement
 
-    var showAjaxSpinner = isAjaxError.awaiting(ajaxCountries);
+    var isOngoingAjaxCountries = isErrorAjaxCountries.awaiting(ajaxCountries);
 
-On **définit** une nouvelle `Property` `showAjaxSpinner` qui vaut :
+On **définit** une nouvelle `Property` `isOngoingAjaxCountries` qui vaut :
 
-- `false` tant que l'un des 2 `EventStream` n'a pas été alimenté ou dès que `isAjaxError` a été alimenté par `ajaxCountries`
-- `true` tant que `isAjaxError` n'a pas été alimenté par `ajaxCountries`
+- `false` tant que l'un des 2 `EventStream` n'a pas été alimenté ou dès que `isErrorAjaxCountries` a été alimenté par `ajaxCountries`
+- `true` tant que `isErrorAjaxCountries` n'a pas été alimenté par `ajaxCountries`
 
     var showOrHide = function(show, selector){
       if(show) selector.show();
@@ -183,10 +183,91 @@ On **définit** une nouvelle `Property` `showAjaxSpinner` qui vaut :
       showOrHide(show, $(".spinner"));
     };
 
-    showAjaxSpinner.onValue(showOrHideSpinner);
+    isOngoingAjaxCountries.onValue(showOrHideSpinner);
 
 On applique le _side effect_ pour afficher ou non le spinner, de façon similaire au message d'erreur.
 
-### Saisie du pays par l'utilisateur
+### Affichage d'une boîte de saisie du pays
 
-On définit
+    var isDoneAjaxCountries = ajaxCountries
+        .map(not(isError))
+        .toProperty(false)
+        .skipDuplicates();
+
+On définit un `EventStream` qui est un peu l'inverse de `isErrorAjaxCountries`.
+
+    <input type="text" name="country" list="countries"/>
+    <datalist id="countries">
+    </datalist>
+
+On ajoute le composant dans le DOM. Ici, c'est une combobox éditable.
+
+    var showOrHideInputCountry = function(show){
+      console.log("show country input", show);
+      showOrHide(show, $("[name='country']"));
+    }
+
+    isDoneAjaxCountries.onValue(showOrHideInputCountry);
+
+On applique le _side effect_ pour afficher ou non l'input, de façon similaire au message d'erreur.
+
+### Remplissage de la boîte de saisie
+
+    var countriesList = ajaxCountries
+      .filter(not(isError));
+
+On définit un `EventStream` qui nous renseigne sur la disponibilité
+de la liste des pays.
+
+    var fillCountries = function(countries){
+      for(var countryCode in countries){
+        $("#countries").append('<option value="'+ countries[countryCode] +'">' + countryCode + '</option>');
+      }
+    };
+
+    countriesList.onValue(fillCountries);
+
+On remplit la datalist avec la liste des pays.
+
+## Récapitulons
+
+Le code est divisé en deux parties.
+
+D'une part, une partie que j'appelle _définitions_. Cette partie est  agnostique à la technologie utilisée et pourrait se prêter à une multitude de scénarios.
+
+Chaque `Observable` définit dans cette partie a une sémantique propre et vraie quelque soit l'état de l'application. L'ensemble forme un graphe de dépendances.
+
+- `ajaxCountries` : le résultat de la requête ajax. C'est l'observable tout en haut de la pyramide des dépendances.
+- `isErrorAjaxCountries` : contient `true` si la requête s'est mal passée.
+- `isDoneAjaxCountries` : contient `true` si la requête s'est bien passée.
+- `isOngoingAjaxCountries` : Contient `true` si la requête ajax est en cours.
+- `countriesList` : contient la liste des pays.
+
+
+Je trouve tout cela claire : on a la requête, ses 3 états et sa valeur finale.
+Je trouve aussi que c'est extensible. Par exemple on pourrait retravailler facilement les valeurs de `countriesList` avec un méthode `map` pour les passer en majuscule. Ou alors on aurait pu conditionner `ajaxCountries` par un autre `EventStream` pour ne faire la requête que sous certaines conditions ...
+
+
+D'autre part, une partie appelée _side effects_ qui ne contient que de la logique d'affichage :
+
+- isErrorAjaxCountries.onValue : on affiche ou pas un message d'erreur
+- isOngoingAjaxCountries.onValue : on affiche ou pas un spinner
+- isDoneAjaxCountries.onValue : on affiche ou pas la boîte de saisie à l'utilisateur
+- countriesList.onValue : on traite le résultat de la requête
+
+## Conclusion
+
+Déjà, j'ai un bon sentiment. J'ai pas l'impression d'avoir laissé trainer des bugs. On a presque l'impression de lire une preuve mathématique.
+
+On ne flippe pas sur un problème de déférencement car toutes les variables sont immutables.
+
+D'aucun me rétorquera qu'avec jQuery, on fait tout ça de manière moins verbeuse (voir `complete`, `error`, `success`). J'ai pris une requête ajax en exemple, car cela reste conçis.
+
+
+Mais imaginons un scénario plus complexe où après avoir choisi son pays on l'invite à saisir son code postal. Dès que les 2 premiers chiffres sont saisis, on l'invite à choisir sa ville dans une liste récupérée en ajax, tout en lui laissant le choix de compléter son code postal en mettant à jour la liste des villes au fur et à mesure. On ne rend le bouton envoyer cliquable que si tout est saisi sans erreur. Le tout avec spinners et message d'erreur...
+
+
+Ce que je viens de décrire, je l'ai vraiment implémenté une fois avec un jQuery 1.4 (pas de `complete`, `error`, `success`) et sans plugins (je ne vous dirai pas où, j'ai trop honte). Et c'était l'enfer. Voici son digne [successeur](TODO).
+
+## Resources
+[http://www.ustream.tv/recorded/29299079](Video of the creator of Bacon.js)
