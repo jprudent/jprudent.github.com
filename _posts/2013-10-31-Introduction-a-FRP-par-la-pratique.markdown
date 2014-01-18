@@ -255,19 +255,36 @@ D'autre part, une partie appelée _side effects_ qui ne contient que de la logiq
 - isDoneAjaxCountries.onValue : on affiche ou pas la boîte de saisie à l'utilisateur
 - countriesList.onValue : on traite le résultat de la requête
 
-## Conclusion
+J'ai un bon sentiment sur le code que j'ai écrit. J'ai pas l'impression d'avoir laissé trainer des bugs. On a presque l'impression d'avoir écrit une preuve mathématique.
 
-Déjà, j'ai un bon sentiment. J'ai pas l'impression d'avoir laissé trainer des bugs. On a presque l'impression de lire une preuve mathématique.
+On ne flippe pas sur un problème de déférencement non plus car toutes les variables sont immutables.
 
-On ne flippe pas sur un problème de déférencement car toutes les variables sont immutables.
+## Difficultés
 
-D'aucun me rétorquera qu'avec jQuery, on fait tout ça de manière moins verbeuse (voir `complete`, `error`, `success`). J'ai pris une requête ajax en exemple, car cela reste conçis.
+### EventStream ou Property ?
 
+Bacon.js fait une distinction entre `EventStream` et `Property`. Je trouve que ce n'est pas très pratique, et on est souvent entrain de se demander quel est le type de notre Observable. Aussi, je trouve la barrière entre les deux concepts un peu floue. La seule différence semble être que la `Property` *peut* avoir une valeur par défaut.
+
+### Un graphe de dépendance
+
+Le debuggage est assez compliqué, il n'est parfois pas évident de trouver pourquoi tel événement a eu lieu.
+Avec un exemple assez conséquent (voir ci-dessous), on oublie qui dépend de qui. Il faut reparcourir les définitions. Pouvoir extraire un arbre des dépendances et le visualiser synthétiserait et aiderait beaucoup le développeur. J'ai trop souvent recours à des `console.log()` pour debugger.
+
+
+## Verbosité ?
+
+D'aucun me rétorquera qu'avec jQuery, on fait tout ça de manière moins verbeuse (`complete`, `error`, `success`, ...). J'ai pris une requête ajax en exemple, car cela reste conçis mais j'aurais pu trouver un exemple où jQuery n'offre pas autant de raccourcis.
+
+J'ai également volontairement variabilisé les différentes étapes et les fonctions au lieu de les inliner. Je trouve ça plus claire, la syntaxe de Javascript étant très lourde.
+
+
+## Aller plus loin
 
 Mais imaginons un scénario plus complexe où après avoir choisi son pays on l'invite à saisir son code postal. Dès que les 2 premiers chiffres sont saisis, on l'invite à choisir sa ville dans une liste récupérée en ajax, tout en lui laissant le choix de compléter son code postal en mettant à jour la liste des villes au fur et à mesure. On ne rend le bouton envoyer cliquable que si tout est saisi sans erreur. Le tout avec spinners et message d'erreur...
 
 
-Ce que je viens de décrire, je l'ai vraiment implémenté une fois avec un jQuery 1.4 (pas de `complete`, `error`, `success`) et sans plugins (je ne vous dirai pas où, j'ai trop honte). Et c'était l'enfer. Voici son digne [successeur](TODO).
+Ce que je viens de décrire, je l'ai vraiment implémenté une fois avec un jQuery 1.4 (pas de `complete`, `error`, `success`) et sans plugins (je ne vous dirai pas où, j'ai trop honte). Et c'était l'enfer. Voici son digne [successeur FRP](TODO).
 
 ## Resources
+[https://github.com/baconjs/bacon.js](L'indispensable readme.md)
 [http://www.ustream.tv/recorded/29299079](Video of the creator of Bacon.js)

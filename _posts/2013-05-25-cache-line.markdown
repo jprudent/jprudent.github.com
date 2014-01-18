@@ -51,7 +51,7 @@ Ensuite, partagées par tous les cores, on a cela :
 ![alt mémoire partagée par les cpus](/images/articles/cache-lines/big_picture.jpg)
 
 * **Le cache de niveau 3** : Cette zone mémoire partagée fait 8Mo.
-Un accès prend **25 cycles**.
+Un accès prend **40 cycles**.
 Le cache de niveau L3 est physiquement dans le CPU.
 
 * **La RAM** : ou DRAM pour être plus précis.
@@ -71,6 +71,9 @@ C'est également difficile à mesurer. Là encore, on change d'unité, on passe
 Le ring sert de bus de communication entre les coeurs et le cache de niveau
 L3 ou la RAM.
 
+
+Voir aussi ce [super schéma](/images/articles/cache-lines/mr.T.memories.jpg)
+issu d'une présentation de [Mr. T](http://www.infoq.com/author/Martin-Thompson).
 
 ### Deux notions importantes ###
 
