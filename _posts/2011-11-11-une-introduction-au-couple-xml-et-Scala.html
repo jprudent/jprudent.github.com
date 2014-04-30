@@ -3,7 +3,7 @@ layout: default
 categories:
 - articles_prog
 ---
-  
+
     <h1>Une introduction au couple XML et Scala</h1>
 <div id="toc-js">
 </div>
@@ -23,7 +23,7 @@ categories:
       cause » de l'héritage très libre, des fois la scaladoc d'une
       classe ça ressemble a une méga partouse entre <cite>class</cite>,
       <cite>trait</cite>, et <cite> object</cite>).</p>
-    <p>Si tes yeux se mettent à pisser le sang en lisant cet article, 
+    <p>Si tes yeux se mettent à pisser le sang en lisant cet article,
       pour une quelconque raison, je te serais extrêmement reconnaissant
        de bien vouloir me signaler mes erreurs.
     </p>
@@ -35,17 +35,14 @@ categories:
     {% highlight scala %}
 scala> val artiste="Didier super"
 artiste: java.lang.String = Didier super
-
 scala> val titre="on va tous crever"
 titre: java.lang.String = on va tous crever
-
 scala> val url = "http://www.didiersuper.com/diskonvatous.htm"
 url: java.lang.String = http://www.didiersuper.com/diskonvatous.htm
-
 scala> val duXML = <musique>
      | <chanson artiste={artiste.toUpperCase} titre={titre.split(" ").mkString("","_","")}>{/*à l'envers */url.reverse}</chanson>
      | </musique>
-duXML: scala.xml.Elem = 
+duXML: scala.xml.Elem =
 <musique>
 <chanson artiste="DIDIER SUPER" titre="on_va_tous_crever">mth.suotavnoksid/moc.repusreidid.www//:ptth</chanson>
 </musique>
@@ -64,7 +61,7 @@ duXML: scala.xml.Elem =
     <h3><a id="procinst" name="procinst"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-pi">processing instructions</a></h3>
 {% highlight scala %}
 scala> <?name foo?>
-res7: scala.xml.ProcInstr = <?name foo?> 
+res7: scala.xml.ProcInstr = <?name foo?>
 {% endhighlight %}
     <h3><a id="comment" name="comment"></a>Les <a target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-comments">commentaires</a></h3>
 {% highlight scala %}
@@ -76,11 +73,11 @@ res8: scala.xml.Comment = <!-- dskf -->
 scala> <a>&nbsp;</a>
 res10: scala.xml.Elem = <a>&nbsp;</a>
 scala> res10.child.head.getClass
-res12: java.lang.Class[_ <: scala.xml.Node] = class scala.xml.EntityRef 
+res12: java.lang.Class[_ <: scala.xml.Node] = class scala.xml.EntityRef
 scala> <a>&#xaa;</a>
 res30: scala.xml.Elem = <a>ª</a>
     {% endhighlight %}
-    
+
     <h3><a id="cdata" target="_blank" href="http://www.w3.org/TR/REC-xml/#sec-cdata-sect">CDATA</a></h3>
     On ne peut pas utiliser les sections <code>CDATA</code>
     directement:
@@ -103,13 +100,13 @@ xml2: scala.xml.Node = <xml><test><![CDATA[a < b]]></test></xml>
     <div class="code"> <xml><test><!--[CDATA[a < b]]--></test></xml> </div>
     <p>Le soucis, c'est qu’on passe par une <code>String</code> et que
       le compilateur ne nous avertira pas si c’est malformé.</p>
-      
+
     <h3>Des « &#x7B; » et des « &#x7D; » à condition de les doubler</h3>
     {% highlight scala %}
 scala> <accolade>ceci {{ '{{' }} est une accolade, ceux la }}}} sont deux accolades</accolade>
 res31: scala.xml.Elem = <accolade>ceci { est une accolade, ceux la }} sont deux accolades</accolade>
-    {% endhighlight %}    
-    
+    {% endhighlight %}
+
     <h3> Passer du XML en paramètre de méthodes </h3>
     <p>Attention à bien mettre un espace avant le chevron <code>&lt;</code>,
       sinon vous passerez comme moi pour un boulet (<a href="http://stackoverflow.com/questions/7553283/writing-xml-literal-as-a-parameter-in-scala"
@@ -117,13 +114,13 @@ res31: scala.xml.Elem = <accolade>ceci { est une accolade, ceux la }} sont deux 
     {% highlight scala %}
 scala> Elem(null, "a", Null, TopScope, <b/>)
 resN: scala.xml.Elem = <a><b></b></a>
-    {% endhighlight %} 
+    {% endhighlight %}
     <h3>Conservation du formatage</h3>
     <p>Quand on écrit du XML, scala conserve le formatage :</p>
     {% highlight scala %}
 scala> <a> <b>     </b> </a>
 res16: scala.xml.Elem = <a> <b>     </b> </a>
-    {% endhighlight %} 
+    {% endhighlight %}
     <p id="text_as_format">Scala crée des
       nœuds pour chaque chaîne de séparateurs ( espace, tabulation,
       retour chariot, … )</p>
@@ -132,7 +129,7 @@ scala> res16.child.foreach(c=>println(c.getClass))
 class scala.xml.Text
 class scala.xml.Elem
 class scala.xml.Text
-    {% endhighlight %} 
+    {% endhighlight %}
     <p>Ce qui signifie que <code>&lt;a&gt;
         &lt;b&gt;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/b&gt; &lt;/a&gt;</code>
       n’est pas égal à <code>&lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;</code>
@@ -152,13 +149,13 @@ res43: Boolean = false
 
 scala> res40 == res42
 res44: Boolean = true
-    {% endhighlight %} 
+    {% endhighlight %}
     <p>Il est possible de supprimer tous
       les blancs avec la méthode <code>trim</code> :</p>
     {% highlight scala %}
 scala> scala.xml.Utility.trim(res42)
 res45: scala.xml.Node = <a><b></b></a>
-    {% endhighlight %} 
+    {% endhighlight %}
     <p>Pense à utiliser trim avant de comparer deux arbres :</p>
     {% highlight scala %}
 scala> scala.xml.Utility.trim(res40) == scala.xml.Utility.trim(res41)
@@ -179,7 +176,7 @@ res32: String =
            <k></k>
 </j>
     {% endhighlight %}
-    
+
     <h2><a id="package" name="package"></a>Le package scala.xml</h2>
     <p> <code>scala.xml</code> contient une floppée d'objets et de
       classes qui représentent le « domaine métier » d'XML. Tous les
@@ -591,7 +588,7 @@ res32: String =
         beaucoup hésité.</span><br style="font-style: italic;">
       <span style="font-style: italic;"> Si tu aurais fait autrement, je
         suis preneur de ta solution bien entendu.</span></p>
-    
+
     <h3>NodeSeq</h3>
     <p>Le papa de tout le monde, c'est <code>NodeSeq</code>. <code>NodeSeq</code>
       étendant <code>Seq[Node]</code>, on peut dors et déjà affimer que
@@ -742,7 +739,7 @@ res32: scala.xml.Atom[Double] = 3.4
     {% endhighlight %}
     <h4> Commentaires, Entity Reference, Processing Instructions</h4>
     <p> <code>SpecialNode</code> a trois autres sous-classes : <code>Comment</code>
-      sert a écrire du commentaire XML (<a href="#comment">exemple</a>), 
+      sert a écrire du commentaire XML (<a href="#comment">exemple</a>),
       <code>EntityRef</code>
       (<a href="#entityref">exemple</a>) et ProcInstr (<a href="#procinst">exemple</a>) pour les processing instruction.</p>
     <h3>Group<br>
@@ -874,7 +871,7 @@ res28: scala.xml.UnprefixedAttribute = constructeur="simplicime" couleur1="rouge
 scala> new PrefixedAttribute("scala","constructeur","simplicime",Null)
 res29: scala.xml.PrefixedAttribute = scala:constructeur="simplicime"
     {% endhighlight %}
-    
+
     <h2> Ouverture d'un flux XML</h2>
     <p> Le trait abstrait <code>XMLLoader</code> est un type paramétré
       (le paramètre <code>T</code> doit être une sous–classe de <code>Node</code>)
@@ -906,7 +903,7 @@ object MyXML extends XMLLoader[Elem] {
   override def parser: SAXParser = {
     javax.xml.parsers.SchtroumpfParserFactory.newInstance.newSAXParser()
   }
-} 
+}
     {% endhighlight %}
     <p> Désolé, je ne pouvait laisser passer ça… Plus sérieusement, cet exemple permets de créer un parser qui ne
       respecte pas les DTD (sic):</p>
@@ -985,34 +982,34 @@ NodeSeq(<b>
       <c attr="abc"></c>
     </b>)
     {% endhighlight %}
-    
+
     <p>Cet exemple renvoie la liste de tous les enfants de type <code>&lt;c&gt;</code>
       :</p>
     {% highlight scala %}
 scala> res57 \\ "c"
 res60: scala.xml.NodeSeq = NodeSeq(<c attr="abc"></c>, <c attr="ac"></c>)
     {% endhighlight %}
-    
+
     <p>Cet exemple renvoie la liste des attributs <code>"attr"</code> de <code>&lt;c&gt;</code> :</p>
     {% highlight scala %}
 scala> res57 \ "c" \ "@attr"
 res61: scala.xml.NodeSeq = ac
     {% endhighlight %}
-    
+
     <p>Cet exemple renvoie la liste des attributs <code>"attr" </code>de la
       racine :</p>
     {% highlight scala %}
 scala> res57 \ "@attr"
 res62: scala.xml.NodeSeq = NodeSeq()
     {% endhighlight %}
-    
+
     <p>Cet exemple renvoie la liste des attributs <code>"attr"</code> de tous les
       éléments :</p>
     {% highlight scala %}
 scala> res57 \\ "@attr"
 res63: scala.xml.NodeSeq = NodeSeq(abc, ac)
     {% endhighlight %}
-    
+
     <p>Bon c’est sympa mais l’utilité du machin s’arrête là. Il n’est
       pas possible d’appliquer des filtres sur les attributs, genre <code>c[@attr="ac"]</code>
       par exemple. Mais puisque <code>\</code> et <code>\\</code>
@@ -1024,7 +1021,7 @@ res67: scala.xml.NodeSeq = NodeSeq(ac)
     {% endhighlight %}
     <p><span style="font-family: monospace;"></span>Pour plus
       d’exemples, va voir le site de <a target="_blank" href="http://www.codecommit.com/blog/scala/working-with-scalas-xml-support">Daniel Spiewak</a>.</p>
-      
+
     <h3>Extraire des données d’<code>Elem</code> avec le matcher</h3>
     <p>Je définis une méthode qui va afficher une petite phrase selon ce
       qui est passé en paramètre :</p>
@@ -1133,7 +1130,7 @@ Ce sac est un assortiment de fraises et de bananes
       débarraser. Par exemple :</p>
     {% highlight xml %}
 <html>
-<head>    
+<head>
       <script>alert('nono le robot')</script>
       <title>The Hobbit</title>
       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/>
@@ -1208,10 +1205,10 @@ defined class RewriteNoScript
 scala> new RewriteNoScript
 res6: RewriteNoScript = <function1>
     {% endhighlight %}
-    
+
     <p>Création d’un jeu de données :</p>
     {% highlight scala %}
-scala> <head>   
+scala> <head>
      |       <script>alert('nono le robot')</script>
      |       <title>The Hobbit</title>
      |       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
@@ -1219,7 +1216,7 @@ scala> <head>
      |       <style type="text/css"></style>
      | </head>
 res9: scala.xml.Elem =
-<head>   
+<head>
       <script>alert('nono le robot')</script>
       <title>The Hobbit</title>
       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
@@ -1227,17 +1224,17 @@ res9: scala.xml.Elem =
       <style type="text/css"></style>
 </head>
     {% endhighlight %}
-    
+
     <p>Appliquer le jeu de données au <code>Transformer</code> :</p>
     {% highlight scala %}
 scala> res6(res9)
 res10: scala.xml.Node =
-<head>   
-     
+<head>
+
       <title>The Hobbit</title>
       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
-     
-     
+
+
 </head>
     {% endhighlight %}
     <p>2) Définir un <code>RewriteRule</code> pour modifier les liens :</p>
@@ -1263,25 +1260,25 @@ scala> class RewriteLien extends RewriteRule {
 }
 defined class RewriteLien
     {% endhighlight %}
-    
+
     <p>Instantiation :</p>
     {% highlight scala %}
 scala> new RewriteLien
 res25: RewriteLien = <function1>
     {% endhighlight %}
-    
+
     <p>Jeu de test :</p>
     {% highlight scala %}
 scala> <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
 res26: scala.xml.Elem = <a href="http://www.gargamel.com/pages/foo.html">Bar</a>
     {% endhighlight %}
-    
+
     <p>Test :</p>
     {% highlight scala %}
 scala> res25(res26)
 res27: scala.xml.Node = <a href="http://www.azrael.com/pages/foo.html">Bar</a>
     {% endhighlight %}
-    
+
     <p>3) Composer les deux rewriters avec un transformer</p>
     {% highlight scala %}
 scala> val rwLien = new RewriteLien
@@ -1294,7 +1291,7 @@ transformer: scala.xml.transform.RuleTransformer = <function1>
     <p>4) Passer notre XML à la moulinette</p>
     {% highlight scala %}
 scala> <html>
-     | <head>   
+     | <head>
      |       <script>alert('nono le robot')</script>
      |       <title>The Hobbit</title>
      |       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"/>
@@ -1307,7 +1304,7 @@ scala> <html>
      | </html>
 res28: scala.xml.Elem =
 <html>
-<head>   
+<head>
       <script>alert('nono le robot')</script>
       <title>The Hobbit</title>
       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
@@ -1322,12 +1319,12 @@ res28: scala.xml.Elem =
 scala> transformer(res28)
 res29: scala.xml.Node =
 <html>
-<head>   
-     
+<head>
+
       <title>The Hobbit</title>
       <meta name="Adept.resource" value="urn:uuid:e7c9da3a-a9ce-4868-b6ae-1db58a59c870"></meta>
-     
-     
+
+
 </head>
 <body>
       <a href="http://www.azrael.com/pages/foo.html">Bar</a>
@@ -1550,7 +1547,7 @@ res26: scala.xml.Node = <a r2="yes" r1="yes"><b r2="yes" r1="yes"><c r2="yes" r1
       scalates. Mais pour être honnête, je n’ai pas encore fouiner de ce
       côté.<br>
     </p>
-    
+
     <h2> Resources et Références</h2>
     <p>Chapitres 1.5 et 10 de la <a target="_blank" href="http://www.scala-lang.org/sites/default/files/linuxsoft_archives/docu/files/ScalaReference.pdf">Référence Scala&nbsp;</a></p>
     <p><a target="_blank" href="www.scala-lang.org/sites/default/files/pdfs/Scala%20Quick%20Reference.pdf">Scala
