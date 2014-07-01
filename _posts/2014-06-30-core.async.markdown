@@ -141,14 +141,88 @@ Au prochain appel l'une des 3 valeur de la map sera incrémentée. Le 3ème poin
 
 La seconde unité d'exécution lit tour à tour dans les _channel_s `player1` et `player2`, détermine un gagnant et écrit le résultat dans `result` qui sera relue par notre 1ère unité d'exécution. Le 1er point, _envoyer un nombre fini de messages à d’autres acteurs_ est vrai.
 
+Concernant la deuxième proposition, _créer un nombre fini de nouveaux acteurs_, je n'ai pas trouvé quelque chose de pertinant pour le démontrer. Cela est néanmoins possible si on remplace le premier acteur par ceci :
+
+    (defn print-stats [stats]
+      (let [total (apply + (vals stats))]
+        (println "wins : " (:wins stats) "/" total)
+        (println "draws : " (:draws stats) "/" total)))
+
+    (defn run-stats [channel]
+      (loop [stats {:wins 0, :draws 0}
+             total 0]
+          (print-stats stats)
+          (recur
+           (update-in stats [(<!! channel)] inc)
+           (inc total))))
+
+    (thread
+
+     (let [stats (chan)]
+
+       (thread (run-stats stats))
+
+       (loop [scores {:player1 0 :player2 0 :draw 0}]
+         (println "Scores : " scores)
+         (let [winner (<!! result)]
+           (>!! stats (if (= :draw winner) :draw :wins))
+           (recur (update-in scores [winner] inc))))))
+
+La présence des deux threads imbriqués indique le lancement d'un acteur par un autre.
+
+h2. Programmation concurrente illimitée
+
+Dans les précédents exemples nous avons instancié des threads pour consommer les valeurs contenues dans les _channels_. Chacun de ces threads consistait en une boucle infinie qui bloquait sont exécution jusqu'à ce qu'une valeur soit lisible. Ce modèle est limité par les [quelques milliers](http://stackoverflow.com/questions/763579/how-many-threads-can-a-java-vm-support) de threads que l'on peut lancer sur la VM. Sans compter [le temps perdu](http://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html) en [context switch](http://en.wikipedia.org/wiki/Context_switch).
+
+Imaginons maintenant que notre plateforme de jeu n'ai pas quelques milliers de threads mais plutôt un centaine de millier.
+
+    (dotimes [t 100000]
+      (let [c (chan)]
+        (thread
+         (loop []
+           (let [[_ v :as tv] (<!! c)]
+             (if (= 0 (mod v 100)) (println tv)))
+           (recur)))
+        (thread
+         (doseq [v (iterate inc 1)]
+           (>!! c [t v])))))
+
+Ici on crée 2 threads 100000 fois. Le premier lit dans un channel et affiche le résultat si c'est un multiple de 100. Le second écrit les entiers de 1 à l'infini.
+
+10000 lignes environ s'affichent puis plus rien. Le CPU monte à 100%, la JVM compte 32000 threads et boom, IOException.
+
+
+Pour pallier à ces limitations, _core.async_ offre la possibilité de créer des processus ultra légers, capables de se partager un pool de threads et qui peuvent se mettre en pause sans bloquer le thread d'exécution.
+
+    (dotimes [t 100000]
+      (let [c (chan)]
+        (go
+         (loop []
+           (let [[t v :as tv] (<! c)]
+             (if (= 0 (mod v 100)) (println tv)))
+           (recur)))
+        (go
+         (doseq [v (iterate inc 1)]
+           (>! c [t v])))))
+
+Dans cette version du programme, j'ai remplacé les threads créés par `thread` par des processus ultra légers via `go` et les appels bloquants `>!!` et `<!!` par leurs versions non-bloquantes `>!` et `<!`. Le programme est stable et régulier : des salves d'informations s'affichent sur la console toutes les 40 secondes environ, les 8 coeurs de mon CPU sont à 40%, la consommation du heap oscille entre 1700 mégas et 160 après GC, et la JVM compte 70 threads.
+
+Nous avons donc réussi à *simuler* 200000 threads ! Ne vous réjouissez pas si vite, j'ai oublié de préciser que ce code tourne aussi sur un navigateur ... Oui on peut écrire du code asynchrone dans le navigateur sans callbacks (hell).
+
+Cela me fait drôlement penser au modèle de [Vert.x](http://vertx.io).
 
 h2. Functional Reactive Programming
 
+Dans un article précédent, j'avais fait une micro présentation de FRP. Pour rappel, il s'agit d'un style de programmation basé sur la manipulation de flux de valeurs, à base de `map`, `filter`, `zip`, `concat`, ...  En bout de chaine de chaque flux, on peut "consommer" les valeurs du flux pour réaliser des effets de bord, un affichage ou une écriture en base par exemple.
+
+
+
 le truc du haut c'est bien mais ordre + timeout
 
-h2. Plus de callbacks hell dans le navigateur
 
 h2. Les mots de la fin
+
+Encore une fois, je suis subjugué par la puissante simplicité de Clojure. `core.async`, en terme d'API, c'est juste un tuyau et des processus pour y lire et écrire. Cet outil simplissime dans son utilisation offre d'énorme possibilités. Comme nous l'avons vu, ce n'est pas un framework mais une librairie qui permet de faire du *sur mesure* pour nos besoins d'IOC, acteur, concurrence, FRP, ...
 
 h2. Ressources
 
