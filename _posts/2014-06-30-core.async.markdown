@@ -4,6 +4,9 @@ h1. Les bons tuyaux de core.async
 
 [core.async](https://github.com/clojure/core.async) est une librairie qui introduit un nouvel outil très simple conceptuellement qui offre des possibilités incroyables. Elle fait partie du projet clojure mais est facultative.
 
+L'objectif de cet article est de vous montrer quelques possibilités offertes par l'incroyable `core.async`.
+
+La plupart des exemples tournent autours du [jeu de Morra](http://en.wikipedia.org/wiki/Morra_%28game%29) qui est une espèce de shi-fu-mi antique. Deux joueurs doivent en même temps produire un nombre avec leurs doigts et crier la somme des doigts des deux joueurs. Le gagnant est celui qui a bien deviné la somme.
 
 h2. Channels
 
@@ -209,16 +212,68 @@ Dans cette version du programme, j'ai remplacé les threads créés par `thread`
 
 Nous avons donc réussi à *simuler* 200000 threads ! Ne vous réjouissez pas si vite, j'ai oublié de préciser que ce code tourne aussi sur un navigateur ... Oui on peut écrire du code asynchrone dans le navigateur sans callbacks (hell).
 
-Cela me fait drôlement penser au modèle de [Vert.x](http://vertx.io).
+Cela me fait penser au modèle de [Vert.x](http://vertx.io).
 
 h2. Functional Reactive Programming
 
-Dans un article précédent, j'avais fait une micro présentation de FRP. Pour rappel, il s'agit d'un style de programmation basé sur la manipulation de flux de valeurs, à base de `map`, `filter`, `zip`, `concat`, ...  En bout de chaine de chaque flux, on peut "consommer" les valeurs du flux pour réaliser des effets de bord, un affichage ou une écriture en base par exemple.
+Dans un article [précédent](http://www.arolla.fr/blog/2014/05/experimentation-de-frp-avec-bacon-js/), j'avais fait une micro présentation de FRP. Pour rappel, il s'agit d'un style de programmation basé sur la manipulation de flux de valeurs, à base de `map`, `filter`, `zip`, `concat`, ...  En bout de chaine de chaque flux, on peut "consommer" les valeurs du flux pour réaliser des effets de bord, un affichage ou une écriture en base par exemple.
+
+Etudions ce bout de code :
+
+    (def player1 (chan))
+    (def player2 (chan))
+
+    (defn winner [correct-guess p1-guess p2-guess]
+      (cond
+       (= p1-guess p2-guess) :draw
+       (= correct-guess p1-guess) :player1
+       (= correct-guess p2-guess) :player2
+       :else :draw))
+
+    (defn process-round [[p1-fingers p1-guess] [p2-fingers p2-guess]]
+      (winner (+ p1-fingers p2-fingers) p1-guess p2-guess))
+
+    (def ch-results (async/map process-round [player1 player2]))
+
+
+On commence par définir les deux _channel_s qui contiennent les inputs des deux joueurs.
+Ensuite, on a la fonction `winner` que nous connaissons déjà. Puis vient `process-round` qui prend les inputs des 2 joueurs et retourne le gagnant.
+Enfin, nous créons un nouveau _channel_ référencé par `ch-results`. Cependant on le crée via la fonction `map`. `map` prend en paramètre un vecteur de _channel_s et une fonction. La fonction a autant de paramètres que de _channel_s dans le vecteur. `map` crée un _channel_ qui contient le résultat de `f` appliquée aux premières valeurs des _channel_s du vecteur.
+
+Si on joue de la manière suivante :
+
+    (>!! player1 [1 2])
+    (>!! player2 [1 2])
+
+    (>!! player1 [1 2])
+    (>!! player1 [1 3])
+
+Alors `ch-results` contiendra `:draw`, `:player1`.
+
+Poursuivons :
+
+    (defn async-reduce [f init ch-input]
+      (let [ch-output (chan)]
+        (go-loop [acc init]
+           (>! ch-output acc)
+           (recur (f acc (<! ch-input))))
+        ch-output))
+
+    (def ch-scores
+      (async-reduce #(update-in %1 [%2] inc) {:player1 0 :player2 0 :draw 0} ch-results))
+
+    (go (while true
+      (println "Scores : " (<! ch-scores))))
+
+`async-reduce` est une fonction utilitaire qui est similaire à un `reduce` classique, sauf qu'au lieu de ne renvoyer qu'une seule valeur, il renvoie un _channel_ sur lequel elle publie tous les résultats intermédiaires.
+Ensuite on crée un nouveau _channel_ `ch-scores` via `async-reduce` qui contiendra tous les scores sucessifs, au fur et à mesure des parties.
+Enfin un `go` block consomme `ch-scores` pour afficher les scores.
+
+On peut encore améliorer le programme pour ne pas afficher les matchs nuls :
 
 
 
-le truc du haut c'est bien mais ordre + timeout
-
+On a mergé, transformé des flux de données pour arriver au résultat attendu. Le side effect est à la fin du programme. Bref, du FRP.
 
 h2. Les mots de la fin
 
@@ -228,9 +283,11 @@ h2. Ressources
 
 [Rationale](http://clojure.com/blog/2013/06/28/clojure-core-async-channels.html) : explication des concepts fondamentaux et leur origine.
 
+[API](http://clojure.github.io/core.async/)
+
 [Walk throught](https://github.com/clojure/core.async/blob/master/examples/walkthrough.clj) Des exemples à taper dans la REPL.
 
-[Le jeu de Morra](http://en.wikipedia.org/wiki/Morra_%28game%29) : le petit jeu implémenté dans cet article. é"
+[Le jeu de Morra](http://en.wikipedia.org/wiki/Morra_%28game%29) : le petit jeu implémenté dans cet article.
 
 
 
