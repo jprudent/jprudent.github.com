@@ -1,4 +1,5 @@
-h1. Les bons tuyaux de core.async
+Les bons tuyaux de core.async
+=============================
 
 [Clojure](http://clojure.org) est le langage le plus simple et le plus cohérent que je connaisse. Le coeur du langage est très concis et fournit pourtant tous les outils nécessaires à l'écriture efficace de programmes modernes (manipulation de données, multithreading).
 
@@ -8,8 +9,8 @@ L'objectif de cet article est de vous montrer quelques possibilités offertes pa
 
 La plupart des exemples tournent autours du [jeu de Morra](http://en.wikipedia.org/wiki/Morra_%28game%29) qui est une espèce de shi-fu-mi antique. Deux joueurs doivent en même temps produire un nombre avec leurs doigts et crier la somme des doigts des deux joueurs. Le gagnant est celui qui a bien deviné la somme.
 
-h2. Channels
-
+Channels
+------------
 
 L'élément central de core.async est le _channel_.
 Il s'agit d'un tuyau, d'un canal, conceptuellement proche d'une _queue_ dans un outils de messaging.
