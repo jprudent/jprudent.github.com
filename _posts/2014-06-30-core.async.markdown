@@ -28,17 +28,18 @@ Un _channel_ peut être bufferisé et est créé avec la fonction `chan`. Ici on
 
 Un tel _channel_ permet d'écrire consécutivement 2 valeurs sans que personne ne lise la valeur.
 
-Je conseille de travailler avec des _channel_s non bufferisés dans un premier temps. Cela rend le raisonnement et la compréhension du code plus aisés.
+Je conseille de travailler avec des _channels_ non bufferisés dans un premier temps. Cela rend le raisonnement et la compréhension du code plus aisés.
 
 
-Un _channel_ est une valeur comme une autre. Ici on l'associe à une (Var)[http://clojure.org/vars] :
+Un _channel_ est une valeur comme une autre. Ici on l'associe à une [Var](http://clojure.org/vars) :
 
         (def player1 (chan 1))
 
 On pourra donc associer le _channel_ `player1` dans une `Map` par exemple, ou si on est vicieux, le faire transiter dans un autre _channel_.
 
 
-h2. Invertion Of Control
+Invertion Of Control
+--------------------
 
 On part d'un _channel_ non bufferisé :
 
@@ -48,13 +49,13 @@ Pour écrire dans un channel, on utilise la fonction bloquante `>!!`
 
         (>!! player1 [5 8])
 
-A ce stade, `player1` contient le vecteur `[5 8]`. Par contre l'exécution du programme est bloquée jusqu'à ce que la valeur du _channel_ soit lue. Il existe bien une opération de lecture `<!!`, mais puisqu'on est bloqué, elle ne sera jamais exécutée. Comment faire ?
+A ce stade, `player1` contient le vecteur `[5 8]`. Par contre l'exécution du programme est bloquée jusqu'à ce que la valeur du _channel_ soit lue. Il existe bien une opération de lecture `<!!`, mais puisqu'on est bloqué, on ne pourra jamais l'exécuter. Comment faire ?
 
 La solution est d'effectuer l'opération de lecture dans une autre unité d'exécution, soit un thread.
 
         (thread
           (loop [m "player 1 moves : "]
-            (println "Player 1 just thows " )
+            (println m)
             (recur (<!! player1))))
 
 
@@ -65,7 +66,7 @@ contenue dans le _channel_ `player1`. Et dans un REPL ça donne :
     #'user/player1
 
     user=> (thread (loop [m "player 1 moves : "] (println m) (recur (<!! player1))))
-    player 1 moves
+    player 1 moves :
     #<ManyToManyChannel clojure.core.async.impl.channels.ManyToManyChannel@34451e6>
 
     user=> (>!! player1 [5 8])
@@ -96,15 +97,17 @@ Ceci affiche 5 8 dans la console.
 
 La version du code utilisant `core.async` va plus loin en rendant le code asynchrone. A chaque composant sa spécialisation, à chaque composant son unité d'exécution.
 
-h2. Modèle d'acteur
+Modèle d'acteur
+---------------
+
 
 [Wikipedia](http://fr.wikipedia.org/wiki/Mod%C3%A8le_d%27acteur) définit le modèle d'acteur ainsi :
 
     Un acteur est une entité capable de calculer, qui, en réponse à un message reçu, peut parallèlement :
 
-      - envoyer un nombre fini de messages à d’autres acteurs ;
-      - créer un nombre fini de nouveaux acteurs ;
-      - spécifier le comportement à avoir lors de la prochaine réception de messages.
+      1) envoyer un nombre fini de messages à d’autres acteurs ;
+      2) créer un nombre fini de nouveaux acteurs ;
+      3) spécifier le comportement à avoir lors de la prochaine réception de messages.
 
     L’exécution des tâches ci-dessus n’est pas ordonnée, elles peuvent être parallélisées.
 
@@ -139,13 +142,13 @@ Etudions ce petit programme :
 
 On a 2 unités d'exécution. La première est dédiée à l'affichage du score. A chaque fois qu'une valeur est présente dans `result` la valeur de `scores` est mise à jour.
 
-Notons que la valeur `scores` est complètement *encapsulée*. Personne d'autre ne peut connaitre le score.
+Notons que la valeur valeur actuelle du score est complètement *encapsulée*. Personne d'autre ne peut connaitre le score.
+La valeur du score courant est dépendante de la valeur précédente. Le 3ème point de la définition d'un acteur, _spécifier le comportement à avoir lors de la prochaine réception de messages_, est bien vérifié.
 
-Au prochain appel l'une des 3 valeur de la map sera incrémentée. Le 3ème point, _spécifier le comportement à avoir lors de la prochaine réception de messages_, est vérifié.
 
-La seconde unité d'exécution lit tour à tour dans les _channel_s `player1` et `player2`, détermine un gagnant et écrit le résultat dans `result` qui sera relue par notre 1ère unité d'exécution. Le 1er point, _envoyer un nombre fini de messages à d’autres acteurs_ est vrai.
+La seconde unité d'exécution lit tour à tour dans les _channel_ `player1` et `player2`, détermine un gagnant et écrit le résultat dans `result` qui sera relue par notre 1ère unité d'exécution. Le 1er point de la définition d'un acteur, _envoyer un nombre fini de messages à d’autres acteurs_ est vrai.
 
-Concernant la deuxième proposition, _créer un nombre fini de nouveaux acteurs_, je n'ai pas trouvé quelque chose de pertinant pour le démontrer. Cela est néanmoins possible si on remplace le premier acteur par ceci :
+Concernant le 2ème point de la définition, _créer un nombre fini de nouveaux acteurs_, je n'ai pas trouvé quelque chose de pertinant pour le démontrer. Cela est néanmoins possible si on remplace le premier acteur par ceci :
 
     (defn print-stats [stats]
       (let [total (apply + (vals stats))]
@@ -172,9 +175,12 @@ Concernant la deuxième proposition, _créer un nombre fini de nouveaux acteurs_
            (>!! stats (if (= :draw winner) :draw :wins))
            (recur (update-in scores [winner] inc))))))
 
-La présence des deux threads imbriqués indique le lancement d'un acteur par un autre.
+La présence des deux threads imbriqués indique le lancement d'un acteur par un autre. Le 2ème point de la définition est vérifié. 
 
-h2. Programmation concurrente illimitée
+Je pense qu'on peut appeler chaque thread un acteur. Au pire on peut dire que ce sont des objets, dans le sens où ils encapsulent un état et communique par message. 
+
+Programmation concurrente illimitée
+-----------------------------------
 
 Dans les précédents exemples nous avons instancié des threads pour consommer les valeurs contenues dans les _channels_. Chacun de ces threads consistait en une boucle infinie qui bloquait sont exécution jusqu'à ce qu'une valeur soit lisible. Ce modèle est limité par les [quelques milliers](http://stackoverflow.com/questions/763579/how-many-threads-can-a-java-vm-support) de threads que l'on peut lancer sur la VM. Sans compter [le temps perdu](http://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html) en [context switch](http://en.wikipedia.org/wiki/Context_switch).
 
@@ -215,7 +221,8 @@ Nous avons donc réussi à *simuler* 200000 threads ! Ne vous réjouissez pas si
 
 Cela me fait penser au modèle de [Vert.x](http://vertx.io).
 
-h2. Functional Reactive Programming
+Functional Reactive Programming
+-------------------------------
 
 Dans un article [précédent](http://www.arolla.fr/blog/2014/05/experimentation-de-frp-avec-bacon-js/), j'avais fait une micro présentation de FRP. Pour rappel, il s'agit d'un style de programmation basé sur la manipulation de flux de valeurs, à base de `map`, `filter`, `zip`, `concat`, ...  En bout de chaine de chaque flux, on peut "consommer" les valeurs du flux pour réaliser des effets de bord, un affichage ou une écriture en base par exemple.
 
@@ -237,9 +244,9 @@ Etudions ce bout de code :
     (def ch-results (async/map process-round [player1 player2]))
 
 
-On commence par définir les deux _channel_s qui contiennent les inputs des deux joueurs.
+On commence par définir les deux _channels_ qui contiennent les inputs des deux joueurs.
 Ensuite, on a la fonction `winner` que nous connaissons déjà. Puis vient `process-round` qui prend les inputs des 2 joueurs et retourne le gagnant.
-Enfin, nous créons un nouveau _channel_ référencé par `ch-results`. Cependant on le crée via la fonction `map`. `map` prend en paramètre un vecteur de _channel_s et une fonction. La fonction a autant de paramètres que de _channel_s dans le vecteur. `map` crée un _channel_ qui contient le résultat de `f` appliquée aux premières valeurs des _channel_s du vecteur.
+Enfin, nous créons un nouveau _channel_ référencé par `ch-results`. Cependant on le crée via la fonction `map`. `map` prend en paramètre un vecteur de _channels_ et une fonction. La fonction a autant de paramètres que de _channels_ dans le vecteur. `map` crée un _channel_ qui contient le résultat de `f` appliquée aux premières valeurs des _channels_ du vecteur.
 
 Si on joue de la manière suivante :
 
@@ -266,7 +273,7 @@ Poursuivons :
     (go (while true
       (println "Scores : " (<! ch-scores))))
 
-`async-reduce` est une fonction utilitaire qui est similaire à un `reduce` classique, sauf qu'au lieu de ne renvoyer qu'une seule valeur, il renvoie un _channel_ sur lequel elle publie tous les résultats intermédiaires.
+`async-reduce` est une fonction utilitaire qui est similaire à un `reduce` classique, sauf qu'au lieu de ne renvoyer qu'une seule valeur, elle renvoie un _channel_ sur lequel elle publie tous les résultats intermédiaires.
 Ensuite on crée un nouveau _channel_ `ch-scores` via `async-reduce` qui contiendra tous les scores sucessifs, au fur et à mesure des parties.
 Enfin un `go` block consomme `ch-scores` pour afficher les scores.
 
@@ -299,12 +306,26 @@ Et une séquence de jeu ressemble à ça :
     Scores :  {:player2 0, :player1 2}
 
 
-h2. Les mots de la fin
+Les mots de la fin
+------------------
 
-Encore une fois, je suis subjugué par la puissante simplicité de Clojure. `core.async`, en terme d'API, c'est juste un tuyau et des processus pour y lire et écrire. Cet outil simplissime dans son utilisation offre d'énorme possibilités. Comme nous l'avons vu, ce n'est pas un framework mais une librairie qui permet de faire du *sur mesure* pour nos besoins d'IOC, acteur, concurrence, FRP, ...
+On a passé en revue 4 bénéfices que l'on peut tirer de `core.async` :
+- Invertion Of Control
+- Modèle d'acteur
+- Programmation concurrente illimitée
+- Functional Reactive Programming
+
+On a réussi à implémenter tout ça avec une API super simple qui peut se résumer à :
+- un tuyau
+- des processus légers pour lire et écrire le tuyau
+
+Comme nous l'avons vu, nous n'avons pas affaire à la lourdeur d'un framework qui vient avec une façon de faire, mais une librairie qui permet de faire du *sur mesure*. 
+
+Bienvenue dans le futur.
 
 
-h2. Ressources
+Ressources
+----------
 
 [Rationale](http://clojure.com/blog/2013/06/28/clojure-core-async-channels.html) : explication des concepts fondamentaux et leur origine.
 
