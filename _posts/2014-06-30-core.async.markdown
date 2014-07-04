@@ -269,15 +269,39 @@ Poursuivons :
 Ensuite on crée un nouveau _channel_ `ch-scores` via `async-reduce` qui contiendra tous les scores sucessifs, au fur et à mesure des parties.
 Enfin un `go` block consomme `ch-scores` pour afficher les scores.
 
-On peut encore améliorer le programme pour ne pas afficher les matchs nuls :
-
-
-
 On a mergé, transformé des flux de données pour arriver au résultat attendu. Le side effect est à la fin du programme. Bref, du FRP.
+
+Ce que j'aime avec ce style de programmation, c'est que c'est facilement extensible. Par exemple pour n'afficher que les résultats où un joueur a gagné, il suffit de modifier légèrement le flux de données avec un filtre :
+
+    (def ch-non-draw-results (async/filter< #(not= :draw %) ch-results ))
+
+    (def ch-scores
+      (async-reduce #(update-in %1 [%2] inc) {:player1 0 :player2 0} ch-non-draw-results))
+
+Et une séquence de jeu ressemble à ça :
+
+    user=> (>!! player1 [1 2])
+    true
+    user=> (>!! player2 [1 2])
+    true
+
+    user=> (>!! player1 [1 2])
+    true
+    user=> (>!! player2 [1 3])
+    true
+    Scores :  {:player2 0, :player1 1}
+
+    user=> (>!! player1 [1 2])
+    true
+    user=> (>!! player2 [1 3])
+    true
+    Scores :  {:player2 0, :player1 2}
+
 
 h2. Les mots de la fin
 
 Encore une fois, je suis subjugué par la puissante simplicité de Clojure. `core.async`, en terme d'API, c'est juste un tuyau et des processus pour y lire et écrire. Cet outil simplissime dans son utilisation offre d'énorme possibilités. Comme nous l'avons vu, ce n'est pas un framework mais une librairie qui permet de faire du *sur mesure* pour nos besoins d'IOC, acteur, concurrence, FRP, ...
+
 
 h2. Ressources
 
