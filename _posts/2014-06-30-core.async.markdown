@@ -52,10 +52,27 @@ Un _channel_ est une valeur comme une autre. Ici on l'associe à une [Var](http:
 
 On pourrait donc associer le _channel_ `player1` dans une `Map` en tant que clé ou valeur par exemple. Et si on est vicieux, on peut même le faire transiter dans un autre _channel_.
 
-Invertion Of Control
+Inversion Of Control
 --------------------
 
-On part d'un _channel_ non bufferisé :
+L'[IoC](http://martinfowler.com/bliki/InversionOfControl.html), est un concept assez général dont le but est de casser les dépendances qu'un module a avec un autre. L'injection de dépendance permet de faire de l'IOC. Mais la programmation évênementiel, dans le navigateur, où l'on _bind_ un évênement à une _callback_ est aussi une forme d'IOC, dans le sens où le flot d'exécution n'est plus programmé séquentiellement. Quand je dis que `core.async` permet de faire de l'IOC, c'est plus dans ce sens.
+
+L'IoC est assez naturelle dans les langages fonctionnels puisqu'on peut passer des fonctions en paramètre (fonctions de 1er ordre) :
+
+~~~clojure
+(defn print-claim [m] (print m))
+
+(defn player-claim [fingers sum handler]
+  (handler [fingers sum]))
+
+(player-claim 5 8 print-claim)
+~~~
+
+Ceci affiche 5 8 dans la console.
+
+
+
+Avec `core.async`, on part d'un _channel_ non bufferisé :
 
 ~~~clojure
 (def player1 (chan))
@@ -102,18 +119,6 @@ contenue dans le _channel_ `player1`. Et dans un REPL ça donne :
 
 On a un thread qui produit les mouvements du joueur 1 sans savoir ce qui en sera fait. Et on a un autre thread qui reçoit les mouvements et les affiche. Au runtime nous avons nous même fait l'association producteur / consommateur. Cela correspond à la notion d'[Invertion of Control](http://martinfowler.com/bliki/InversionOfControl.html), si ce n'est qu'on a codé notre propre framework et utilisant un _channel_ pour faire la colle entre les composants.
 
-L'IoC est assez naturelle dans les langages fonctionnels puisqu'on peut passer des fonctions en paramètre (fonctions de 1er ordre) :
-
-~~~clojure
-(defn print-claim [m] (print m))
-
-(defn player-claim [fingers sum handler]
-  (handler [fingers sum]))
-
-(player-claim 5 8 print-claim)
-~~~
-
-Ceci affiche 5 8 dans la console.
 
 La version du code utilisant `core.async` va plus loin en rendant le code asynchrone. A chaque composant sa spécialisation, à chaque composant son unité d'exécution.
 
