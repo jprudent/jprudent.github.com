@@ -55,9 +55,11 @@ On pourrait donc associer le _channel_ `player1` dans une `Map` en tant que clé
 Inversion Of Control
 --------------------
 
-L'[IoC](http://martinfowler.com/bliki/InversionOfControl.html), est un concept assez général dont le but est de casser les dépendances qu'un module a avec un autre. L'injection de dépendance permet de faire de l'IOC. Mais la programmation évênementiel, dans le navigateur, où l'on _bind_ un évênement à une _callback_ est aussi une forme d'IOC, dans le sens où le flot d'exécution n'est plus programmé séquentiellement. Quand je dis que `core.async` permet de faire de l'IOC, c'est plus dans ce sens.
+L'[IoC](http://martinfowler.com/bliki/InversionOfControl.html), est un concept assez général dont le but est de casser les dépendances qu'un module a avec un autre. L'[injection de dépendance](http://fr.wikipedia.org/wiki/Injection_de_d%C3%A9pendances) permet de faire de l'IOC (voir [Guice](https://github.com/google/guice/wiki/GettingStarted), [Spring](http://projects.spring.io/spring-framework/), ...). Mais la programmation évênementiel, dans le navigateur, où l'on _bind_ un évênement à une _callback_ est aussi une forme d'IOC, dans le sens où le flot d'exécution n'est plus programmé séquentiellement. Quand je dis que `core.async` permet de faire de l'IOC, c'est plus dans ce sens.
 
-L'IoC est assez naturelle dans les langages fonctionnels puisqu'on peut passer des fonctions en paramètre (fonctions de 1er ordre) :
+### Traditionellement
+
+Dans les langages fonctionnels, l'IoC par [injection de dépendance]() est assez naturelle puisqu'on peut passer des fonctions en paramètre (fonctions de 1er ordre) :
 
 ~~~clojure
 (defn print-claim [m] (print m))
@@ -68,9 +70,10 @@ L'IoC est assez naturelle dans les langages fonctionnels puisqu'on peut passer d
 (player-claim 5 8 print-claim)
 ~~~
 
-Ceci affiche 5 8 dans la console.
+Ceci affiche `5 8` dans la console. Le comportement de la fonction `player-claim` a été injecté.
 
 
+### Avec core.async
 
 Avec `core.async`, on part d'un _channel_ non bufferisé :
 
