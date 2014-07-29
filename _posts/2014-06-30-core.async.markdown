@@ -24,23 +24,25 @@ Pour taper vous-même les exemples dans un repl, les imports suivants sont suffi
 L'élément central de core.async est le _channel_.
 Il s'agit d'un tuyau, d'un canal, conceptuellement proche d'une _queue_ dans un outils de messaging.
 
+
+
 Un _channel_ se crée simplement :
 
 ~~~clojure
 (chan)
 ~~~
 
-Un tel _channel_ est non bufferisé. Cela signifie que l'écriture dans ce _channel_ est bloquée tant que personne ne lit la valeur présente.
+Un tel _channel_ ne peut contenir qu'une seule valeur. Cela signifie que l'écriture dans ce _channel_ est bloquée tant que personne ne lit la valeur présente.
 
-Un _channel_ peut être bufferisé. Ici on crée un _channel_ qui ne peut bufferiser qu'une seule valeur :
+Un _channel_ peut être *bufferisé* pour contenir plusieurs valeurs . Ici on crée un _channel_ qui peut contenir 2 valeurs :
 
 ~~~clojure
-(chan 1)
+(chan 2)
 ~~~
 
 Un tel _channel_ permet d'écrire consécutivement 2 valeurs sans être obligé d'attendre que quelqu'un ne lise les valeurs.
 
-Je conseille de travailler avec des _channels_ non bufferisés dans un premier temps. Cela rend le raisonnement et la compréhension du code plus aisés.
+Je conseille de travailler avec des _channels_ *non bufferisés dans un premier temps*. Cela rend le raisonnement et la compréhension du comportement plus aisés.
 
 Un _channel_ est une valeur comme une autre. Ici on l'associe à une [Var](http://clojure.org/vars) :
 
@@ -65,7 +67,7 @@ Pour écrire dans un channel, on utilise la fonction bloquante `>!!`
 (>!! player1 [5 8])
 ~~~
 
-A ce stade, `player1` contient le vecteur `[5 8]`. Par contre l'exécution du programme est bloquée jusqu'à ce que la valeur du _channel_ soit lue. Il existe bien une opération de lecture `<!!`, mais puisqu'on est bloqué, on ne pourra jamais l'exécuter. Comment faire ?
+A ce stade, `player1` contient le vecteur `[5 8]`. Par contre l'exécution du programme est bloquée jusqu'à ce que la valeur du _channel_ soit lue. Il existe bien une opération de lecture `<!!`, mais puisqu'on est bloqué, on ne pourra jamais l'exécuter dans le même thread. Comment faire ?
 
 La solution est d'effectuer l'opération de lecture dans une autre unité d'exécution, soit un thread.
 
@@ -76,7 +78,7 @@ La solution est d'effectuer l'opération de lecture dans une autre unité d'exé
     (recur (<!! player1))))
 ~~~
 
-La macro thread permet de créer ... un thread. Ce thread boucle indéfiniment. A chaque itération de boucle il affiche la valeur
+La macro `thread` permet de créer ... un thread. Ce thread boucle indéfiniment. A chaque itération de boucle il affiche la valeur
 contenue dans le _channel_ `player1`. Et dans un REPL ça donne :
 
     user=> (def player1 (chan))
