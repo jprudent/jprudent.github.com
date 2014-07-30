@@ -133,7 +133,9 @@ Modèle d'acteur
 > Un acteur est une entité capable de calculer, qui, en réponse à un message reçu, peut parallèlement :
 
 >  1) envoyer un nombre fini de messages à d’autres acteurs ;
+
 >  2) créer un nombre fini de nouveaux acteurs ;
+
 >  3) spécifier le comportement à avoir lors de la prochaine réception de messages.
 
 Etudions ce petit programme :
@@ -167,7 +169,7 @@ Etudions ce petit programme :
 
 On a 2 unités d'exécution. La première est dédiée à l'affichage du score. A chaque fois qu'une valeur est présente dans `result` la valeur de `scores` est mise à jour.
 
-Notons que la valeur valeur actuelle du score est complètement *encapsulée*. Personne d'autre ne peut connaitre le score.
+Notons que la valeur actuelle du score est complètement *encapsulée*. Personne d'autre ne peut connaitre le score.
 La valeur du score courant est dépendante de la valeur précédente. Le 3ème point de la définition d'un acteur, _spécifier le comportement à avoir lors de la prochaine réception de messages_, est bien vérifié.
 
 La seconde unité d'exécution lit tour à tour dans les _channel_ `player1` et `player2`, détermine un gagnant et écrit le résultat dans `result` qui sera relue par notre 1ère unité d'exécution. Le 1er point de la définition d'un acteur, _envoyer un nombre fini de messages à d’autres acteurs_ est vrai.
@@ -208,21 +210,21 @@ Programmation concurrente illimitée
 
 Dans les précédents exemples nous avons instancié des threads pour consommer les valeurs contenues dans les _channels_. Chacun de ces threads consistait en une boucle infinie qui bloquait sont exécution jusqu'à ce qu'une valeur soit lisible. Ce modèle est limité par les [quelques milliers](http://stackoverflow.com/questions/763579/how-many-threads-can-a-java-vm-support) de threads que l'on peut lancer sur la VM. Sans compter [le temps perdu](http://blog.tsunanet.net/2010/11/how-long-does-it-take-to-make-context.html) en [context switch](http://en.wikipedia.org/wiki/Context_switch).
 
-Imaginons maintenant que notre plateforme de jeu n'ai pas quelques milliers de threads mais plutôt un centaine de millier.
+Imaginons maintenant que notre plateforme de jeu n'ait pas quelques milliers de threads mais plutôt un centaine de millier.
 
 ~~~clojure
 (dotimes [t 100000]
-  (let [c language="(chan)"][/c]
-
-
-(thread
-(loop []
-(let [[_ v :as tv] (<!! c)]
-(if (= 0 (mod v 100)) (println tv)))
-(recur)))
-(thread
-(doseq [v (iterate inc 1)]
-(>!! c [t v])))))
+  (let [c (chan)]
+  
+    (thread
+      (loop []
+        (let [[_ v :as tv] (<!! c)]
+          (if (= 0 (mod v 100)) (println tv)))
+          (recur)))
+          
+    (thread
+      (doseq [v (iterate inc 1)]
+        (>!! c [t v])))))
 ~~~
 
 Ici on crée 2 threads 100000 fois. Le premier lit dans un channel et affiche le résultat si c'est un multiple de 100. Le second écrit les entiers de 1 à l'infini.
@@ -233,26 +235,22 @@ Pour pallier à ces limitations, _core.async_ offre la possibilité de créer de
 
 ~~~clojure
 (dotimes [t 100000]
-(let
-
-[c language="(chan)"][/c]
-
-
-(go
-(loop []
-(let [[t v :as tv] (<! c)]
-(if (= 0 (mod v 100)) (println tv)))
-(recur)))
-(go
-(doseq [v (iterate inc 1)]
-(>! c [t v])))))
+  (let [c (chan)]
+    (go
+      (loop []
+        (let [[t v :as tv] (<! c)]
+          (if (= 0 (mod v 100)) (println tv)))
+          (recur)))
+    (go
+      (doseq [v (iterate inc 1)]
+        (>! c [t v])))))
 ~~~
 
-Dans cette version du programme, j'ai remplacé les threads créés par `thread` par des processus ultra légers via `go` et les appels bloquants `&gt;!!` et `&lt;!!` par leurs versions non-bloquantes `&gt;!` et `&lt;!`.
+Dans cette version du programme, j'ai remplacé les threads créés par `thread` par des processus ultra légers via `go` et les appels bloquants `>!!` et `<!!` par leurs versions non-bloquantes `>!` et `<!`.
 
 Le programme est stable et régulier : des salves d'informations s'affichent sur la console toutes les 40 secondes environ, les 8 coeurs de mon CPU sont à 40%, la consommation du heap oscille entre 1700 mégas et 160 après GC, et la JVM compte 70 threads.
 
-Nous avons donc réussi à *simuler* 200000 threads ! J'ai oublié de préciser que ce code peut aussi tourner sur un navigateur ... Oui on peut écrire du code asynchrone dans le navigateur sans callbacks (hell).
+Nous avons donc réussi à *simuler* 200000 threads ! J'ai oublié de préciser que *ce code peut aussi tourner sur un navigateur* ... Oui on peut écrire du code asynchrone dans le navigateur sans callbacks (hell).
 
 Functional Reactive Programming
 -------------------------------
