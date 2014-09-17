@@ -8,12 +8,13 @@ En septembre dernier, j'ai participé pendant deux jours à la formation DDD ...
 
 Pendant cette formation, les ateliers pratiques se divisaient en deux langages : C# et Java. J'ai choisi Clojure et j'y ai trouvé beaucoup d'avantages que je voulais approfondir et partager.
 
+
 Domain Driven Design
 --------------------
 
 Cet article n'a pas pour objectif de présenter DDD. Mais pour ceux qui ne connaissent pas encore [Domain Driven Design](http://en.wikipedia.org/wiki/Domain-driven_design),
-il s'agit d'une approche et de bonnes pratiques pour développer un logiciel. DDD est axé sur le coeur de métier
-et permet de créer un logiciel conforme, extensible et compréhensible. Le sujet est très riche, il couvre à la fois les aspects fonctionnels et techniques, et mérite vraiment une attention particulière.
+il s'agit d'une approche et de bonnes pratiques pour développer un logiciel. DDD est axé sur le coeur de métier et permet de créer un logiciel conforme, extensible et compréhensible. Le sujet est très riche, il couvre à la fois les aspects fonctionnels et techniques, et mérite vraiment une attention particulière. 
+
 
 Clojure
 -------
@@ -93,6 +94,4 @@ Ces deux lignes de code permettent d'enchainer l'interview (fictif):
     (defrecord Patient [id])
     (defn historique [patient])
 ~~~
-
-L'analyste détecte un
 
