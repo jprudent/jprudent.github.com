@@ -15,7 +15,10 @@ Mark Sweep Review
 
 Larger heap = larger pause time
 
+What is a safe point ? What is a GC root ?
+------------------------------------------
 
+J'abandonne, présentation trop rapide, pas de plan, perdu.
 
 Links
 -----
