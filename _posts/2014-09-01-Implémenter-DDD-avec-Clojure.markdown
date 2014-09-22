@@ -98,13 +98,14 @@ DDD est agnostique à l'architecture utilisée. A vrai dire DDD ne traite pas d'
 
  Dans son livre Evans met l'accent sur une _architecture en couche_. En 2003, c'était le truc vachement bien. Pour qu'une architecture en couche puisse être testable et modulaire, il faut appliquer _Dependency Inversion Principle_ :
 
- - les modules de haut niveau (la GUI par exemple), ne doit pas dépendre des modules de bas niveau (la Persistence par exemple). Les modules doivent dépendre d'une abstraction.
+ - les modules de haut niveau (qui ont une dépendance), ne doit pas dépendre des modules de bas niveau (la dite dépendance). Les modules doivent dépendre d'une abstraction.
 
  - les abstractions ne doivent pas faire apparaître les détails d'implémentations. Les détails doivent dépendre des abstractions
  
  L'exemple typique est le _repository_. Notre coeur de programme n'ayant pas de dépendance, il doit définir une interface utilisée dans les autres morceaux de code, un _service_ par exemple. Cette interface est alors implémentée dans la couche de persistance avec toutes les dépendances techniques dont elle a besoin.
 
  Admettons que nous ayons le _service_ suivant :
+ 
 ~~~clojure
         (ns pharma.prescription.service)
      
@@ -113,7 +114,7 @@ DDD est agnostique à l'architecture utilisée. A vrai dire DDD ne traite pas d'
             (throw (Exception. "not yet implemented"))))  
 ~~~ 
 
-`prescrire-ordonnance` est un service.  Il a besoin de récupérer le médecin via la fonction `medecin-of-id`.
+`prescrire-ordonnance` est un _service_.  Il a besoin de récupérer le médecin via la fonction `medecin-of-id`.
 
 Dans un langage fonctionnel, une fonction est une valeur et son abstraction est sa signature. Clojure n'étant pas fortement typé, n'importe quelle fonction d'un argument bindée au symbole `medecin-of-id` fait l'affaire.
 
@@ -133,29 +134,12 @@ L'utilisateur peut retrouver la signature originelle avec une partielle mais cel
          (prescrire-ordonnance 1 1 [])
 ~~~
  
- C'est mieux. Mais ce serait encore plus satisfaisant si `medecin-of-id` pouvait être récupéré de manière plus dynamique et élégante. Nous avons pour cela 3 patterns : _Plugin_, _Service Locator_ et _Injection de Dépendance_.
+C'est mieux. Mais ce serait encore plus satisfaisant si `medecin-of-id` pouvait être récupéré de manière plus dynamique et élégante. Nous avons pour cela 3 patterns : _Plugin_, _Service Locator_ et _Injection de Dépendance_.
  
- 
- Pour plus d'infos:
- - [http://stackoverflow.com/questions/62539/what-is-the-dependency-inversion-principle-and-why-is-it-important](Stackoverflow)
- 
- -  [http://www.objectmentor.com/resources/articles/dip.pdf](l'article original de Bob Martin)  
  
 #### DIP en long, en large
 
- Tout ce que je raconte dans ce paragraphe est issu du (www.objectmentor.com/resources/articles/dip.pdf)[papier original de Mr Martin sur DIP] et de (http://martinfowler.com/articles/dipInTheWild.html)[cet article].
-  
- Un code avec avec un mauvais design, c'est :
  
- #. Du code _rigide_ : un code difficile à modifier car chaque changement affecte plusieurs parties du system
- 
- #. Du code _fragile_ : Quand on fait un changement, on fait une régression sur une partie inattendue du système.
- 
- #. Du code _immobile_ : le code a tellement d'adhérence avec l'application qu'il est impossible de l'extraire pour le réutiliser.
- 
- Ce qui rend un code rigide, fragile, et immobile est l'adhérence entre modules.
- 
- Plus un composant est détaillé, plus il est probable qu'il soit soumis à modification
  
  Ne pas confondre :
  
@@ -163,21 +147,18 @@ L'utilisateur peut retrouver la signature originelle avec une partielle mais cel
     
 - Inversion Of Control : est un style programmatique. "Ne nous appelez pas, c'est nous qui vous rappelons". L'exemple classique est le passage d'une callback à un listener d'évênement : "Quand le bouton est cliqué, exécute moi ce code".
 
-DI permet de cabler du code, IoC définit le sens d'appel du code et DIP donne une forme au code.
-
- 
-#### Digression sur l'utilité de DIP
-
-Je suis arrivé sur le marché du travail en 2006, sur un gros projet en Java. A cette époque, on était en plein boom Spring. L'un des point fort de Java est l'_interface_, qui est un super moyen d'abstraction. Ajoutons là dessus Spring pour faire de l'injection et de la manipulation de code (AOP, Transactions, ...) et les interfaces deviennent indispensables. On crée donc des interfaces à tout va. Cela permet même de tester son code plus facilement !
 
 
-Et je n'avais jamais entendu parler de DIP alors même que j'appliquais le concept tous les jours. Beaucoup de patterns sont historiques. Les langages ont petit à petit simplifié l'usage des patterns allant jusqu'à les inclure carrément dans le langage. L'_interface_ de Java est un outil d'abstraction beaucoup plus puissant que le _header file_ de C++. De même en Scala, le pattern _singleton_ est inclut dans le langage sous forme de _companion object_.
 
 
-Aussi les librairies ont beaucoup évoluées et rendent le découpage interface / implémentation dispensable. Spring est capable d'injecter des implémentations sans interface. Mockito est capable de mocker des implémentations aussi bien que des interfaces. La création systématique d'interface est un anti pattern. Ce n'est plus justifié.
+
+Le découplage des composants de haut niveau des composants de bas niveau est obtenu en créant des interfaces appatenant aux packages de haut niveau.
+
+Le rôle de DI est de découpler la manière dont une dépendance est obtenue. Elle ne joue aucun rôle dans l'abstraction et un rôle mineur dans le découplage.
 
 
-En tant que "jeune" développeur, il faut donc comprendre les problèmes du passé pour donner du sens aux pratiques du présent. Le papier de Robert C. Martin, qui a inventé ce terme, date de 1996! Presque 20 ans! Personne n'avait de téléphone portable ! Internet c'était (http://www.internetworldstats.com/emarketing.htm)[36 millions d'utilisateurs] (3 milliards aujourd'hui) ! Java était en version 1.0 !
+
+
 
 
 ### Alors DIP ou pas DIP ?
@@ -193,6 +174,8 @@ On a donc  2 types d'interfaces :
 - celles de l'API (Application Programming Interface), qui sont les points d'entrée concrêts permettant d'utiliser notre coeur logiciel.
  
 - celles de la SPI (Service Provider Interface), qui sont les points de sorties qui permettent d'implémenter les briques purement technique.
+
+Dans les deux cas les interfaces sont spécifiques au métier que l'on est entrain de développer. Des interfaces de type CRUD sont typiquement à proscrire.
 
 On voit qu'il n'est pas tellement aisé de parler d'architecture en couche, surtout dans un contexte de connectivité.
 
