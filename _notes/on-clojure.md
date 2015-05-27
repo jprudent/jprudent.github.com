@@ -1,19 +1,35 @@
-# Documentation du code
+# Caractéristiques du code
 
-## Pas besoin de documentation !
+## C'est du Clojure
 
-Un code Clojure a deux caractéristiques essentielles :
+### Régularité
 
+Le code est *régulier*. Il existe très peu de fantaisie dans la syntaxe contrairement à [d'autres langages concurrents](http://brenocon.com/scalacheat). De ce fait, pour un oeil exercé, la lecture est grandement facilitée. 
 
-Le code est *régulier*. Il existe très peu de fantaisie dans la syntaxe contrairement à [d'autres langages concurrents](http://brenocon.com/scalacheat). De ce fait, pour un oeil exercé, la lecture est grandement facilitée. Il est possible de forcer encore la régularité en limitant le plus possible la création de macros funkys et de suivre un bon [guide de style](https://github.com/bbatsov/clojure-style-guide).
-Un code concis a besoin de beaucoup moins de documentation.
+Il est possible de forcer encore la régularité en limitant le plus possible la création de macros funkys et de suivre un bon [guide de style](https://github.com/bbatsov/clojure-style-guide).
 
+Autre avantage de la régularité est qu'on 
 
-Le code est *concis*. Programmer en fonctionnel avec Java 8 est beaucoup plus verbeux. Clojure fournit les bons sucres syntaxiques pour manipuler les structures de données de base. 
+Le code est *concis*. Programmer en fonctionnel avec Java 8 est beaucoup plus verbeux. Clojure fournit les bons sucres syntaxiques pour manipuler les structures de données de base. Et qui dit moins de code dit moins de commentaire (je vous laisse apprécier si c'est un sophisme ou non). 
+
+# Documentation et commentaires
+
+La documentation permet d'utiliser correctement une API et de décrire un produit. Elle est aussi bien utile au producteur qu'au consommateur.
+
+Le commentaire en revanche est un détail interne qui ne parle qu'aux développeurs. On dit d'un commentaire qu'il n'est jamais nécessaire.
 
 ## DSL
 
-Clojure est expressif. Il permet de construire des DSL "à la Lisp". Voici par exemple l'utilisation d'[un DSL que j'ai écrit](https://github.com/jprudent/hdl-clj/blob/master/src/hdl_clj/core.clj) pour définir des portes logiques :
+Un programme écrit avec un DSL est autodescriptif. Il n'y a pas de bruit technique. Les commentaires sont inutiles.
+
+Clojure est [expressif](http://www.infoq.com/news/2013/03/Language-Expressiveness). Il permet de construire des DSL "à la Lisp". On ne peut pas se "débarrasser" des parenthèses. En revanche on peut créer des verbes avec des fonctions, des noms avec des _var_s et de la donnée. Voici un extrait d'un jeu vidéo :
+
+        (defn move-enemy [{:keys [enemy? in-zone? id] :as enemy-entity}]
+          (when (and enemy? in-zone? (not (moving-fast? enemy-entity)))
+            (let [added-velocity (random-vec2 x-max y-max)]
+              (add-event [:enemy-moved id added-velocity]))))
+
+On peut également s'appuyer sur un jeu de macros pour casser un peu la régularité du langage. Voici par exemple l'utilisation d'[un DSL que j'ai écrit](https://github.com/jprudent/hdl-clj/blob/master/src/hdl_clj/core.clj) pour définir des portes logiques :
 
     (hdl/defgate Or [a b] => [out]
                  (Not [a] => [not-a])
@@ -57,6 +73,7 @@ Il est parfois plus simple d'écrire des préconditions et des postconditions au
     (replacev-at [1 9 3] 1 2)
     => [1 2 3]
 
+## Schema
 
 ## Metadonnées
 Par défaut une _var_ a quelques métadonnées prédéfinies:
@@ -73,12 +90,28 @@ Par défaut une _var_ a quelques métadonnées prédéfinies:
     => nil
     
 On peut attacher des métadonnées à n'importe quelle `var`.
-Ces métadonnées sont accessibles au runtime, d'autre fonctions (ou elle même !) peuvent s'appuyer dessus. Libre d'imaginer ce que l'on peut faire avec !
+Ces métadonnées sont accessibles au runtime, d'autres fonctions (ou elle même !) peuvent s'appuyer dessus. Libre d'imaginer ce que l'on peut faire avec !
 
-    (def ^{:precision ".2"} rounded-pi 3.14)
-    => #'user/rounded-pi
-    (:precision (meta #'rounded-pi)) ;; récupère la métadonnée :precision sur la var rounded-pi
-    => ".2"
+    (defn ^{:deprecated true} old-service [] (println "Bien le bonjour"))
+    => #'user/old-service
+    
+    (defn new-service [] ("slt"))
+    => #'user/new-service
+    
+    (defn deprecation-warning [f & args]
+      (when (:deprecated (meta f))
+        (println "Warning ! The service is deprecated"))
+      (apply f args))
+    => #'user/deprecation-warning
+    
+    (deprecation-warning old-service)
+    Bien le bonjour
+    => nil
+    
+    (deprecation-warning #'old-service)
+    Warning ! The service is deprecated
+    Bien le bonjour
+    => nil
 
 ## Docstrings
 
