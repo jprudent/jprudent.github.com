@@ -1,0 +1,20 @@
+Interactor implements a use case
+has application specific business rules
+
+Entities represents business objects
+has independent business rules (based on physics or mathematics)
+like implementation of withdraw of an account
+
+Boundary : interfaces. You can decorate boundaries, like for managing transactions, kind of AOP
+boundaries takes RequestModel as parameter and returns a ResultModel.
+
+Entity gateway : repository
+
+Clean separation between framework and business
+
+views should not know about the business objects
+
+Presenter : presenter model view pattern
+
+@see Service layer in PoEAA fowler
+@see Hexagonale architecture

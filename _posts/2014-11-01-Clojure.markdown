@@ -1,0 +1,8 @@
+Pourquoi Clojure ?
+
+- live reload
+- fait pour la manipulation de données
+- tourne sur plusieurs plateformes sans cacher la plateforme : partage de code client / serveur, réutilisation des librairies
+
+
+Application de CRA basique

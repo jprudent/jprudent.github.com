@@ -1,0 +1,1 @@
+Quand nous êtions enfant, nous nagions des heures dans les eaux alpines du lac Kir. Les bras lassés de tant de brasses, nous nous reposions alors à l'ombre des ceps, sous leurs feuilles émeraudes gorgées de chlorophyle estivale qui camouflaient des grappes prometteuses pour le mois de la rentrée scolaire.
