@@ -44,7 +44,7 @@ Mais quand le serveur de cache reçoit 30000 requêtes en même temps ...
 Alors on multiplie les serveurs de cache et on ajoute un load balancer. Le load balancer reçoit toutes les URLs et
 les répartit aux serveurs de cache. Et voici, le schéma qu'il faut mettre en forme avec PowerPoint :
 
-![Image schéma complet](./schema.jpe)
+![Image schéma complet](/images/articles/consistent-hashing/schema.jpe)
 
 L'algorithme magique de répartition d'une URL à un serveur de cache est le suivant :
  
@@ -78,7 +78,7 @@ On peut également apposer n'importe qu'elle URL par la formule magique :
         
 Ce qui pourrait donner un cercle du genre :
 
-![Image les serveurs et les URLs sur un cercle](./cercle.jpe)
+![Image les serveurs et les URLs sur un cercle](/images/articles/consistent-hashing/cercle.jpe)
 
 Maintenant mettons-nous à la place du load-balancer. Comment trouver le serveur de cache responsable de l'URL
 `http://www.altavista.fr/search?q=netscape` ? 
