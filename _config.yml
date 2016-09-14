@@ -1,4 +1,5 @@
 server: true
 pygments: true
 markdown: rdiscount
-
+gems:
+  - jekyll-feed
