@@ -53,16 +53,14 @@ There are plateaus in learning process.
 If the book is worth reading, it's worth 3 readings, in 3 different manners :
 
 1. Structural / Analytic reading - Top down approach
-  1. What the book is all about ?
-  2. What the book is trying to say ?
-  3. What is the structure of the book ?
-  4. What is the main problem whick is solved (or not) ?
-
+   1. What the book is all about ?
+   2. What the book is trying to say ?
+   3. What is the structure of the book ?
+   4. What is the main problem whick is solved (or not) ?
 2. Interpretative / Synthetic - Bottom up approach
-  1. Notice important words.
-  2. Notice important sentences.
-  3. Notice similarity for paragraphes that expresses arguments. 
-
+   1. Notice important words.
+   2. Notice important sentences.
+   3. Notice similarity for paragraphes that expresses arguments. 
 3. Critical / Evaluative - Judgement, (dis)aggreement
 
 While reading, there 1 one of the 3 manners, there are 2 ways each :
