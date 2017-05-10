@@ -17,6 +17,24 @@ The difference between information and learning is the difference between what t
 
 An _original_, _great_ book tends to be like a _live_ teacher. Whereas _comment_, _summary_ are _dead_ teachers for sure, and not enlightening.
 
+## Two kinds of books
+
+### Theorical
+
+- To be seen or understood
+- "That" something is the case
+- 3 families of theorical books
+    - historical : particular past events
+    - philosophical : general truth, relies on ordinary experience
+    - scientific : observations under specific conditions
+
+### Practical
+
+- Something that *works*
+- Immediate cash return
+- How to do something that you think you should
+- Often oratorical / propaganda
+
 ## On vicious circle
 There is less and less people that knows how to read properly. Books are not so great nowadays.
 
@@ -74,12 +92,41 @@ Best to read both as poetry *and* science.
 
 ## Type 1 reading : Structural / Analytic
 
+- grasp the structure
+- scrap the parts
+- don't worry it makes it even more beautiful
+
 ### Rule n°1: What is this all about ?
 
-- Think about the title
-- Read the preface
-- Read the table of content (TOC) conscienciously
+You should know what kind of book you are reading before starting the reading.
 
+Classify the book according to kind and subject matter.
+
+- Think about the title
+- Read the preface : where the author tells you what the book is about
+- Read the table of content (TOC) conscienciously : where the author tells you what you will find in the book
+
+### Rule n°2: What is it trying to say ?
+
+State the unity of the whole book in a single senence or in a small paragraph.
+
+About unity (aka simplicity).
+
+### Rule n°3: What is the structure of the book ?
+
+Set forth the major parts of the book, an show how these are organised into a whole, be connected to one another and to the unity of the whole.
+
+- A book is made of many parts organised organicaly. It's not a collection of things, they are bound.
+- About complexity (in its literal definition)
+- Each part has a unity
+- Need not follow the _apparent_ structure of the book
+- Make your **own** blueprint
+
+### Rule n°4: What is the problem ?
+
+- Find out what's author problems were
+- A problem is a question.
+- There may be many problems.
 
 # Various tips more or less extrapolated from the book :
 
@@ -88,3 +135,9 @@ Best to read both as poetry *and* science.
 - Reader must make connection between a reading and personal experience or other readings.
 - Reader must be active. Reading is an excrutiating activity.
 - Reader must *take notes* on the book itself or on a pad.
+
+# Some quotes
+
+> There are only a small number of plots (about novels)
+
+> A man can be skilled in an art without being the ideal artist
