@@ -1,26 +1,23 @@
 This is some notes about the book [How to read a book ?](https://www.goodreads.com/book/show/567610.How_to_Read_a_Book?ac=1&from_search=true).
 
-# Do you know how to read ?
+# About reading
 
+## Do you know how to read ?
 This intent of a writter is to communicate with a reader. The perfection of this process is achieved when the reader's mind is in sync with the writter's.
 
-
-# There are two kind of reading
-
+## There are two kind of reading
 - The _informational_ reading is easy to read. It's just some new data the reader will remember.
 - The _learning_ reading is harder to read. Reader is enlightened and will understand stuff he didn't understand.
 
 The difference between information and learning is the difference between what the author _says_ and what the author _means_.
 
-# There are two kinds of teachers
-
+## There are two kinds of teachers
 - _Live_ teacher whom you can ask questions.
 - _Dead_ teacher, like a book.
 
 An _original_, _great_ book tends to be like a _live_ teacher. Whereas _comment_, _summary_ are _dead_ teachers for sure, and not enlightening.
 
-# On vicious circle
-
+## On vicious circle
 There is less and less people that knows how to read properly. Books are not so great nowadays.
 
 ## Learning plateaus
@@ -52,17 +49,20 @@ There are plateaus in learning process.
      - Level N-1
      - Level N-1 <-- you start here, good luck ;)
 
-
+# How to read - overview
 If the book is worth reading, it's worth 3 readings, in 3 different manners :
+
 1. Structural / Analytic reading - Top down approach
   1. What the book is all about ?
   2. What the book is trying to say ?
   3. What is the structure of the book ?
   4. What is the main problem whick is solved (or not) ?
+
 2. Interpretative / Synthetic - Bottom up approach
   1. Notice important words.
   2. Notice important sentences.
   3. Notice similarity for paragraphes that expresses arguments. 
+
 3. Critical / Evaluative - Judgement, (dis)aggreement
 
 While reading, there 1 one of the 3 manners, there are 2 ways each :
@@ -76,9 +76,12 @@ Best to read both as poetry *and* science.
 
 ## Type 1 reading : Structural / Analytic
 
+### Rule n°1: What is this all about ?
+
 - Think about the title
 - Read the preface
 - Read the table of content (TOC) conscienciously
+
 
 # Various tips more or less extrapolated from the book :
 
