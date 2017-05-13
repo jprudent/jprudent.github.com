@@ -90,7 +90,7 @@ A book can be read 2 more ways :
 2. As *science* (pure knowledge communicated from the author)  
 Best to read both as poetry *and* science.
 
-## Type 1 reading : Structural / Analytic
+## First reading : Structural / Analytic
 
 - grasp the structure
 - scrap the parts
@@ -128,6 +128,30 @@ Set forth the major parts of the book, an show how these are organised into a wh
 - A problem is a question.
 - There may be many problems.
 
+## Second reading 
+
+### Rule n°1: Important words
+
+Spot the important words and throught them come to terms with the author.
+- a term is not a word
+- a term is an unambiguous word
+- Process :
+    1. Spot the words (grammatical step)
+    2. Find their meanings (logical step) which is term
+- a word can be many terms
+    - eg : reading 
+        1. for amusement
+        2. for information
+        3. for gaining insight
+ - beware of synonyms
+ - beware of translations : loose meaning
+ - beware of old books: meanings have shifted
+ - connect the word
+![Alt text](https://g.gravizo.com/svg?digraph%20G%20{term%20[shape=box];%20term%20-%3E%20word;%20term%20-%3E%20ambiguity;%20term%20-%3Eimportant;%20term%20-%3E%20communication})
+ - eliminate ordinary words
+ - a word can be special for a given author
+ - a term can be a phrase
+ 
 # Various tips more or less extrapolated from the book :
 
 - Reader must be conscient of it's own knowledgable limitations. Pick a book that teaches you.
@@ -135,7 +159,7 @@ Set forth the major parts of the book, an show how these are organised into a wh
 - Reader must make connection between a reading and personal experience or other readings.
 - Reader must be active. Reading is an excrutiating activity.
 - Reader must *take notes* on the book itself or on a pad.
-
+- With enough will you can understand any books
 # Some quotes
 
 > There are only a small number of plots (about novels)
