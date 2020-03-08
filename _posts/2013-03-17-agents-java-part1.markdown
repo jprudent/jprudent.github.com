@@ -1,7 +1,10 @@
 ---
 layout: default
+lang: fr
 categories:
 - articles_prog
+tags:
+- JVM
 ---
 Agents Java - Partie 1
 ======================

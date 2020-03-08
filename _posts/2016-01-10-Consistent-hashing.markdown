@@ -1,7 +1,12 @@
 ---
 layout: default
+lang: fr
 categories:
 - articles_prog
+tags: 
+- distributed
+- algorithm
+
 ---
 
 Le hashing consistant a été introduit en 1997 par le papier [Consistent Hashing and Random Trees: Distributed Caching Protocols for Relieving Hot Spots on the World Wide Web](https://www.akamai.com/us/en/multimedia/documents/technical-publication/consistent-hashing-and-random-trees-distributed-caching-protocols-for-relieving-hot-spots-on-the-world-wide-web-technical-publication.pdf) 

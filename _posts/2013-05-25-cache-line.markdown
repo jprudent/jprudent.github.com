@@ -1,7 +1,12 @@
 ---
 layout: default
+lang: fr
 categories:
 - articles_prog
+tags:
+- hardware
+- optimisation
+
 ---
 # Observation des Cache Lines #
 <div id="toc-js">

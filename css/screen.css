@@ -299,3 +299,7 @@ tbody tr {
 img {
     max-width: 800px;
 }
+
+.tag {
+    background-color: #bfcaff;
+}

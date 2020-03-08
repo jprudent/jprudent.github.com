@@ -1,9 +1,11 @@
 ---
 layout: default
 title: Dependency Inversion Principle
+lang: fr
 categories:
 - articles_prog
-published: true
+tags:
+- pattern
 ---
 
 # Dependency Inversion Principle

@@ -1,7 +1,11 @@
 ---
 layout: default
+lang: fr
 categories:
 - articles_prog
+tags:
+- clojure
+- paradigm
 ---
 
 Les bons tuyaux de core.async

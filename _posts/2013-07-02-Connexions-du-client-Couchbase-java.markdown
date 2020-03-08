@@ -1,7 +1,10 @@
 ---
 layout: default
+lang: fr
 categories:
 - articles_prog
+tags:
+- couchbase
 ---
 # Les 3 connexions du client couchbase java #
 
