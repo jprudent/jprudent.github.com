@@ -103,7 +103,7 @@ ses informations sur `http://node1:8091/pools/default?uuid=b7e59676b22aecc10425b
 
 {% highlight json %}
 
-{
+    {
 
     "storageTotals": { … },
     "name": "default",
@@ -132,7 +132,7 @@ ses informations sur `http://node1:8091/pools/default?uuid=b7e59676b22aecc10425b
     "counters": { … },
     "stopRebalanceIsSafe": true
 
-}
+    }
 	
 {% endhighlight %}
 
@@ -274,7 +274,7 @@ et où sont distribuées les clés.
 		]
 
 	}
-	
+
 {% endhighlight %}
 
 Dans cette description l'une des infos est la fameuse `streamingUri`. 

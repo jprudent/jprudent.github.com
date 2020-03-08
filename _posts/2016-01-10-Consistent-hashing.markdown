@@ -187,8 +187,8 @@ Sortons maintenant de notre contexte initial, à savoir le load-balancer et les 
 grâce au hashage consistant ? Allez, je vous aide un peu : 
 
 - On peut faire un [filesystem distribué](https://en.wikipedia.org/wiki/GlusterFS) tolérant aux pannes
-- On peut faire une [base de donnée mémoire distribuée](http://docs.hazelcast.org/docs/3.5/manual/html/datapartitioning.html) (j'ai mis le lien qui explique le partitionnement des données, ça vous rappelle quelque chose ?)
-- On faire une [autre base de donnée mémoire distribuée](http://developer.couchbase.com/documentation/server/4.1/concepts/buckets-vbuckets.html) (j'ai mis le lien qui explique ce qu'est un vBucket, ça vous rappelle quelque chose ?)
+- On peut faire une [base de donnée mémoire distribuée](http://docs.hazelcast.org/docs/3.5/manual/html/datapartitioning.html) (j'ai mis le lien qui explique le partitionnement des données)
+- On faire une [autre base de donnée mémoire distribuée](http://developer.couchbase.com/documentation/server/4.1/concepts/buckets-vbuckets.html) (j'ai mis le lien qui explique ce qu'est un vBucket)
 - On peut faire [index distribué des fichiers qui sont partagés sur Emule](https://en.wikipedia.org/wiki/Kademlia) (la notion de noeud le plus proche est toutefois plus compliquée !)
 
 En fait dès que vous entendez parler d'une technologie qui met les mots : distributed, autoscaling, resiliant, et replication dans
