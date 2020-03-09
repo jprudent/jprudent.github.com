@@ -43,9 +43,9 @@ IPFS a un autre motto :
 > The InterPlanetary File System is a peer-to-peer hypermedia 
 >protocol designed to make the web faster, safer, and more open.
 
-Ok, j'ai testé. Faster : nop. Safer : ça dépend. Open : yep!
+Ok, j'ai testé. Faster : nop. Safer : par défaut. Open : yep!
 
-#### Faster : en théorie
+#### Faster
 
 Pour simplifier IPFS, c'est un gros cache distribué.
 Le modèle est le suivant :
@@ -70,6 +70,10 @@ Et plus il est disponible, plus il est accessible rapidement.
 IPFS découpe chaque fichier en bloc afin de paralléliser
 son téléchargement. Freenet ça marche comme ça aussi, 
 sauf qu'ici mon noeud ne redistribue que ce que j'ai consulté.
+Un noeud IPFS tout frais, ne télécharge rien, ne distribue rien,
+mis à part sa participation à la DHT (désactivable avec
+l'option `--routing=dhtclient`). Il ne distribue que ce 
+qui est dans le cache.
 
 J'ai testé du partage de fichier entre ma tablette et 
 mon ordinateur. C'est trop bien, ça passe les firewalls, 
@@ -90,15 +94,16 @@ avoir à configurer des DNS / Nginx / NAT.
 Il faudrait que des millions de machine fassent tourner
 IPFS pour que ça soit rapide. On est trop accroc à l'instantané
 pour espérer que ça plaise à des vrais Roger, Michel et Monica.
-- ... et là tu vois on utilise véritablement ce pourquoi
-  internet a été conçu, on participe égalitairement à un
-  réseau de millions de machi ...
-- c'est lent ton bazar, r'mets moi le Google, chuis habitué 
+> — ... et là tu vois on utilise véritablement ce pourquoi
+>   internet a été conçu, on participe égalitairement à un
+>   réseau de millions de machi ...
+>
+> — c'est lent ton bazar, r'mets moi le Google, chuis habitué 
 
 Aujourd'hui, ya rien de plus rapide qu'un DNS
 bien connu devant une ferme de caches HTTP. Et c'est triste.
 
-#### Safer : ça dépend
+#### Safer
 
 Le web assure sa sécurité par un système de certificats. 
 Ce système s'est un peu ouvert dernièrement avec Let's Encrypt
@@ -111,9 +116,10 @@ Les certificats protègent de 2 choses :
 aux clients. "Si tu vois un cadenas vert, ça veut dire
 que cette page est bien émise par le serveur à qui tu 
 la demande"
-- Ils permettent de communiquer secrètement. Un sniffer sur
+- Ils permettent de communiquer confidentiellement. Un sniffer sur
 le réseau sait qu'il y a communication, mais est incapable
-d'en connaître la nature.
+d'en connaître la nature. "T'inquiète pas, tu peux saisir
+ton numéro de CB, ya que moi qui le verra"
 
 IPFS adresse les fichiers par leur contenu. Quand on crée
 un fichier sur le réseau ou quand on veut le télécharger,
@@ -124,14 +130,61 @@ Un marseillais malicieux qui déciderait de refourguer des
 recettes de bouillabaisse au lieu de coq au vin se ferait
 capter direct car une fois la recette téléchargée, il suffit
 de calculer son hash pour vérifier qu'elle correspond bien
-à son adresse. Pas de problème d'authenticité.
+à son adresse. L'authenticité est indissociable d'IPFS.
+
+Toutes les connexions IPFS utilisent une couche de transport
+sécurisée appelée [SECIO](https://github.com/libp2p/specs/blob/master/secio/README.md).
+ Cela garantit un échange confidentiel entre les noeuds.
+Il reste cependant possible de désactiver les connexions
+sécurisées avec l'option `--disable-transport-encryption`.
+Ce n'est pas un prérequis au fonctionnement d'IPFS qui 
+est indépendant de la couche de transport. Vous faites
+un coq au vin, ça va se savoir.
+
+Chaque noeud met à dispo une gateway HTTP vers et depuis
+le réseau IPFS. Si vous utilisez celle de quelqu'un d'autre,
+là vous risquez de vous retrouver avec une bouillabaisse 
+dans la marmite. N'utilisez les gateways publiques qu'à des
+fins de test.
+
+#### Open
+
+Il n'y a aucun droit d'entrée à IPFS. Pas d'inscription,
+pas de CB, pas de pub, pas d'incentive à la participation,
+pas de ratio de partage, pas de cryptothune.
+C'est open source, documenté.
+
+Il n'y a aucune restriction sur le type de contenu diffusé.
+Certains utilisateurs partagent des archives de centaines de
+gigas, d'autres de simples fichiers texte. Concernant la 
+moralité et la légalité des contenus, tant qu'on reste 
+loin de ces choses,  
+
+La gateway local permet de construire des pages HTML
+riches (avec JS et CSS), qui lie d'autres pages. C'est une
+reconstruction du web. Installez l'extension firefox et
+récompensez les contenu de qualité en les conservant 
+définitivement dans votre cache (pin content).
+
+
+### Conclusion
+
+IPFS est un joli soft, bien abouti. Les outils fonctionnent
+et la communauté est bouillonnante. 
+Je trouve que les curseurs liberté, facilité et anonymat 
+sont bien dosés. Je vais continuer
+à jouer avec ce petit bijou technologique.
+
 
 ###
+
 produit abouti (desktop, cli, mobile, )
 incentive à faire tourner un noeud (pinning service)
 rich app
 services
-https
 gateway
 bonne documentation
 piratage
+small node inside the web page (this is already possible with js-ipfs) and your browser can help serve the content to others thanks to it
+
+https://blog.cloudflare.com/e2e-integrity/
