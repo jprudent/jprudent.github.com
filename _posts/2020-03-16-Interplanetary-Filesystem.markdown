@@ -1,9 +1,14 @@
-
+---
+layout: default
+lang: fr
+categories:
+- articles_prog
+tags:
+- p2p
+---
 ### C'était mieux avant
 
-Depuis longtemps je pense qu'internet est détourné de son
-usage. A la base, c'est un projet de hippie destiné 
-à libérer la l'information. Internet repose sur des 
+Internet est mal utilisé. Internet repose sur des 
 protocoles qui sont peer-to-peer. Pourtant les milliards
 de navigateurs sont clients, et jamais serveurs. Nos
 ISP n'offre même pas des débits montant / descendants
@@ -43,7 +48,7 @@ IPFS a un autre motto :
 > The InterPlanetary File System is a peer-to-peer hypermedia 
 >protocol designed to make the web faster, safer, and more open.
 
-Ok, j'ai testé. Faster : nop. Safer : par défaut. Open : yep!
+Ok, j'ai testé. Faster : not yet. Safer : yep! Open : yep!
 
 #### Faster
 
@@ -80,14 +85,13 @@ mon ordinateur. C'est trop bien, ça passe les firewalls,
 ça reste dans le réseau local, c'est très rapide, plus 
 simple qu'un Termux avec un client SSH.
  
-En bonus je peux partager mon fichier dans le reste du monde.
+En bonus je peux partager mon fichier avec le reste du monde.
 Là ça se gâte un peu, parceque mon réseau c'est pas celui
 d'Amazon. On se croirait revenu au temps de la Mule mais
 c'est ben cool.
 
 J'ai aussi essayé de mettre ce blog sur IPFS. Alors,
-oui ça marche mais c'est rapide comme un Minitel. A
-cette vitesse, le SEO je peux faire une croix dessus. 
+oui ça marche mais c'est rapide comme un Minitel. 
 Mais c'est jouissif de devenir acteur d'internet sans 
 avoir à configurer des DNS / Nginx / NAT.
 
@@ -152,39 +156,31 @@ fins de test.
 Il n'y a aucun droit d'entrée à IPFS. Pas d'inscription,
 pas de CB, pas de pub, pas d'incentive à la participation,
 pas de ratio de partage, pas de cryptothune.
-C'est open source, documenté.
+C'est open source, bien documenté.
 
 Il n'y a aucune restriction sur le type de contenu diffusé.
 Certains utilisateurs partagent des archives de centaines de
 gigas, d'autres de simples fichiers texte. Concernant la 
 moralité et la légalité des contenus, tant qu'on reste 
-loin de ces choses,  
+loin de ces choses, on 
 
-La gateway local permet de construire des pages HTML
-riches (avec JS et CSS), qui lie d'autres pages. C'est une
-reconstruction du web. Installez l'extension firefox et
-récompensez les contenu de qualité en les conservant 
-définitivement dans votre cache (pin content).
+La gateway locale permet de construire des pages HTML
+riches (avec JS et CSS), qui lient d'autres pages ou contenus sur IPFS. C'est une
+reconstruction du web. Installez l'[extension firefox](https://github.com/ipfs-shipyard/ipfs-companion)
+et récompensez les contenus de qualité en les conservant 
+définitivement dans votre cache ("pin content"), et participer
+à leur diffusion plus massive.
 
 
 ### Conclusion
 
-IPFS est un joli soft, bien abouti. Les outils fonctionnent
-et la communauté est bouillonnante. 
-Je trouve que les curseurs liberté, facilité et anonymat 
+C'est encore un truc de geek. Peu utilisé, et finalement
+j'ai pas trouvé de contenus incroyablement incroyables.
+ Les outils fonctionnent et la communauté est
+bouillonnante. 
+IPFS c'est à mon avis intéressant si on veut construire 
+une solution pour une communauté volontaire, quand on n'a pas
+les moyens de se payer la BP.
+Je trouve que les rapports entre liberté, facilité et anonymat 
 sont bien dosés. Je vais continuer
 à jouer avec ce petit bijou technologique.
-
-
-###
-
-produit abouti (desktop, cli, mobile, )
-incentive à faire tourner un noeud (pinning service)
-rich app
-services
-gateway
-bonne documentation
-piratage
-small node inside the web page (this is already possible with js-ipfs) and your browser can help serve the content to others thanks to it
-
-https://blog.cloudflare.com/e2e-integrity/

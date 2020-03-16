@@ -1,0 +1,810 @@
+I"�;<h1 id="comment-fonctionne-un-debugger-">Comment fonctionne un debugger ?</h1>
+
+<div id="toc-js">
+</div>
+
+<h2 id="motivations">Motivations</h2>
+
+<p>Un debugger est un outil fabuleux : cette sensation de contrôle divin ! La possibilité de figer l’exécution d’un process et d’inspecter les arcanes de sa mémoire.</p>
+
+<p>C’était les deux phrases lyriques de cet article :) Nous verrons que le divin n’est qu’une machinerie bien huilée.</p>
+
+<p>Le débugger est un outil que j’utilise quotidiennement. Je trouve important d’en comprendre les mécanismes sous-jacents. Ecrire un concurrent à <a href="https://en.wikipedia.org/wiki/GNU_Debugger">GDB</a> n’est certainement pas la meilleur façon d’utiliser son temps libre. En revanche écrire un
+<a href="https://en.wikipedia.org/wiki/Proof_of_concept">POC</a> de débugger est certainement la manière la plus didactique d’apprendre ! Et c’est ce que je vous propose aujourd’hui, d’écrire un petit debugger pas super pratique mais fonctionnel.</p>
+
+<p>Concernant le fond, cet article ne traite que de Linux sous architecture x86_64. Il part du principe que vous avez de vagues notions sur ce qu’est :</p>
+
+<ul>
+  <li>l’<a href="https://en.wikibooks.org/wiki/X86_Assembly/X86_Architecture">architecture x86</a></li>
+  <li>le langage <a href="https://en.wikipedia.org/wiki/X86_instruction_listings">assembleur x86</a></li>
+  <li>le système Linux</li>
+  <li>un <a href="https://en.wikipedia.org/wiki/Process_%28computing%29">process</a></li>
+  <li>un <a href="https://en.wikipedia.org/wiki/Unix_signal">signal Unix</a></li>
+  <li>le langage C</li>
+</ul>
+
+<p>Concernant la forme, cet article est en franglish (parce que je trouve étrange d’écrire <em>deboggueur</em>). Les exemples sont en langage C et ils ne sont spécifiques à l’architecture x86_64 (ne fonctionneront pas en 32 bits). N’étant pas codeur C, il y a certainement plein de choses à redire sur mon code, n’hésitez pas à le faire.</p>
+
+<p>Pour toute question, n’hésitez pas à me contacter.</p>
+
+<h2 id="rapide-rappel-sur-les-syscalls-et-les-interruptions">Rapide rappel sur les syscalls et les interruptions</h2>
+
+<p>Si vous savez déjà ce qu’est un syscall, vous pouvez sauter cette section.</p>
+
+<p>Le processeur a plusieurs niveaux d’exécution :</p>
+
+<ul>
+  <li>
+    <p>Typiquement le noyau Linux tourne dans un mode dit <em>privilégié</em>. Dans ce mode il peut accèder à toute la mémoire, lire et écrire sur disque, …</p>
+  </li>
+  <li>
+    <p>Les autres process, comme votre navigateur, tournent dans un mode <em>non privilégié</em>. Ils n’ont accès qu’à une certaine partie de la mémoire et ne peuvent pas écrire directement sur disque.</p>
+  </li>
+</ul>
+
+<p>Tant qu’un process se contente de faire des calculs et de lire et écrire en mémoire, il est autonome. Mais dès qu’il décide d’agir sur son environnement (a.k.a. <em>side effect</em>), comme écrire sur le disque, il doit utiliser un <em>appel système</em> a.k.a <em>syscall</em>.</p>
+
+<p>Le process effectuant un <em>syscall</em> donne la main au noyau et <strong><em>bloque</em></strong> jusqu’à ce que le <em>syscall</em> ait été effectué. Un <em>syscall</em> est en général une opération coûteuse en temps.</p>
+
+<p>Linux implémente le standard <a href="https://en.wikipedia.org/wiki/POSIX">POSIX</a> qui définit un ensemble d’appels système.</p>
+
+<p>En voici un extrait :</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>%rax</th>
+      <th>syscall</th>
+      <th>%rdi</th>
+      <th>%rsi</th>
+      <th>%rdx</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>read</td>
+      <td><code class="highlighter-rouge">unsigned int file_descriptor</code></td>
+      <td><code class="highlighter-rouge">char * buffer</code></td>
+      <td><code class="highlighter-rouge">size_t length</code></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>write</td>
+      <td><code class="highlighter-rouge">unsigned int file_descriptor</code></td>
+      <td><code class="highlighter-rouge">char * buffer</code></td>
+      <td><code class="highlighter-rouge">size_t length</code></td>
+    </tr>
+    <tr>
+      <td>57</td>
+      <td>fork</td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>59</td>
+      <td>execve</td>
+      <td><code class="highlighter-rouge">const char *filename</code></td>
+      <td><code class="highlighter-rouge">const char *const argv[]</code></td>
+      <td><code class="highlighter-rouge">const char *const envp[]</code></td>
+    </tr>
+    <tr>
+      <td>60</td>
+      <td>exit</td>
+      <td><code class="highlighter-rouge">int error_code</code></td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>62</td>
+      <td>kill</td>
+      <td><code class="highlighter-rouge">pid_t pid</code></td>
+      <td><code class="highlighter-rouge">int signal</code></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>101</td>
+      <td>ptrace</td>
+      <td><code class="highlighter-rouge">long request</code></td>
+      <td><code class="highlighter-rouge">long pid</code></td>
+      <td><code class="highlighter-rouge">unsigned long data</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Allez voir la <a href="http://blog.rchapman.org/post/36801038863/linux-system-call-table-for-x86-64">liste complète</a>.</p>
+
+<p>Chaque <em>syscall</em> a un identifiant qui est placé dans le registre <code class="highlighter-rouge">RAX</code> et peut avoir jusqu’à 6 paramètres passés par convention dans les registres <code class="highlighter-rouge">RDI</code>, <code class="highlighter-rouge">RSI</code>, <code class="highlighter-rouge">RDX</code>, <code class="highlighter-rouge">RCX</code>, <code class="highlighter-rouge">R8</code>, <code class="highlighter-rouge">R9</code>.</p>
+
+<p><code class="highlighter-rouge">read</code> et <code class="highlighter-rouge">write</code> permettent de lire et d’écrire dans un fichier. Nous aborderons les autres un peu plus tard.</p>
+
+<p>L’exemple suivant est un typique “hello world” qui illustre un appel au  <em>syscall</em> <code class="highlighter-rouge">write</code> :</p>
+
+<div class="language-nasm highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">mov</span>    <span class="kc">$</span><span class="mh">0x1</span><span class="p">,</span><span class="o">%</span><span class="nb">rax</span>
+<span class="nf">mov</span>    <span class="kc">$</span><span class="mh">0x1</span><span class="p">,</span><span class="o">%</span><span class="nb">rdi</span>
+<span class="nf">mov</span>    <span class="kc">$</span><span class="mh">0x4000fe</span><span class="p">,</span><span class="o">%</span><span class="nb">rsi</span>
+<span class="nf">mov</span>    <span class="kc">$</span><span class="mh">0xd</span><span class="p">,</span><span class="o">%</span><span class="nb">rdx</span>
+<span class="nf">syscall</span>
+</code></pre></div></div>
+
+<p>Traduit en français, cela donne : “Appel du syscall <code class="highlighter-rouge">sys_write</code> (RAX=1) pour écrire dans le file descriptor 1 (RDI=1), alias la sortie standard, la chaîne de caractère à l’adresse 0x4000fe (RSI=0x4000fe) de longueur 13 (RDX=0xd). Notez l’instruction <code class="highlighter-rouge">syscall</code> qui est une vraie instruction assembleur x86_64.</p>
+
+<p>Il existe un utilitaire très pratique, <code class="highlighter-rouge">strace</code>, qui permet de tracer tous les <em>syscall</em> effectués par un process. Par exemple pour tracer tous les <em>syscall</em> <code class="highlighter-rouge">write</code> de la commande <code class="highlighter-rouge">echo</code> :</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$strace</span> <span class="nt">-o</span> <span class="s1">'| grep write'</span> <span class="nb">echo</span> <span class="s2">"Hello"</span>
+write<span class="o">(</span>1, <span class="s2">"Hello</span><span class="se">\n</span><span class="s2">"</span>, 6<span class="o">)</span>                  <span class="o">=</span> 6
+</code></pre></div></div>
+
+<ul>
+  <li>On écrit dans le file descriptor 1 (sortie standard),</li>
+  <li>Une chaine de caractère qui contient “Hello\n”</li>
+  <li>On écrit 6 caractères</li>
+  <li><code class="highlighter-rouge">write</code> a bien écrit 6 caractères</li>
+</ul>
+
+<p>Un process prépare les paramètres du <em>syscall</em> dans les registres du CPU et fait exécuter l’instruction <code class="highlighter-rouge">syscall</code> au CPU. Et là magiquement l’exécution du process s’arrête (bloque) et ne reprend que lorsque le <em>syscall</em> a été réalisé.</p>
+
+<p>La tuyauterie permettant cela s’appelle une <em>interruption</em>. Une <em>interruption</em> permet au CPU d’appeler une fonction du kernel. Donc quand le CPU exécute l’instruction <code class="highlighter-rouge">syscall</code>, il redonne la main au noyau qui se débrouille pour mettre en pause le process appelant, exécuter la commande <em>syscall</em> demandée avec les paramètres, et relancer le process.</p>
+
+<h2 id="salut-fiston-cest-papa-">Salut fiston, c’est papa !</h2>
+
+<p>Si vous savez déjà ce qu’est un <code class="highlighter-rouge">fork</code>, vous pouvez sauter cette section.</p>
+
+<p>On peut imaginer qu’un debugger a une certaine emprise sur le process déboggé. Sous Linux, ce genre d’abus de position s’exprime par une relation père fils.</p>
+
+<p>Si vous avez une console à proximité et que vous tapez <code class="highlighter-rouge">pstree</code> vous remarquerez que les process sont organisés hiérarchiquement. La racine commune à tous est <code class="highlighter-rouge">systemd</code> (ou <code class="highlighter-rouge">init</code> sur des systèmes plus anciens) et votre navigateur est une feuille de l’arbre.</p>
+
+<p>Pour créer un process fils, un futur père utilise le syscall <code class="highlighter-rouge">fork</code>. C’est d’ailleurs la seule façon de créer des process. Voici un code typique :</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>   <span class="n">pid_t</span> <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"I am the child"</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"I am the father of %d"</span><span class="p">,</span> <span class="n">child</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">fork</code> procède à une copie presque intégrale du processus appelant (mémoire, registres CPU, …). L’appelant devient le processus père du clone qui est donc son fils.
+Quand <code class="highlighter-rouge">fork</code> rend la main, les 2 processus continuent leurs exécution juste après l’appel à <code class="highlighter-rouge">fork</code>, sur le <code class="highlighter-rouge">if</code>.</p>
+
+<p>Je disais copie <em>presque</em> intégrale car dans le process père, <code class="highlighter-rouge">fork</code> renvoie le PID du fils, et dans le process fils il renvoie 0. Le fils affichera donc “I am the child” et le père “I am the father of 1234”.</p>
+
+<p>En extrapolant, on peut voir le <code class="highlighter-rouge">fork</code> comme une <a href="https://fr.wikipedia.org/wiki/Mitose">mitose</a> cellulaire. Avant la mitose on a 1 cellule et après la mitose on a 2 cellules qui partagent exactement le même ADN (le code).</p>
+
+<h2 id="trace-moi-si-tu-peux">Trace moi si tu peux</h2>
+
+<p>Linux fournit un syscall appelé <code class="highlighter-rouge">ptrace</code> qui permet d’implémenter un débugger.</p>
+
+<p>Daurénavant nous parlerons de <em>tracer</em> (le débugger) et de <em>tracee</em> (le process  à débugger), c’est le vocabulaire employé dans la page de <code class="highlighter-rouge">man</code> de <code class="highlighter-rouge">ptrace</code>.</p>
+
+<p>Le <em>tracee</em> fait appel à la commande <code class="highlighter-rouge">TRACEME</code> pour signaler qu’il souhaite être tracé par son père. Dans ce mode, le process peut être dans deux états possibles. Soit il est actif, dans l’état <code class="highlighter-rouge">RUNNING</code>, soit il est inactif, dans l’état <code class="highlighter-rouge">STOPPED</code>.</p>
+
+<p>En mode <code class="highlighter-rouge">TRACEME</code>, le <em>tracee</em> passe à l’état <code class="highlighter-rouge">STOPPED</code> quand il reçoit <strong><em>n’importe quel signal</em></strong>.</p>
+
+<p>Le <em>tracee</em> passe à l’état <code class="highlighter-rouge">RUNNING</code> quand le père lance la commande <code class="highlighter-rouge">ptrace</code> <code class="highlighter-rouge">CONT</code> (continue).</p>
+
+<p>Le code suivant illustre ce principe :</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">pid_t</span> <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_TRACEME</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">getpid</span><span class="p">();</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"I am about to get STOPPED</span><span class="se">\n</span><span class="s">"</span><span class="p">)</span>
+        <span class="n">kill</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">SIGUSR1</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"I am RUNNING again</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Waiting for the child to stop</span><span class="se">\n</span><span class="s">"</span><span class="p">)</span>
+        <span class="n">waitpid</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"The tracee is stopped</span><span class="se">\n</span><span class="s">"</span><span class="p">)</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_CONT</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="c1">// wait for the child to exit</span>
+        <span class="n">waitpid</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Le <em>tracee</em> récupère son pid avec la fonction <code class="highlighter-rouge">getpid</code> et s’envoie un signal SIGUSR1 via <code class="highlighter-rouge">kill</code>. Notons que <code class="highlighter-rouge">kill</code> est un <em>syscall</em> qui permet d’envoyer des signaux à un process. <code class="highlighter-rouge">kill</code> prend un PID comme premier paramètre. Le second paramètre est le signal à envoyer. On ne peut pas accompager des données supplémentaires à un signal. A la réception de ce signal, le <em>tracee</em> passe à l’état <code class="highlighter-rouge">STOPPED</code> car il est en mode <code class="highlighter-rouge">TRACEME</code>.</p>
+
+<p>Le <em>tracer</em> fait un premier <code class="highlighter-rouge">waitpid</code>. <code class="highlighter-rouge">waitpid</code> permet d’attendre un changement d’état de son processus fils. Ici, il attend que son fils passe à l’état <code class="highlighter-rouge">STOPPED</code>. Notons que <code class="highlighter-rouge">wait</code> est un <em>syscall</em> également.</p>
+
+<p>Une fois que <code class="highlighter-rouge">wait</code> redonne la main, le <em>tracer</em> utilise <code class="highlighter-rouge">PTRACE_CONT</code> pour que le <em>tracee</em> repasse à l’état <code class="highlighter-rouge">RUNNING</code> et continue de s’exécuter.</p>
+
+<p>Le père fait un ultime <code class="highlighter-rouge">wait</code>. C’est un peu hors propos mais cela permet au <em>tracee</em> de terminer proprement son exécution, sans rester à l’état zombie.</p>
+
+<p>Nous venons d’illustrer le mécanisme de signaux et de commandes <code class="highlighter-rouge">ptrace</code> qui permettent de changer l’état (<code class="highlighter-rouge">RUNNING</code> / <code class="highlighter-rouge">STOPPED</code>) du <em>tracee</em>.</p>
+
+<h2 id="traçons">Traçons</h2>
+
+<p>Lorsque le <em>tracee</em> est à l’état <code class="highlighter-rouge">STOPPED</code>, <code class="highlighter-rouge">ptrace</code> fournit au <em>tracer</em> des commandes qui permettent de l’inspecter et de l’exécuter pas à pas.</p>
+
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">PEEKUSER</code> permet d’inspecter les registres du CPU. Les valeurs de registre ne sont pas lues en live depuis le CPU. En fait, quand le kernel stoppe le tracee il enregistre le contexte du processus, dont les registres, afin que ce dernier puisse reprendre son exécution plus tard, comme si de rien n’était. Les valeurs renvoyées par <code class="highlighter-rouge">ptrace</code> sont issues de cet enregistrement.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">PEEKTEXT</code> permet d’examiner la mémoire.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">SINGLESTEP</code> exécute l’instruction pointée par le registre <code class="highlighter-rouge">RIP</code> et repasse
+le <em>tracee</em> à l’état <code class="highlighter-rouge">STOPPED</code>.</p>
+  </li>
+</ul>
+
+<p>Le fonctionnement de ces deux commandes est illustré par le code suivant.
+Il s’agit de compter le nombre d’<a href="https://en.wikipedia.org/wiki/Branch_%28computer_science%29#Examples">embranchement</a> sur lequel est passé le <em>tracee</em>.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">fizzbuzz</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">fizz</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">fizz</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">"Fizz"</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">buzz</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">buzz</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">"Buzz"</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">fizz</span><span class="o">||</span><span class="n">buzz</span><span class="p">))</span> <span class="n">printf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">", "</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">waitchild</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">WIFSTOPPED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d raised an unexpected status %d"</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">trace</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">child</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">instruction</span><span class="p">,</span> <span class="n">opcode1</span><span class="p">,</span> <span class="n">opcode2</span><span class="p">,</span> <span class="n">ip</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">jmps</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">do</span> <span class="p">{</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKUSER</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">RIP</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">instruction</span> <span class="o">=</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKTEXT</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">opcode1</span> <span class="o">=</span> <span class="n">instruction</span> <span class="o">&amp;</span> <span class="mh">0x00000000000000FF</span><span class="p">;</span>
+    <span class="n">opcode2</span> <span class="o">=</span> <span class="p">(</span><span class="n">instruction</span> <span class="o">&amp;</span> <span class="mh">0x000000000000FF00</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">((</span><span class="n">opcode1</span> <span class="o">&gt;=</span> <span class="mh">0x70</span> <span class="o">&amp;&amp;</span> <span class="n">opcode1</span> <span class="o">&lt;=</span> <span class="mh">0x7F</span><span class="p">)</span> <span class="o">||</span>
+       <span class="p">(</span><span class="n">opcode1</span> <span class="o">==</span> <span class="mh">0x0F</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">opcode2</span> <span class="o">&gt;=</span> <span class="mh">0x83</span> <span class="o">&amp;&amp;</span> <span class="n">opcode2</span> <span class="o">&lt;=</span> <span class="mh">0x87</span><span class="p">)))</span> <span class="p">{</span>
+         <span class="n">jmps</span> <span class="o">=</span> <span class="n">jmps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_SINGLESTEP</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">=&gt; There are %lu jumps</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">jmps</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">instruction</span><span class="p">;</span>
+    <span class="n">pid_t</span> <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_TRACEME</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">getpid</span><span class="p">();</span>
+        <span class="n">kill</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">SIGUSR1</span><span class="p">);</span>
+        <span class="n">fizzbuzz</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// wait for the child to stop</span>
+        <span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+        <span class="n">trace</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Le fichier <a href="https://gist.github.com/jprudent/437338b32a54bc37d232f5430ee42f87">source complet</a>.</p>
+
+<p>A l’exécution on a :</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FizzBuzz, 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, Fizz, 22, 23, Fizz, Buzz, 26, Fizz, 28, 29, FizzBuzz, 31, 32, Fizz, 34, Buzz, Fizz, 37, 38, Fizz, Buzz, 41, Fizz, 43, 44, FizzBuzz, 46, 47, Fizz, 49, Buzz, Fizz, 52, 53, Fizz, Buzz, 56, Fizz, 58, 59, FizzBuzz, 61, 62, Fizz, 64, Buzz, Fizz, 67, 68, Fizz, Buzz, 71, Fizz, 73, 74, FizzBuzz, 76, 77, Fizz, 79, Buzz, Fizz, 82, 83, Fizz, Buzz, 86, Fizz, 88, 89, FizzBuzz, 91, 92, Fizz, 94, Buzz, Fizz, 97, 98, Fizz,
+=&gt; There are 23037 jumps
+</code></pre></div></div>
+
+<p>Plusieurs exécutions du programme retournent toujours le même nombre, ce qui est assez rassurant.</p>
+
+<p>Détaillons le programme :</p>
+
+<p>La fonction <code class="highlighter-rouge">main</code> reprend le même schéma que les exemples précédents :</p>
+
+<ol>
+  <li>
+    <p><code class="highlighter-rouge">fork</code> du process</p>
+  </li>
+  <li>
+    <p>le <em>tracee</em> se met en mode <code class="highlighter-rouge">TRACEME</code> et passe à l’état <code class="highlighter-rouge">STOPPED</code> en s’envoyant n’importe quel signal, puis exécutera <code class="highlighter-rouge">fizzbuzz</code> quand il passera à l’état <code class="highlighter-rouge">RUNNING</code>.</p>
+  </li>
+  <li>
+    <p>Le <em>tracer</em> attend que le <em>tracee</em> passe à l’état <code class="highlighter-rouge">STOPPED</code> puis exécute <code class="highlighter-rouge">trace</code></p>
+  </li>
+</ol>
+
+<p><code class="highlighter-rouge">fizzbuzz</code> est une simple fonction qui implémente le célèbre <a href="https://en.wikipedia.org/wiki/Fizz_buzz">FizzBuzz</a>. C’est cette fonction qui sera auditée par le <em>tracer</em>.</p>
+
+<p><code class="highlighter-rouge">waitchild</code> encapsule un appel à <code class="highlighter-rouge">waitpid</code>. Si le <em>tracee</em> passe à l’état <code class="highlighter-rouge">STOPPED</code>, elle renvoie 0. Et si le <em>tracee</em> passe à l’état <code class="highlighter-rouge">TERMINATED</code>, elle renvoie 1.</p>
+
+<p><code class="highlighter-rouge">trace</code> est une boucle dont la condition d’arrêt est le <em>tracee</em> qui passe à l’état <code class="highlighter-rouge">TERMINATED</code>. Dans cette boucle, le <em>tracer</em> :</p>
+
+<ol>
+  <li>
+    <p>Utilise la commande <code class="highlighter-rouge">PEEKUSER</code> afin de récupérer l’adresse de l’instruction courante stockée dans le registre <code class="highlighter-rouge">RIP</code>. <code class="highlighter-rouge">PEEKUSER</code> permet d’inspecter les registres du CPU.</p>
+  </li>
+  <li>
+    <p>Lit en mémoire, à l’adresse stockée dans <code class="highlighter-rouge">RIP</code>, l’instruction sur laquelle le <em>tracee</em> est arrêté, via la commande <code class="highlighter-rouge">PEEKTEXT</code>.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">PEEKTEXT</code> écrit les octets en mémoire dans un <code class="highlighter-rouge">long</code> de 8 octets. Notons que l’archi x86 est en <a href="https://en.wikipedia.org/wiki/Endianness">little endian</a>, cela signifie que l’octet à l’adresse pointée par <code class="highlighter-rouge">RIP</code> est récupéré dans l’octet de poids de plus faible du <code class="highlighter-rouge">long</code>. D’où les calculs binaires pour récupérer les deux premiers octets pointés par <code class="highlighter-rouge">RIP</code>.</p>
+  </li>
+  <li>
+    <p>On vérifie si l’instruction correspond à une instruction de <a href="https://en.wikipedia.org/wiki/X86_instruction_listings#Original_8086.2F8088_instructions">saut conditionnel</a> (instructions Jcc), auquel cas, on incrémente la variable <code class="highlighter-rouge">jmps</code>.</p>
+  </li>
+  <li>
+    <p>On exécute la commande <code class="highlighter-rouge">SINGLESTEP</code> qui exécute <strong><em>une seule</em></strong> instruction du <em>tracee</em> et lui envoie un signal <code class="highlighter-rouge">SIGTRAP</code> pour qu’il passe immédiatement à l’état <code class="highlighter-rouge">STOPPED</code>.</p>
+  </li>
+  <li>
+    <p>Après l’exécution de la boucle, on affiche le résultat.</p>
+  </li>
+</ol>
+
+<p><em>23000</em> sauts conditionnels est assez hallucinant, cela en fait 2300 par itération. <code class="highlighter-rouge">fizzbuzz</code> est assez simple, mais je pense que <code class="highlighter-rouge">printf</code> doit être assez compliqué et faire monter l’addition.</p>
+
+<h2 id="tracer-nimporte-quoi">Tracer n’importe quoi</h2>
+
+<p>Jusqu’ici, le <em>tracee</em> était un process bien connu, que nous avions codé nous même. Ce que nous aimerions, c’est tracer n’importe quel programme.</p>
+
+<p>Le <em>syscall</em> <code class="highlighter-rouge">excecve</code> permet de remplacer l’image du process appelant par un autre. A l’issu du <em>syscall</em> <code class="highlighter-rouge">execve</code>, le process n’a plus rien à voir avec le code d’origine, il est complètement remplacé par le programme passé à <code class="highlighter-rouge">execve</code>. D’ailleurs, il n’y a aucun moyen de récupérer le résultat d’<code class="highlighter-rouge">execve</code>.</p>
+
+<p><code class="highlighter-rouge">execve</code> a 3 paramètres :</p>
+<ul>
+  <li>le chemin du programme</li>
+  <li>les arguments à passer au programme</li>
+  <li>les variables d’environnement à passer au programme</li>
+</ul>
+
+<p>Une subtilité d’<code class="highlighter-rouge">execve</code> intéressante dans notre cas, est qu’un signal <code class="highlighter-rouge">SIGTRAP</code> est automatiquement envoyé après l’exécution d’<code class="highlighter-rouge">execve</code> si le process est en mode <code class="highlighter-rouge">TRACEME</code>. Ce qui siginifie que l’on peut se passer d’envoyer manuellement un signal dans le <em>tracee</em>. Lorsque <code class="highlighter-rouge">waitpid</code> donne la main au <em>tracer</em>, l’image du <em>tracee</em> a été remplacée par celle du programme passé en paramètre d’<code class="highlighter-rouge">execve</code>.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">waitchild</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">WIFSTOPPED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d raised an unexpected status %d"</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">trace</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">child</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">instruction</span><span class="p">,</span> <span class="n">opcode1</span><span class="p">,</span> <span class="n">opcode2</span><span class="p">,</span> <span class="n">ip</span><span class="p">;</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">jmps</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">do</span> <span class="p">{</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKUSER</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">RIP</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">instruction</span> <span class="o">=</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKTEXT</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">opcode1</span> <span class="o">=</span> <span class="n">instruction</span> <span class="o">&amp;</span> <span class="mh">0x00000000000000FF</span><span class="p">;</span>
+    <span class="n">opcode2</span> <span class="o">=</span> <span class="p">(</span><span class="n">instruction</span> <span class="o">&amp;</span> <span class="mh">0x000000000000FF00</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">((</span><span class="n">opcode1</span> <span class="o">&gt;=</span> <span class="mh">0x70</span> <span class="o">&amp;&amp;</span> <span class="n">opcode1</span> <span class="o">&lt;=</span> <span class="mh">0x7F</span><span class="p">)</span> <span class="o">||</span>
+       <span class="p">(</span><span class="n">opcode1</span> <span class="o">==</span> <span class="mh">0x0F</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">opcode2</span> <span class="o">&gt;=</span> <span class="mh">0x83</span> <span class="o">&amp;&amp;</span> <span class="n">opcode2</span> <span class="o">&lt;=</span> <span class="mh">0x87</span><span class="p">)))</span> <span class="p">{</span>
+         <span class="n">jmps</span> <span class="o">=</span> <span class="n">jmps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_SINGLESTEP</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">=&gt; There are %lu jumps</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">jmps</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">long</span> <span class="n">instruction</span><span class="p">;</span>
+    <span class="n">pid_t</span> <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_TRACEME</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">execve</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">argv</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// wait for the child to stop</span>
+        <span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+        <span class="n">trace</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Le <a href="https://gist.github.com/jprudent/bdcafa9622784c72cf95839a0fcf55f7">source complet</a>.</p>
+
+<p><code class="highlighter-rouge">waitpid</code> et <code class="highlighter-rouge">trace</code> n’ont pas été modifiés, <code class="highlighter-rouge">fizzbuzz</code> a été supprimé.</p>
+
+<p><code class="highlighter-rouge">main</code> a subi quelques altérations :</p>
+
+<ol>
+  <li>
+    <p>Le <em>tracee</em> s’attend à ce que soient passés le chemin du programme à tracer dans <code class="highlighter-rouge">argv[1]</code> et les arguments du programme à tracer dans <code class="highlighter-rouge">argv[2]</code>, <code class="highlighter-rouge">argv[3]</code>, etc.</p>
+  </li>
+  <li>
+    <p>Le <em>tracee</em> ne s’envoie plus de signal lui-même pour passer à l’état <code class="highlighter-rouge">STOPPED</code></p>
+  </li>
+  <li>
+    <p>Le <em>tracee</em> appel <code class="highlighter-rouge">execve</code> qui envoie un signal <code class="highlighter-rouge">SIGTRAP</code> implicitement.</p>
+  </li>
+</ol>
+
+<p>Le code du <em>tracer</em> n’a absolument pas changé.</p>
+
+<p>A l’exécution, cela donne :</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./ptrace_ex4 /usr/bin/ls /      
+bin   dev  home  lib64	     media  opt   root	sbin  sys  usr
+boot  etc  lib	 lost+found  mnt    proc  run	srv   tmp  var
+<span class="o">=&gt;</span> There are 44633 jumps
+</code></pre></div></div>
+<h2 id="breakpoints">Breakpoints</h2>
+
+<p>Jusqu’ici, le <em>tracer</em> se contente de faire quelques calculs préprogrammés. L’une des fonctionnalités attendue d’un débugger est de pouvoir poser des points d’arrêt à une adresse particulière.</p>
+
+<p>La théorie est simple : il faut que le <em>tracee</em> passe à l’état <code class="highlighter-rouge">STOPPED</code> au moment où il exécute l’instruction à l’adresse choisie.</p>
+
+<p>La pratique ressemble à un gros hack. Le <em>tracer</em> <strong><em>modifie</em></strong> le code du <em>tracee</em> pour qu’à l’adresse du breakpoint le <em>tracee</em> reçoive un signal qui le mette à l’état <code class="highlighter-rouge">STOPPED</code>.</p>
+
+<p>Rappelez vous, la plus petite instruction assembleur peut faire un seul octet. Il faut donc que le code qui déclenche le signal fasse 1 octet afin de ne pas modifier plusieurs instructions.</p>
+
+<p><code class="highlighter-rouge">int 3</code> a pour opcode 0xCC et lève une <em>interruption</em> spécialement cablée dans le kernel pour envoyer un signal <code class="highlighter-rouge">SIGTRAP</code> à qui la lève.</p>
+
+<p>Pour écrire dans la mémoire du <em>tracee</em>, <code class="highlighter-rouge">ptrace</code> fournit la commande <code class="highlighter-rouge">POKETEXT</code>. Nous verrons aussi la commande <code class="highlighter-rouge">POKEUSER</code> qui permet d’écrire dans un registre du CPU.</p>
+
+<p>Voici à quoi ressemble une implémentation de breakpoint.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">waitchild</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">WIFSTOPPED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d raised an unexpected status %d"</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="nf">to_ulong</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">strtol</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">16</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="nf">readMemoryAt</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKTEXT</span><span class="p">,</span> <span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">writeMemoryAt</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">instruction</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_POKETEXT</span><span class="p">,</span> <span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">instruction</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="nf">readRegister</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">int</span> <span class="n">reg</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKUSER</span><span class="p">,</span> <span class="n">tracee</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">reg</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">writeRegister</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">int</span> <span class="n">reg</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_POKEUSER</span><span class="p">,</span> <span class="n">tracee</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">reg</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="nf">setbp</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">original</span> <span class="o">=</span> <span class="n">readMemoryAt</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">);</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">int3</span> <span class="o">=</span> <span class="p">(</span><span class="n">original</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFFFFFFFFFF00</span><span class="p">)</span> <span class="o">|</span> <span class="mh">0x00000000000000CC</span><span class="p">;</span>
+    <span class="n">writeMemoryAt</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">int3</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"Set breakpoint at %lx, new instruction is %lx instead of %lx</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+          <span class="n">address</span><span class="p">,</span> <span class="n">readMemoryAt</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">),</span> <span class="n">original</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">original</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">removebp</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">original</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">previously</span> <span class="o">=</span> <span class="n">readMemoryAt</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">);</span>
+  <span class="n">writeMemoryAt</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">original</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"Unset breakpoint at %lx, new instruction is %lx, instead of %lx</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+       <span class="n">address</span><span class="p">,</span> <span class="n">readMemoryAt</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">address</span><span class="p">),</span> <span class="n">previously</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">showregisters</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"RIP = %lx</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+        <span class="n">readRegister</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">RIP</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">setIp</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">address</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">writeRegister</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">RIP</span><span class="p">,</span> <span class="n">address</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">presskey</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">getchar</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">setbuf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">bpAddress</span> <span class="o">=</span> <span class="n">to_ulong</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">pid_t</span> <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_TRACEME</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">execve</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">argv</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// wait for the child to stop</span>
+        <span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+
+        <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">originalInstruction</span> <span class="o">=</span> <span class="n">setbp</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">bpAddress</span><span class="p">);</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_CONT</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+        <span class="k">while</span><span class="p">(</span><span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">printf</span><span class="p">(</span><span class="s">"Breakpoint hit !</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+          <span class="n">showregisters</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+          <span class="n">presskey</span><span class="p">();</span>
+
+          <span class="n">removebp</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">bpAddress</span><span class="p">,</span> <span class="n">originalInstruction</span><span class="p">);</span>
+          <span class="n">setIp</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">bpAddress</span><span class="p">);</span>
+
+          <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_SINGLESTEP</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+          <span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+
+          <span class="n">setbp</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">bpAddress</span><span class="p">);</span>
+
+          <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_CONT</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>Le <a href="https://gist.github.com/jprudent/f3965b5e9a658d5088c090a9f0aab2b2">source complet</a></p>
+
+<p>Woh! Ca commence à être gros ! Décortiquons tout ça.</p>
+
+<p><code class="highlighter-rouge">main</code> suis le même pattern que d’habitude: <code class="highlighter-rouge">fork</code>, et <code class="highlighter-rouge">TRACEME</code>, <code class="highlighter-rouge">execve</code> pour le <em>tracee</em>. En revanche le code du <em>tracer</em> a pas mal changé :</p>
+<ul>
+  <li>Comme d’habitude, <code class="highlighter-rouge">waitchild</code> attend que le <em>tracee</em> passe à l’état <code class="highlighter-rouge">STOPPED</code>.</li>
+  <li><code class="highlighter-rouge">setbp</code> pose le point d’arrêt à l’adresse demandée. Concrêtement, il s’agit d’utiliser la commande <code class="highlighter-rouge">POKETEXT</code> pour écrire l’opcode 0xCC (<code class="highlighter-rouge">int 3</code>) à l’adresse mémoire du breakpoint. <code class="highlighter-rouge">setbp</code> retourne l’instruction originale (très important!).</li>
+  <li>La commande <code class="highlighter-rouge">CONT</code> permet de continuer l’exécution du <em>tracee</em> jusqu’à ce qu’il exécute cette fameuse <code class="highlighter-rouge">int 3</code> et passe à l’état <code class="highlighter-rouge">STOPPED</code></li>
+  <li>La boucle <code class="highlighter-rouge">while</code> termine quand le <em>tracee</em> passe à l’état <code class="highlighter-rouge">TERMINATED</code></li>
+  <li>Si on est rentré dans la boucle, cela signifie que l’instruction <code class="highlighter-rouge">int 3</code> correspondant au breakpoint a été exécutée.</li>
+  <li>On affiche quelques registres et on bloque tant que l’utilisateur n’a pas pressé Ctrl+D au clavier pour lui laisser le temps de lire.</li>
+  <li>A ce moment le registre <em>RIP</em> vaut <code class="highlighter-rouge">bpAddress + 1</code>, car on a exécuté <code class="highlighter-rouge">int 3</code> qui fait un octet. Si on laisse filer le <em>tracee</em> il n’exécutera jamais l’instruction qui était prévue à l’adresse <code class="highlighter-rouge">bpAddress</code>. De plus, <code class="highlighter-rouge">bpAddress + 1</code> contient certainement une instruction inintelligible.</li>
+  <li>Donc le <em>tracer</em> remet l’instruction originale à l’adresse <code class="highlighter-rouge">bpAddress</code> via <code class="highlighter-rouge">POKETEXT</code>.</li>
+  <li>Puis le <em>tracer</em> <strong><em>rembobine</em></strong> le fil d’exécution du <em>tracee</em> en mettant le registre <em>RIP</em> à <code class="highlighter-rouge">bpAddress</code> pour qu’il pointe sur l’instruction prévue. Pour cela, on utilise la commande <code class="highlighter-rouge">POKEUSER</code> pour affecter une valeur à un registre du CPU.</li>
+  <li>Avec la commande <code class="highlighter-rouge">SINGLESTEP</code>, le <em>tracer</em> commande au <em>tracee</em> d’exécuter l’instruction à <code class="highlighter-rouge">bpAddress</code>, la fameuse instruction qui avait été zappée au profit de <code class="highlighter-rouge">int 3</code>.</li>
+  <li>Enfin, le <em>tracer</em> <strong><em>repose le breakpoint</em></strong> et laisse filer le <em>tracee</em> jusqu’à ce que ce dernier passe à <code class="highlighter-rouge">TERMINATED</code> ou à <code class="highlighter-rouge">STOPPED</code> (s’il réexécute <code class="highlighter-rouge">int 3</code> à l’adresse <code class="highlighter-rouge">bpAddress</code>)</li>
+</ul>
+
+<p>Testons ce nouveau <em>tracer</em> sur le programme <code class="highlighter-rouge">fizzbuzz</code> suivant :</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">fizzbuzz</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">fizz</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">fizz</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">"Fizz"</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">buzz</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">buzz</span><span class="p">)</span> <span class="n">printf</span><span class="p">(</span><span class="s">"Buzz"</span><span class="p">);</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">fizz</span><span class="o">||</span><span class="n">buzz</span><span class="p">))</span> <span class="n">printf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">", "</span><span class="p">);</span>
+        <span class="n">fflush</span><span class="p">(</span><span class="n">stdout</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">fizzbuzz</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>On peut décompiler le programme et chercher la fonction <code class="highlighter-rouge">fizzbuzz</code> :</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ objdump -d fizzbuzz | grep -A200 '&lt;fizzbuzz&gt;:' | less
+
+0000000000400576 &lt;fizzbuzz&gt;:
+  400576:	55                   	push   %rbp
+  400577:	48 89 e5             	mov    %rsp,%rbp
+  40057a:	48 83 ec 10          	sub    $0x10,%rsp
+  40057e:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%rbp)
+  400585:	e9 c3 00 00 00       	jmpq   40064d &lt;fizzbuzz+0xd7&gt;
+  40058a:	...
+  ... BLA BLA FIZZ BUZZ BLA BLA ...
+  400649:	83 45 fc 01          	addl   $0x1,-0x4(%rbp)
+  40064d:	83 7d fc 63          	cmpl   $0x63,-0x4(%rbp)
+  400651:	0f 8e 33 ff ff ff    	jle    40058a &lt;fizzbuzz+0x14&gt;
+  400657:	90                   	nop
+  400658:	c9                   	leaveq
+  400659:	c3                   	retq   
+</code></pre></div></div>
+
+<p>La fonction <code class="highlighter-rouge">fizzbuzz</code> est mappée en mémoire à l’adresse 0x4004e6.</p>
+
+<p>On reconnait notre boucle :</p>
+
+<ol>
+  <li>
+    <p>en 0x40057e la variable <code class="highlighter-rouge">i</code> est initialisée à 0</p>
+  </li>
+  <li>
+    <p>en 0x400585 on saute en 0x40064d</p>
+  </li>
+  <li>
+    <p>en 0x40064d on compare <code class="highlighter-rouge">i</code> à 99</p>
+  </li>
+  <li>
+    <p>en 0x400651 si <code class="highlighter-rouge">i</code> &lt;= 99 on entre dans la boucle en 0x40058a, sinon la fonction se termine</p>
+  </li>
+  <li>
+    <p>en 0x400649 qui est la dernière instruction de la boucle, <code class="highlighter-rouge">i</code> est incrémenté et retour en 4)</p>
+  </li>
+</ol>
+
+<p>Lançons <code class="highlighter-rouge">fizzbuzz</code> avec un point d’arrêt sur l’adresse 0x400651 :</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./ptrace_ex5 400651 ./fizzbuzz
+Set breakpoint at 400651, new instruction is c990ffffff338ecc instead of c990ffffff338e0f
+Breakpoint hit !
+RIP = 400652
+
+Unset breakpoint at 400651, new instruction is c990ffffff338e0f, instead of c990ffffff338ecc
+Set breakpoint at 400651, new instruction is c990ffffff338ecc instead of c990ffffff338e0f
+FizzBuzz, Breakpoint hit ! // On a passé la première itération
+RIP = 400652
+
+Unset breakpoint at 400651, new instruction is c990ffffff338e0f, instead of c990ffffff338ecc
+Set breakpoint at 400651, new instruction is c990ffffff338ecc instead of c990ffffff338e0f
+1, Breakpoint hit ! // 2ème itération
+RIP = 400652
+
+...
+</code></pre></div></div>
+
+<p>Après avoir pressé 100 fois la touche entrée, le <em>tracer</em> et le <em>tracee</em> terminent leur exécution sans problème. Ouf!</p>
+
+<p>Cette implémentation des breakpoints est assez extraordinaire je trouve. Elle a l’avantage de ne pas ralentir le <em>tracee</em> en dehors des moments où il est à l’état <code class="highlighter-rouge">STOPPED</code>.</p>
+
+<p>Il ne devrait pas être compliqué d’implémenter des breakpoints conditionnels. Je vous laisse faire ça chez vous tranquillement.</p>
+
+<h2 id="breakpoints-sans-modifier-le-tracee">Breakpoints sans modifier le <em>tracee</em></h2>
+
+<p>Il est possible d’implémenter les breakpoints sans devoir modifier le code du <em>tracee</em>.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">waitchild</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">pid</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">waitpid</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">status</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">WIFSTOPPED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%d raised an unexpected status %d"</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="nf">to_ulong</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">strtol</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">16</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="nf">readRegister</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">,</span> <span class="kt">int</span> <span class="n">reg</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_PEEKUSER</span><span class="p">,</span> <span class="n">tracee</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">reg</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">showregisters</span><span class="p">(</span><span class="n">pid_t</span> <span class="n">tracee</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">"RIP = %lx</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+        <span class="n">readRegister</span><span class="p">(</span><span class="n">tracee</span><span class="p">,</span> <span class="n">RIP</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">presskey</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">getchar</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">bpAddress</span> <span class="o">=</span> <span class="n">to_ulong</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="n">pid_t</span> <span class="n">child</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
+    <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">rip</span><span class="p">;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">child</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_TRACEME</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">execve</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">argv</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// wait for the child to stop</span>
+        <span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+        <span class="k">do</span> <span class="p">{</span>
+          <span class="n">rip</span> <span class="o">=</span> <span class="n">readRegister</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">RIP</span><span class="p">);</span>
+          <span class="k">if</span><span class="p">(</span><span class="n">rip</span> <span class="o">==</span> <span class="n">bpAddress</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">showregisters</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+            <span class="n">presskey</span><span class="p">();</span>
+          <span class="p">}</span>
+          <span class="n">ptrace</span><span class="p">(</span><span class="n">PTRACE_SINGLESTEP</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">waitchild</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Le <a href="https://gist.github.com/jprudent/05d3a2d2ed26e9d1b12a2770ebcdb5f3">source complet</a>.</p>
+
+<p>Seul le code du <em>tracer</em> a changé. L’idée est de dérouler le <em>tracee</em> uniquement en pas à pas et de s’arrêter quand <em>RIP</em> vaut l’adresse du breakpoint.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ./ptrace_ex6 400651 ./fizzbuzz
+ RIP = 400651
+ FizzBuzz, RIP = 400651
+ 1, RIP = 400651
+ 2, RIP = 400651
+
+ ...
+</code></pre></div></div>
+
+<p>C’est extrêmement simple comparé à l’autre implémentation mais cela ralentit beaucoup trop le <em>tracee</em>. En effet, pour chaque instruction exécutée il faut faire 2 <em>syscall</em>:</p>
+
+<ol>
+  <li>
+    <p><code class="highlighter-rouge">ptrace</code> <code class="highlighter-rouge">SINGLESTEP</code> qui fait passer le <em>tracee</em> de l’état <code class="highlighter-rouge">STOPPED</code>
+à l’état <code class="highlighter-rouge">RUNNING</code> à l’état <code class="highlighter-rouge">STOPPED</code></p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">wait</code> pour attendre que le <em>tracee</em> soit à l’état <code class="highlighter-rouge">STOPPED</code></p>
+  </li>
+</ol>
+
+<p>Sachant, comme nous l’avons vu, qu’un <em>syscall</em> passe par une interruption pour redonner la main au kernel, cette méthode ne fonctionne en pratique que sur des petits programmes comme <code class="highlighter-rouge">fizzbuzz</code>.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>C’était un bonne aventure ! Avant de m’y intéresser, un débugger était un outil magique aux mécanismes impalpables.</p>
+
+<p>Je connais désormais les rouages d’un débugger sous Linux. Je pense que pour OSX, on doit avoir quelque chose de très similaire.</p>
+
+<p>Ecrire cet article me permet de mieux comprendre la <a href="https://www.gnu.org/software/gdb/documentation/">documentation de GDB</a>.</p>
+
+<p>Aussi, j’ai une bien meilleur cartographie des intéractions entre un process et le noyau. Je comprends beaucoup mieux pourquoi on dit qu’un process bloque quand on fait de l’I/O, et j’en comprends le mécanisme.</p>
+
+<p>Malgré le fait que ce ne soit pas vraiment mon domaine de compétence, j’ai de plus en plus envie de faire de la programmation système. Le langage <a href="https://doc.rust-lang.org/book/">Rust</a> commence sérieusement à me faire de l’oeil.</p>
+
+<h2 id="aller-plus-loin">Aller plus loin</h2>
+
+<p>Il y a deux commandes <code class="highlighter-rouge">ptrace</code> que je n’ai pas présenté :</p>
+
+<ul>
+  <li><code class="highlighter-rouge">ATTACH</code> permet de débugger un process existant, donc sans utiliser le mécanisme de <code class="highlighter-rouge">fork</code></li>
+  <li><code class="highlighter-rouge">SYSCALL</code> arrête le <em>tracee</em> à chaque <em>syscall</em>. Cela permet d’implémenter la commande <code class="highlighter-rouge">strace</code>.</li>
+</ul>
+
+<p>Il existe aussi une troisième façon de poser des breakpoints: <em>hard breakpoints</em>. Ce mécanisme est implémenté directement au niveau du CPU via des registres dédiés.</p>
+
+<h2 id="références">Références</h2>
+
+<p>Cet article n’est pas tout à fait original. Ces quelques sources m’ont accompagnées. Si le sujet vous a intéressé, je vous en conseille vivement la lecture.</p>
+
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">man 2 ptrace</code></p>
+  </li>
+  <li>
+    <p>Playing with ptrace <a href="http://www.linuxjournal.com/article/6100">Part I</a>, <a href="http://www.linuxjournal.com/article/6210">Part II</a></p>
+  </li>
+  <li>
+    <p>Nice <a href="https://mikecvet.wordpress.com/2010/08/14/ptrace-tutorial/]">ptrace tutorial</a></p>
+  </li>
+  <li>
+    <p>Why <a href="http://lwn.net/Articles/371501/">ptrace is aweful</a> ?</p>
+  </li>
+  <li>
+    <p>How debuggers work <a href="http://eli.thegreenplace.net/2011/01/23/how-debuggers-work-part-1">part1</a>,   <a href="http://eli.thegreenplace.net/2011/01/27/how-debuggers-work-part-2-breakpoints">part2</a>,   <a href="http://eli.thegreenplace.net/2011/02/07/how-debuggers-work-part-3-debugging-information">part3</a>. En plus l’auteur a mis des références en bas de ses articles, ce que j’apprécie beaucoup ;)</p>
+  </li>
+  <li>
+    <p>Explication sur l’implémentation des <a href="https://www.kernel.org/doc/ols/2009/ols2009-pages-149-158.pdf">hardware breakpoints</a></p>
+  </li>
+  <li>
+    <p>Un autre article sur <a href="http://www.alexonlinux.com/how-debugger-works">le fonctionnement d’un debugger</a></p>
+  </li>
+  <li>
+    <p><a href="http://mainisusuallyafunction.blogspot.fr/2011/01/implementing-breakpoints-on-x86-linux.html">Implémentation d’un breakpoint</a></p>
+  </li>
+</ul>
+:ET

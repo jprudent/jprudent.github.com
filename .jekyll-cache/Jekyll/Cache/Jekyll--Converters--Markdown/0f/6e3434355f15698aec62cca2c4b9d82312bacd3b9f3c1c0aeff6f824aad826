@@ -1,0 +1,430 @@
+I"��<h1 id="agents-java---partie-1">Agents Java - Partie 1</h1>
+
+<div id="toc-js">
+</div>
+
+<h2 id="mise-en-situation-fictive">Mise en situation fictive</h2>
+
+<p>Vous exercez une activité lucrative très réglementée et le gouvernement vous impose de lui communiquer
+certaines informations.</p>
+
+<p>Concrêtement, le gouvernement fournit une classe Logger compilée (.class).
+Vous devez appeler ce Logger de temps en temps.</p>
+
+<p>La société <em>SSII Corp</em> a développé le Logger.
+Malheureusement, cette classe est buggée.
+Vous ne pouvez pas l’utiliser sur votre environnement Linux car le logger 
+utilise un chemin codé en dur de type Windows.</p>
+
+<p>Admettons que toute votre activité se résume à cette simple classe Java:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java">	
+	<span class="kn">package</span> <span class="nn">fr.arolla</span><span class="o">;</span>
+	
+	<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+	<span class="kn">import</span> <span class="nn">java.util.HashMap</span><span class="o">;</span>
+	<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
+	
+	<span class="kn">import</span> <span class="nn">fr.gouv.france.Logger</span><span class="o">;</span>
+	
+	<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Foo</span> <span class="o">{</span>
+	
+	<span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+			
+			<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Je fais des affaires sur internet"</span><span class="o">);</span>
+      
+			<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Je transmets des informations au gouvernement"</span><span class="o">);</span>
+			<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">infos</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span><span class="nc">Object</span><span class="o">&gt;();</span>
+			<span class="n">infos</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"cafe"</span><span class="o">,</span> <span class="mh">0xCAFE</span><span class="o">);</span>
+			<span class="n">infos</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"babe"</span><span class="o">,</span> <span class="mh">0xBABE</span><span class="o">);</span>
+			<span class="k">new</span> <span class="nf">Logger</span><span class="o">().</span><span class="na">log</span><span class="o">(</span><span class="n">infos</span><span class="o">);</span>
+			<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Informations transmises au gouvernement"</span><span class="o">);</span>
+			
+			<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Fin des affaires"</span><span class="o">);</span>
+			
+		<span class="o">}</span>
+	
+	<span class="o">}</span>
+	</code></pre></figure>
+
+<p>Ce programme produit sur la console :</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Je fais des affaires sur internet
+Je transmets des informations au gouvernement
+Exception in thread "main" java.io.FileNotFoundException: C:/Windows/USers/SSIICorp/Mes documenst/pariLogger.log (No such file or directory)
+	at java.io.FileOutputStream.open(Native Method)
+	at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:212)
+	at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:136)
+	at java.io.FileWriter.&lt;init&gt;(FileWriter.java:78)
+	at fr.gouv.france.Logger.log(Logger.java:13)
+	at fr.arolla.Foo.main(Foo.java:19)
+</code></pre></div></div>
+
+<p>C’est embêtant! Vous n’avez pas le code source et vous ne savez pas vraiment ce que fait cette grosse boîte noire. 
+De plus, il est imposé d’utiliser cette classe sans l’altérer. Comment faire ?
+… on va bricoler en instrumentant le Logger avec un agent java</p>
+
+<p>Certains bouts de code sont écrits en Scala car Java c’est vintage mais pas très rock n’roll.</p>
+
+<p>Si vous voulez, vous pouvez cloner le code <a href="https://github.com/jprudent/java-agent.git">ici</a></p>
+
+<p>Si vous voulez vous lancer dans les travaux pratiques, munissez vous de :</p>
+<ul>
+  <li><a href="https://github.com/harrah/xsbt">SBT</a></li>
+  <li><a href="http://www.scala-lang.org/downloads/">Scala</a></li>
+  <li>JDK (of course)</li>
+</ul>
+
+<h2 id="le-package-javalanginstrument">Le package java.lang.instrument</h2>
+
+<p>Ce package mal connu existe depuis la version 5 de java. Que nous dit la <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html#package_description" title="javadoc">dernière javadoc</a> ?</p>
+
+<blockquote>
+  <p>Provides services that allow Java programming language agents to instrument programs running on the JVM. The mechanism for instrumentation is modification of the byte-codes of methods.</p>
+</blockquote>
+
+<p>Cool ! C’est pile ce qui fallait et c’est ce qu’on va utiliser.</p>
+
+<h2 id="création-dun-agent-en-3-étapes">Création d’un agent en 3 étapes</h2>
+
+<h3 id="1-ecrire-lagent">1. Ecrire l’agent</h3>
+<p>Tout d’abord, il faut un agent. Un agent est une simple classe qui “implémente” :</p>
+
+<ul>
+  <li>soit <code class="highlighter-rouge">public static void premain(String agentArgs, Instrumentation inst)</code></li>
+  <li>soit <code class="highlighter-rouge">public static void premain(String agentArgs)</code></li>
+</ul>
+
+<p>Concrêtement voici à quoi ressemble un agent simplissime :</p>
+
+<figure class="highlight"><pre><code class="language-scala" data-lang="scala">	
+	<span class="k">package</span> <span class="nn">fr.arolla</span>
+	
+	<span class="k">object</span> <span class="nc">SimpleAgent</span> <span class="o">{</span>
+	  <span class="k">def</span> <span class="nf">premain</span><span class="o">(</span><span class="n">agentArgs</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="o">{</span>
+	    <span class="nf">println</span><span class="o">(</span><span class="s">"Un simple agent appelé avec les arguments "</span> <span class="o">+</span> <span class="n">agentArgs</span><span class="o">)</span>
+	  <span class="o">}</span>
+	<span class="o">}</span>
+	</code></pre></figure>
+
+<p>Un agent est une classe normale, sa seule spécificité est d’implémenter la méthode static <code class="highlighter-rouge">premain</code>.</p>
+
+<p>D’après la javadoc, cette classe est chargée par le même classloader que les autres classes. Les mêmes contraintes de sécurité (policy) s’y appliquent donc.</p>
+
+<h3 id="2-packaging">2. Packaging</h3>
+<p>L’agent doit obligatoirement être packagé dans un jar. A ma connaissance, il n’existe aucun moyen d’attacher un agent sous la forme d’un simple .class.</p>
+
+<p>Le manifest du jar doit contenir un attribut <code class="highlighter-rouge">Premain-Class</code> dont la valeur est le nom qualifié de la classe qui contient la méthode statique <code class="highlighter-rouge">premain</code>.</p>
+
+<figure class="highlight"><pre><code class="language-properties" data-lang="properties">	<span class="py">Premain-Class</span><span class="p">:</span> <span class="s">fr.arolla.SimpleAgent</span></code></pre></figure>
+
+<p>Le jar et son <code class="highlighter-rouge">MANIFEST.MF</code> peuvent être générés à la main comme le faisait ma grand-mère ou via un outil de build. J’utilise logiquement <em>sbt</em> mais c’est aussi possible avec <em>maven</em>. Voici le contenu de mon <em>build.sbt</em>:</p>
+
+<figure class="highlight"><pre><code class="language-scala" data-lang="scala">	<span class="n">name</span> <span class="o">:=</span> <span class="s">"arollagent"</span>
+	
+	<span class="n">version</span> <span class="o">:=</span> <span class="s">"1"</span>
+	
+	<span class="n">scalaVersion</span> <span class="o">:=</span> <span class="s">"2.9.1"</span>
+	
+	<span class="n">packageOptions</span> <span class="o">:=</span> <span class="k">new</span> <span class="nv">Package</span><span class="o">.</span><span class="py">ManifestAttributes</span><span class="o">(</span>
+	<span class="o">(</span><span class="k">new</span> <span class="nv">java</span><span class="o">.</span><span class="py">util</span><span class="o">.</span><span class="py">jar</span><span class="o">.</span><span class="py">Attributes</span><span class="o">.</span><span class="py">Name</span><span class="o">(</span><span class="s">"Premain-Class"</span><span class="o">)-&gt;</span><span class="s">"fr.arolla.SimpleAgent"</span><span class="o">)</span>
+	<span class="o">)::</span><span class="nc">Nil</span></code></pre></figure>
+
+<p>La commande <code class="highlighter-rouge">sbt package</code> construit le jar dans <code class="highlighter-rouge">target/scala-2.9.1/arollagent_2.9.1-1.jar</code></p>
+
+<h3 id="3-attacher-lagent-à-la-jvm">3. Attacher l’agent à la JVM</h3>
+<p>Il suffit d’ajouter l’option <em>javaagent</em> à la JVM:</p>
+
+<p><code class="highlighter-rouge">-javaagent:jarpath[=options]</code></p>
+
+<p><em>jarpath</em> est le chemin du jar contenant l’agent.</p>
+
+<p><em>options</em> sont les arguments passés à l’agent.</p>
+
+<p>Voyons cela de plus près …</p>
+
+<h4 id="cas-nominal">Cas nominal</h4>
+<p>Lancer les commandes:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sbt package
+$ export CLASSPATH=target/scala-2.9.1/classes:/home/stup3fait/.sbt/boot/scala-2.9.1/lib/scala-library.jar:lib/logger.jar:/home/stup3fait/.ivy2/cache/org.ow2.asm/asm/jars/asm-4.0.jar
+$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar fr.arolla.Foo
+</code></pre></div></div>
+
+<p>Cela affiche :</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Un simple agent appelé avec les arguments null
+Je fais des affaires sur internet
+Je transmets des informations au gouvernement
+Exception in thread "main" java.io.FileNotFoundException: C:/Windows/USers/SSIICorp/Mes documenst/pariLogger.log (No such file or directory)
+        at java.io.FileOutputStream.open(Native Method)
+        at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:212)
+        at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:136)
+        at java.io.FileWriter.&lt;init&gt;(FileWriter.java:78)
+        at fr.gouv.france.Logger.log(Logger.java:13)
+        at fr.arolla.Foo.main(Foo.java:19)
+</code></pre></div></div>
+
+<ul>
+  <li><code class="highlighter-rouge">sbt package</code> package l’agent dans le jar avec le Manifest qui va bien</li>
+  <li><code class="highlighter-rouge">export CLASSPATH ...</code> met dans le classpath:
+    <ul>
+      <li>notre classe Foo à exécuter</li>
+      <li>la librairie scala (dont dépend l’agent)</li>
+      <li>le jar qui contient le logger buggé  (dont dépend Foo)</li>
+      <li>la librairie de manipulation de bytecode (dont dépendra l’agent)</li>
+    </ul>
+  </li>
+  <li><code class="highlighter-rouge">java -javaagent:...</code> exécute la classe Foo avec notre agent</li>
+</ul>
+
+<p>On voit que l’agent s’est exécuté avant le <code class="highlighter-rouge">main()</code>.</p>
+
+<h4 id="passer-des-arguments-à-lagent">Passer des arguments à l’agent</h4>
+<p>En fait on ne passe qu’un seul argument à l’agent. Libre à lui de découper au besoin.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar=cafe\ babe fr.arolla.Foo
+
+Un simple agent appelé avec les arguments cafe babe	
+Je fais des affaires sur internet
+Je transmets des informations au gouvernement
+Exception in thread "main" java.io.FileNotFoundException: C:/Windows/USers/SSIICorp/Mes documenst/pariLogger.log (No such file or directory)
+</code></pre></div></div>
+
+<h4 id="plusieurs-agents-à-la-fois">Plusieurs agents à la fois</h4>
+<p>On peu lancer une compagnie d’agents en chaînant les <code class="highlighter-rouge">-javaagent</code>:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar=AGENT\ 1 -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar=AGENT\ 2 fr.arolla.Foo
+Un simple agent appelé avec les arguments AGENT 1
+Un simple agent appelé avec les arguments AGENT 2
+Je fais des affaires sur internet
+Je transmets des informations au gouvernement
+Exception in thread "main" java.io.FileNotFoundException: C:/Windows/USers/SSIICorp/Mes documenst/pariLogger.log (No such file or directory)
+</code></pre></div></div>
+
+<h2 id="anatomie-du-logger">Anatomie du Logger</h2>
+<p>Bon, nous avons un peu dégrossi un peu ce qu’était un agent. Attaquons nous maintenant au Logger buggé.</p>
+
+<p>On dézippe le jar et on regarde son bytecode avec <code class="highlighter-rouge">javap</code>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>javap -c -s -p fr/gouv/france/Logger.class
+</code></pre></div></div>
+
+<p>La méthode log commence ainsi:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public void log(java.util.Map&lt;java.lang.String, java.lang.Object&gt;) throws java.io.IOException;                                                                                                                                                                               
+    Signature: (Ljava/util/Map;)V                                                                                                                                                                                                                                              
+    Code:                                                                                                                                                                                                                                                                      
+       0: aconst_null                                                                                                                                                                                                                                                          
+       1: astore_2                                                                                                                                                                                                                                                             
+       2: new           #21                 // class java/io/FileWriter                                                                                                                                                                                                        
+       5: dup                                                                                                                                                                                                                                                                  
+       6: ldc           #23                 // String C://Windows/USers/SSIICorp/Mes documenst/pariLogger.log     &lt;-- YEAH!
+       8: iconst_1                                                                                                                                                                                                                                                             
+       9: invokespecial #25                 // Method java/io/FileWriter."&lt;init&gt;":(Ljava/lang/String;Z)V   
+</code></pre></div></div>
+
+<p>A la ligne 6, l’instruction <code class="highlighter-rouge">ldc</code> charge sur la stack la constante #23 qui contient le chemin du fichier de log. Cette 
+constante sert de paramètre au constructeur de la class <code class="highlighter-rouge">FileWriter</code> à la ligne 9.</p>
+
+<p>Pour corriger le bug, il suffit de charger un bon chemin à la ligne 23.</p>
+
+<h2 id="instrumentation-et-agents">Instrumentation et agents</h2>
+
+<p>Jusqu’ici on a créé un agent qui ne servait à rien et on a trouvé l’endroit où réside le bug.</p>
+
+<p>L’agent que nous avons écrit s’exécute avant <code class="highlighter-rouge">main</code> mais ne permet pas d’instrumenter du code. Pour avoir cette capacité, il faut “implémenter”
+<code class="highlighter-rouge">public static void premain(String agentArgs, Instrumentation inst);</code></p>
+
+<p>Allons y:</p>
+
+<figure class="highlight"><pre><code class="language-scala" data-lang="scala">	<span class="k">package</span> <span class="nn">fr.arolla</span>
+	<span class="k">import</span> <span class="nn">java.lang.instrument.Instrumentation</span>
+	<span class="k">import</span> <span class="nn">java.lang.instrument.ClassFileTransformer</span>
+	<span class="k">import</span> <span class="nn">java.security.ProtectionDomain</span>
+	
+	
+	<span class="k">object</span> <span class="nc">ArollAgent</span> <span class="o">{</span>
+	  <span class="k">def</span> <span class="nf">premain</span><span class="o">(</span><span class="n">agentArgs</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">inst</span><span class="k">:</span> <span class="kt">Instrumentation</span><span class="o">)</span> <span class="o">{</span>
+	    <span class="nv">inst</span><span class="o">.</span><span class="py">addTransformer</span><span class="o">(</span><span class="k">new</span> <span class="nc">ArollaTransformer</span><span class="o">);</span>
+	  <span class="o">}</span>
+	<span class="o">}</span>
+	
+	<span class="k">class</span> <span class="nc">ArollaTransformer</span> <span class="k">extends</span> <span class="nc">ClassFileTransformer</span><span class="o">()</span> <span class="o">{</span>
+	  <span class="k">override</span> <span class="k">def</span> <span class="nf">transform</span><span class="o">(</span><span class="n">cl</span><span class="k">:</span> <span class="kt">ClassLoader</span><span class="o">,</span> <span class="n">className</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">clazz</span><span class="k">:</span> <span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">],</span> <span class="n">protectionDomain</span><span class="k">:</span> <span class="kt">ProtectionDomain</span><span class="o">,</span> <span class="n">rawClass</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">Byte</span><span class="o">])</span> <span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">Byte</span><span class="o">]</span> <span class="k">=</span>  <span class="o">{</span>
+	    <span class="nf">println</span><span class="o">(</span><span class="s">"Nom de la classe: "</span> <span class="o">+</span> <span class="n">className</span><span class="o">)</span>
+	    <span class="kc">null</span>
+	  <span class="o">}</span>
+	<span class="o">}</span></code></pre></figure>
+
+<p>La nouveauté c’est le paramètre <a href="http://docs.oracle.com/javase/6/docs/api/java/lang/instrument/Instrumentation.html">inst</a>. 
+Dans le cadre de cet article, seule la méthode addTransformer nous intéresse:</p>
+
+<p><code class="highlighter-rouge">void addTransformer(ClassFileTransformer transformer)</code></p>
+
+<p><code class="highlighter-rouge">addTransformer</code> permet de recenser toutes les instances de <code class="highlighter-rouge">ClassFileTransformer</code> à appeler lorsqu’un <code class="highlighter-rouge">ClassLoader</code> définit une nouvelle classe. 
+<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/instrument/ClassFileTransformer.html">ClassFileTransformer</a> est une interface qui n’a qu’une seule
+méthode: <code class="highlighter-rouge">transform</code>. C’est dans cette méthode que l’on va faire notre petite bidouille pour réparer <code class="highlighter-rouge">Logger</code>.</p>
+
+<p>Regardons de plus près la signature de la méthode transform:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java">	<span class="kt">byte</span><span class="o">[]</span> <span class="nf">transform</span><span class="o">(</span><span class="nc">ClassLoader</span> <span class="n">loader</span><span class="o">,</span>
+	                 <span class="nc">String</span> <span class="n">className</span><span class="o">,</span>
+	                 <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">classBeingRedefined</span><span class="o">,</span>
+	                 <span class="nc">ProtectionDomain</span> <span class="n">protectionDomain</span><span class="o">,</span>
+	                 <span class="kt">byte</span><span class="o">[]</span> <span class="n">classfileBuffer</span><span class="o">)</span>
+	                 <span class="kd">throws</span> <span class="nc">IllegalClassFormatException</span></code></pre></figure>
+
+<p><code class="highlighter-rouge">transform</code> retourne un tableau de byte correspondant au nouveau bytecode de la classe. C’est ce nouveau bytecode qui sera
+enregistré par le class loader. Si aucune transformation n’est à faire, il faut retourner <code class="highlighter-rouge">null</code>.</p>
+
+<p>Au niveau paramètres seuls deux nous intéressent :</p>
+<ul>
+  <li><em>className</em> est le nom de la classe. Par exemple “java/util/List”</li>
+  <li><em>classfileBuffer</em> le bytecode actuel de la classe</li>
+</ul>
+
+<p>Modifions maintenant le manifest pour utiliser notre nouvel agent:</p>
+
+<figure class="highlight"><pre><code class="language-scala" data-lang="scala">	<span class="n">packageOptions</span> <span class="o">:=</span> <span class="k">new</span> <span class="nv">Package</span><span class="o">.</span><span class="py">ManifestAttributes</span><span class="o">(</span>
+	<span class="o">(</span><span class="k">new</span> <span class="nv">java</span><span class="o">.</span><span class="py">util</span><span class="o">.</span><span class="py">jar</span><span class="o">.</span><span class="py">Attributes</span><span class="o">.</span><span class="py">Name</span><span class="o">(</span><span class="s">"Premain-Class"</span><span class="o">)-&gt;</span><span class="s">"fr.arolla.ArollAgent"</span><span class="o">)</span>
+	<span class="o">)::</span><span class="nc">Nil</span></code></pre></figure>
+
+<p>Et relançons le programme</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sbt package
+
+$ java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar fr.arolla.Foo
+
+Nom de la classe: sun/launcher/LauncherHelper
+Nom de la classe: fr/arolla/Foo
+Nom de la classe: java/lang/Void
+Je fais des affaires sur internet
+Je transmets des informations au gouvernement
+Nom de la classe: java/lang/Integer$IntegerCache
+Nom de la classe: fr/gouv/france/Logger
+Nom de la classe: java/io/FileWriter
+Nom de la classe: java/io/FileNotFoundException
+Exception in thread "main" Nom de la classe: java/lang/Throwable$WrappedPrintStream
+Nom de la classe: java/lang/Throwable$PrintStreamOrWriter
+Nom de la classe: java/util/IdentityHashMap
+Nom de la classe: java/util/IdentityHashMap$KeySet
+java.io.FileNotFoundException: C:/Windows/USers/SSIICorp/Mes documenst/pariLogger.log (No such file or directory)
+        at java.io.FileOutputStream.open(Native Method)
+        at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:212)
+        at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:136)
+        at java.io.FileWriter.&lt;init&gt;(FileWriter.java:78)
+        at fr.gouv.france.Logger.log(Logger.java:13)
+        at fr.arolla.Foo.main(Foo.java:19)
+Nom de la classe: java/lang/Shutdown
+Nom de la classe: java/lang/Shutdown$Lock
+</code></pre></div></div>
+
+<p>On remarque deux choses:</p>
+<ul>
+  <li>que le transformer est appelé <em>avant</em> d’utiliser une classe <em>pour la première fois</em>.</li>
+  <li>que certaines classes du runtime ne sont apparemment pas instrumentables (où est <code class="highlighter-rouge">HashMap</code>)</li>
+</ul>
+
+<h2 id="instrumentation-du-logger">Instrumentation du Logger</h2>
+
+<p>Il existe pas mal de librairies permettant d’instrumenter du bytecode. Les plus connues sont <a href="http://asm.ow2.org/">ASM</a> et <a href="https://commons.apache.org/bcel/">BCEL</a>. Voir <a href="http://java-source.net/open-source/bytecode-libraries">cette page</a>
+pour encore plus de choix !
+J’ai opté pour ASM car je la connaissais déjà et la <a href="http://download.forge.objectweb.org/asm/asm4-guide.pdf">documentation</a> est un vrai bouquin qui vous apprendra plein de choses sur l’anatomie d’une classe.</p>
+
+<p>Et voilà la version finale de l’agent:</p>
+
+<figure class="highlight"><pre><code class="language-scala" data-lang="scala">	<span class="k">package</span> <span class="nn">fr.arolla</span>
+	<span class="k">import</span> <span class="nn">java.lang.instrument.Instrumentation</span>
+	<span class="k">import</span> <span class="nn">java.lang.instrument.ClassFileTransformer</span>
+	<span class="k">import</span> <span class="nn">java.security.ProtectionDomain</span>
+	<span class="k">import</span> <span class="nn">org.objectweb.asm.ClassVisitor</span>
+	<span class="k">import</span> <span class="nn">org.objectweb.asm.Opcodes</span>
+	<span class="k">import</span> <span class="nn">org.objectweb.asm.MethodVisitor</span>
+	<span class="k">import</span> <span class="nn">org.objectweb.asm.ClassWriter</span>
+	<span class="k">import</span> <span class="nn">org.objectweb.asm.ClassReader</span>
+	
+	<span class="k">object</span> <span class="nc">LoggerPatcherAgent</span> <span class="o">{</span>
+		<span class="k">def</span> <span class="nf">premain</span><span class="o">(</span><span class="n">agentArgs</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">inst</span><span class="k">:</span> <span class="kt">Instrumentation</span><span class="o">)</span> <span class="o">{</span>
+			<span class="nv">inst</span><span class="o">.</span><span class="py">addTransformer</span><span class="o">(</span><span class="k">new</span> <span class="nc">LoggerPatcherTransformer</span><span class="o">);</span>
+		<span class="o">}</span>
+	<span class="o">}</span>
+	
+	<span class="k">class</span> <span class="nc">LoggerPatcherTransformer</span> <span class="k">extends</span> <span class="nc">ClassFileTransformer</span> <span class="o">{</span>
+	  <span class="k">class</span> <span class="nc">PatchLdcLoggerAdapter</span><span class="o">(</span><span class="n">mv</span><span class="k">:</span><span class="kt">MethodVisitor</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">MethodVisitor</span><span class="o">(</span><span class="nv">Opcodes</span><span class="o">.</span><span class="py">ASM4</span><span class="o">,</span><span class="n">mv</span><span class="o">)</span> <span class="o">{</span>
+	    <span class="k">override</span> <span class="k">def</span> <span class="nf">visitLdcInsn</span><span class="o">(</span><span class="n">constante</span><span class="k">:</span><span class="kt">Any</span><span class="o">)</span> <span class="o">{</span>
+	      <span class="n">constante</span> <span class="k">match</span> <span class="o">{</span>
+	      	<span class="k">case</span> <span class="n">string</span><span class="k">:</span><span class="kt">String</span> <span class="kt">if</span> <span class="kt">string.startsWith</span><span class="o">(</span><span class="err">"</span><span class="kt">C://</span><span class="err">"</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="nv">mv</span><span class="o">.</span><span class="py">visitLdcInsn</span><span class="o">(</span><span class="s">"/tmp/log"</span><span class="o">)</span> 
+	      	<span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="nv">mv</span><span class="o">.</span><span class="py">visitLdcInsn</span><span class="o">(</span><span class="n">constante</span><span class="o">)</span>
+	      <span class="o">}</span>
+	    <span class="o">}</span>
+	  <span class="o">}</span>
+	  
+	  <span class="k">class</span> <span class="nc">LoggerClassAdapter</span><span class="o">(</span><span class="n">cv</span><span class="k">:</span><span class="kt">ClassVisitor</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">ClassVisitor</span><span class="o">(</span><span class="nv">Opcodes</span><span class="o">.</span><span class="py">ASM4</span><span class="o">,</span><span class="n">cv</span><span class="o">)</span> <span class="o">{</span>
+	    <span class="k">override</span> <span class="k">def</span> <span class="nf">visitMethod</span><span class="o">(</span><span class="n">access</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span><span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">desc</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">signature</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">exceptions</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span><span class="kt">MethodVisitor</span> <span class="o">=</span> <span class="o">{</span>
+	    	<span class="k">val</span> <span class="nv">mv</span> <span class="k">=</span> <span class="nv">cv</span><span class="o">.</span><span class="py">visitMethod</span><span class="o">(</span><span class="n">access</span><span class="o">,</span><span class="n">name</span><span class="o">,</span><span class="n">desc</span><span class="o">,</span><span class="n">signature</span><span class="o">,</span><span class="n">exceptions</span><span class="o">)</span> 
+	        <span class="nf">if</span><span class="o">(</span><span class="n">mv</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">name</span> <span class="o">==</span> <span class="s">"log"</span><span class="o">)</span> <span class="k">new</span> <span class="nc">PatchLdcLoggerAdapter</span><span class="o">(</span><span class="n">mv</span><span class="o">)</span>
+	        <span class="k">else</span> <span class="n">mv</span>
+	    <span class="o">}</span>
+	  <span class="o">}</span>
+	  
+	  <span class="k">override</span> <span class="k">def</span> <span class="nf">transform</span><span class="o">(</span><span class="n">cl</span><span class="k">:</span> <span class="kt">ClassLoader</span><span class="o">,</span> <span class="n">className</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">clazz</span><span class="k">:</span> <span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">],</span> <span class="n">protectionDomain</span><span class="k">:</span> <span class="kt">ProtectionDomain</span><span class="o">,</span> <span class="n">rawClass</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">Byte</span><span class="o">])</span> <span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">Byte</span><span class="o">]</span> <span class="k">=</span>  <span class="o">{</span>    
+	    <span class="c1">//fail fast</span>
+	    <span class="nf">if</span><span class="o">(</span><span class="n">className</span> <span class="o">!=</span> <span class="s">"fr/gouv/france/Logger"</span><span class="o">)</span> <span class="k">return</span> <span class="kc">null</span>
+	    
+	    <span class="k">val</span> <span class="nv">cw</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ClassWriter</span><span class="o">(</span><span class="nv">ClassWriter</span><span class="o">.</span><span class="py">COMPUTE_MAXS</span> <span class="o">&amp;</span> <span class="nv">ClassWriter</span><span class="o">.</span><span class="py">COMPUTE_FRAMES</span><span class="o">)</span>
+	    <span class="k">new</span> <span class="nc">ClassReader</span><span class="o">(</span><span class="n">rawClass</span><span class="o">).</span><span class="py">accept</span><span class="o">(</span><span class="k">new</span> <span class="nc">LoggerClassAdapter</span><span class="o">(</span><span class="n">cw</span><span class="o">),</span> <span class="mi">0</span><span class="o">)</span>
+	    <span class="nv">cw</span><span class="o">.</span><span class="py">toByteArray</span><span class="o">()</span>
+	  <span class="o">}</span>
+	<span class="o">}</span></code></pre></figure>
+
+<p>Bon, je ne veux pas trop m’attarder sur l’utilisation d’ASM, mais en gros ça prend le <code class="highlighter-rouge">ldc #23</code> qu’on avait repéré et ça le remplace par
+un <code class="highlighter-rouge">ldc #XX</code>, où XX est le numéro de constante qu’ASM nous a créé dans le constant pool et qui contient “/tmp/log”.</p>
+
+<p>Si on relance l’appli avec le nouvel agent:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$java -javaagent:target/scala-2.9.1/arollagent_2.9.1-1.jar fr.arolla.Foo
+
+Je fais des affaires sur internet
+Je transmets des informations au gouvernement
+Informations transmises au gouvernement
+Fin des affaires
+</code></pre></div></div>
+
+<p>et dans /tmp/log on a un truc du genre:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cat /tmp/log
+Mon Jul 02 22:43:48 CEST 2012
+        cafe:51966
+        babe:47806
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Résultat</p>
+<ul>
+  <li>des beaux logs</li>
+  <li>on a utilisé la librairie presqu’originale :)</li>
+  <li>on n’a écrit que 30 lignes de code supplémentaires :)</li>
+</ul>
+
+<p>Pour réaliser cela, il a suffit de décompiler/analyser le Logger et de créer un agent qui utilise ASM pour l’instrumenter.</p>
+
+<p>Les agents offre une ultime interface, au plus bas niveau, avec le code à lancer sur la JVM. Plutôt pratique pour altérer des comportements …</p>
+
+<p>D’ailleurs, ça m’a aussi donné des idées non pas pour corriger des bugs mais plutôt pour en créer. En effet, on pourrait facilement simuler des connexions foireuses, des pannes, des problèmes de filesystem sans modifier le code,
+sur un environnement iso-prod pour voir comment se débrouille l’appli et sans avoir besoin de relivrer.</p>
+
+<p>Dans un prochain article sur le sujet, il y aura au moins deux points que j’approfondirai :</p>
+<ul>
+  <li>l’instrumentation à chaud avec la méthode redefine</li>
+  <li>le lien avec les classloader</li>
+</ul>
+
+<h2 id="ressources">Ressources</h2>
+
+<ul>
+  <li><a href="http://www.javalobby.org/java/forums/t19309.html">http://www.javalobby.org/java/forums/t19309.html</a></li>
+  <li><a href="http://blog.gorillalogic.com/2009/05/15/java-profiling-with-the-java-lang-instrument-package/">http://blog.gorillalogic.com/2009/05/15/java-profiling-with-the-java-lang-instrument-package/</a></li>
+</ul>
+:ET

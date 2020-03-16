@@ -1,0 +1,310 @@
+I"Mv<h1 id="expérimentation-de-frp-avec-baconjs">Expérimentation de FRP avec Bacon.js</h1>
+<div id="toc-js">
+</div>
+
+<h2 id="la-théorie">La théorie</h2>
+
+<h3 id="ethymologie">Ethymologie</h3>
+
+<p>Tout anagramme mérite une petite explication. C’est souvent par là qu’il faut commencer pour mieux comprendre une technologie.</p>
+
+<p>Functional Reactive Programming</p>
+
+<p>Reactive : d’après <a href="http://wordnetweb.princeton.edu/perl/webwn?s=reactive">wordnet</a> “qui réagit à un stimulus”.</p>
+
+<p>Functional Programming: fait référence à la <a href="http://fr.wikipedia.org/wiki/Programmation_fonctionnelle">programmation fonctionnelle</a></p>
+
+<h3 id="analogie">Analogie</h3>
+
+<p>L’analogie que l’on retrouve le plus souvent sur le net pour expliquer FRP est la feuille de calcul d’un <a href="http://www.libreoffice.org/features/calc/screenshot-of-calc-the-libreoffice-spreadsheet-program/">tableur</a>.</p>
+
+<p>Certaines cellules contiennent des <code class="highlighter-rouge">valeurs</code> que l’utilisateur peut changer, et d’autres des <code class="highlighter-rouge">formules</code>.</p>
+
+<p>Par exemple</p>
+
+<p><img src="/images/articles/frp/spreadsheet.png" alt="alt une formule dans un tableur" /></p>
+
+<p>Appliqué à FRP une feuille de calcul s’explique de la manière suivante :</p>
+
+<ul>
+  <li><code class="highlighter-rouge">A1</code> et <code class="highlighter-rouge">B1</code> sont des <em>streams d’events</em>. Quand un utilisateur change la valeur de la cellule, un <em>event</em> est envoyé à la cellule qui change alors sa <em>valeur courante</em></li>
+  <li><code class="highlighter-rouge">C1</code> est aussi un <em>stream d’events</em>. Seulement, les évênements ne sont plus générés directement par l’utilisateur mais induits par un changement de <em>valeur courante</em> de <code class="highlighter-rouge">A1</code> et <code class="highlighter-rouge">B1</code>.
+<code class="highlighter-rouge">C1</code> <em>réagit</em>, <em>observe</em>, <em>écoute</em> les <em>évênements</em> des deux autres cellules.</li>
+</ul>
+
+<p>C’est sorte d’implémentation du fameux <a href="http://fr.wikipedia.org/wiki/Observateur_%28patron_de_conception%29">observateur</a>.</p>
+
+<h3 id="vocabulaire">Vocabulaire</h3>
+
+<p>Sur le net on trouvera un vocabulaire éparse et confus pour désigner des concepts sémantiquements identiques. Enumérons :</p>
+
+<ul>
+  <li><em>event</em> : les stimuli de l’application</li>
+  <li><em>event stream</em>, <em>property</em>, <em>behaviour</em>, <em>observable</em> :  une variable qui réagit à des <em>events</em></li>
+  <li><em>observer</em>, <em>listener</em> : généralement une fonction qui prend la <em>valeur courante</em> d’un <em>event stream</em> et réalise un <em>side effect</em>.</li>
+  <li><em>side effect</em> : une action qui modifie l’environnement. Par exemple une sortie sur la console, une affectation de variable ou encore la manipulation du DOM.</li>
+</ul>
+
+<h2 id="présentation-baconjs">Présentation Bacon.js</h2>
+
+<p><a href="https://github.com/baconjs/bacon.js">Bacon.js</a> prend son inspiration en la librairie <a href="https://github.com/Reactive-Extensions/RxJS">RxJs</a> de Microsoft.</p>
+
+<p>Bacon.js propose deux types d’ <em>observable</em>:</p>
+
+<ul>
+  <li><em>event stream</em></li>
+  <li><em>property</em> : est très similaire à <em>event stream</em>, à l’exception qu’une <em>property</em> a toujours une valeur, dès sa création.</li>
+</ul>
+
+<p>Bacon.js propose des méthodes pour passer d’un type d’<em>observable</em> à l’autre, et des méthodes pour créer et <a href="https://github.com/baconjs/bacon.js/wiki/Diagrams">mixer</a> des <em>observables</em>.
+Le plus simple, est d’aller faire un tour sur le <a href="https://github.com/baconjs/bacon.js/tree/master">readme</a> du projet pour vous faire un première idée. Visitez le <a href="https://github.com/baconjs/bacon.js/wiki">wiki</a> et les quelques exemples.</p>
+
+<h2 id="la-pratique">La pratique</h2>
+
+<h3 id="objectif">Objectif</h3>
+
+<p>Dans ce document d’exploration on va implémenter un formulaire qui permet de choisir son pays. La liste des pays est récupérée d’un service qui cause en JSON. Il faudra gérer un spinner et la gestion des erreurs. Simple ? Cela dépend de la rigueur que l’on met à traiter tous les états …</p>
+
+<p>J’ai écrit un petit serveur tout simple en clojure dont les sources sont <a href="https://github.com/jprudent/jam-frp">ici</a>. Pour le builder, il faut récupérer <a href="http://leiningen.org/">lein</a> et
+lancer la commande</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lein ring server
+</code></pre></div></div>
+
+<p>Autrement, l’application complète (client et serveur) est déployée sur <a href="http://rocky-reef-4045.herokuapp.com/index.html">http://rocky-reef-4045.herokuapp.com/index.html</a>. Attention aux yeux,
+ça pique un peu comme design :)</p>
+
+<h3 id="récupérer-la-liste-des-pays">Récupérer la liste des pays</h3>
+
+<p>Un GET sur <a href="http://rocky-reef-4045.herokuapp.com/countries">/countries</a> permet de récupérer la liste des pays. C’est un objet JSON de cette forme :</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="p">{</span>
+      <span class="dl">"</span><span class="s2">FRA</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">France</span><span class="dl">"</span><span class="p">,</span>
+      <span class="dl">"</span><span class="s2">VEN</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">Venezuela</span><span class="dl">"</span>
+    <span class="p">}</span></code></pre></figure>
+
+<p>Bacon.js s’intègre bien avec <a href="http://www.jquery.com">jQuery</a>. <code class="highlighter-rouge">fromPromise</code> permet de créer un <code class="highlighter-rouge">EventStream</code> pour un appel ajax renvoyant une promesse.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">ajaxCountries</span> <span class="o">=</span> <span class="nx">Bacon</span><span class="p">.</span><span class="nx">fromPromise</span><span class="p">(</span><span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">(</span><span class="nx">URL</span><span class="p">.</span><span class="nx">countries</span><span class="p">))</span> <span class="c1">// creation d'un event stream à partir de la requête ajax</span>
+      <span class="p">.</span><span class="nx">mapError</span><span class="p">(</span><span class="dl">"</span><span class="s2">ERROR</span><span class="dl">"</span><span class="p">);</span> <span class="c1">// en cas d'erreur produit une string spéciale</span></code></pre></figure>
+
+<p>Si l’appel réussit, le stream <code class="highlighter-rouge">ajaxContries</code> contiendra la réponse du serveur. Sinon l’état du stream est en erreur.
+Le cas d’erreur est un peu spécial, il ne produit pas de valeur mais fait basculer l’état du stream à <code class="highlighter-rouge">error</code>. <code class="highlighter-rouge">mapError</code> permet de produire quand même une valeur
+en cas d’erreur.</p>
+
+<p>A des fins de test, environ 1 fois sur 4 le crache une erreur 500. D’expérience, la gestion des erreurs dans une application faisant un usage d’AJAX doit être prévue depuis la conception.</p>
+
+<p>Votre application Javascript <strong>doit</strong> prévoir les cas d’erreur. Si elle ne les prévoit pas vous aurez sûrement des erreurs de déférencement, et un freeze de l’application. True story.</p>
+
+<p>Donc nous allons déjà adresser le cas d’erreur en créant une nouvelle <code class="highlighter-rouge">Property</code>.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">isError</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">v</span><span class="p">){</span>
+      <span class="k">return</span> <span class="nx">v</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">ERROR</span><span class="dl">"</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="kd">var</span> <span class="nx">isErrorAjaxCountries</span> <span class="o">=</span> <span class="nx">ajaxCountries</span>
+        <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">isError</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">toProperty</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">skipDuplicates</span><span class="p">();</span></code></pre></figure>
+
+<p><code class="highlighter-rouge">map</code> permet de transformer une valeur en une autre valeur. Ici, si la valeur vaut <code class="highlighter-rouge">"ERROR"</code> on map à <code class="highlighter-rouge">true</code> sinon <code class="highlighter-rouge">false</code>.
+<code class="highlighter-rouge">map</code> et <code class="highlighter-rouge">mapError</code> renvoient un nouvel <code class="highlighter-rouge">EventStream</code> et prennent normalement une fonction en paramètre. Cette fonction prend en
+paramètre la <em>valeur</em> de l’évènement et retourne la nouvelle valeur.</p>
+
+<p>Ici on passe une constante. C’est un sucre syntaxique pour une fonction qui serait similaire à :</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="nx">constant</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">v</span><span class="p">){</span>
+      <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span><span class="k">return</span> <span class="nx">v</span><span class="p">};</span>
+    <span class="p">}</span>
+
+    <span class="nx">stream</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">constant</span><span class="p">(</span><span class="dl">"</span><span class="s2">ERROR</span><span class="dl">"</span><span class="p">));</span> <span class="c1">// le stream ne contiendra que des true</span></code></pre></figure>
+
+<p><code class="highlighter-rouge">toProperty</code> transforme un <code class="highlighter-rouge">EventStream</code> en une <code class="highlighter-rouge">Property</code> avec une <em>valeur par défaut</em>, ici <code class="highlighter-rouge">false</code>.
+En effet, quelque soit l’état de l’application on doit savoir s’il faut ou non afficher le message d’erreur.
+C’est la principale différence entre un <code class="highlighter-rouge">EventStream</code>, qui peut ne pas avoir de valeur (pendant le temps de la requête),
+et une <code class="highlighter-rouge">Property</code> qui a toujours une valeur.</p>
+
+<p><code class="highlighter-rouge">skipDuplicate</code> est une petite optimisation qui empêche que deux valeurs consécutives dans le stream soient égales.</p>
+
+<p>Pour résumé, voici les 2 états possibles des deux streams que nous avons créé :</p>
+
+<p><img src="/images/articles/bacon/ajaxCountries.png" alt="les 2 états possibles des streams" /></p>
+
+<p>Pour le moment nous n’avons écrit que des <strong>définitions</strong>. Ce sont des vérités qui seront toujours vraies, quelque soit l’état de l’application.
+Nous n’avons que des variables immutables. Aucun <em>side effect</em>.</p>
+
+<p>Attaquons nous maintenant aux side effects.</p>
+
+<p>Le DOM sera produit à partir du fichier HTML suivant :</p>
+
+<figure class="highlight"><pre><code class="language-html" data-lang="html">    <span class="cp">&lt;!DOCTYPE HTML&gt;</span>
+    <span class="nt">&lt;html&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;head&gt;</span>
+            <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"index.css"</span> <span class="na">media=</span><span class="s">"all"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;/head&gt;</span>
+    <span class="nt">&lt;body&gt;</span>
+        <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"error"</span><span class="nt">&gt;&lt;/span&gt;</span>
+
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"http://cdnjs.cloudflare.com/ajax/libs/bacon.js/0.7.10/bacon.js"</span> <span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;&lt;/script&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"http://code.jquery.com/jquery-1.10.1.min.js"</span> <span class="na">type=</span><span class="s">"text/javascript"</span><span class="nt">&gt;&lt;/script&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"index.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+
+    <span class="nt">&lt;/body&gt;</span>
+    <span class="nt">&lt;/html&gt;</span></code></pre></figure>
+
+<p>Un <code class="highlighter-rouge">span</code> contient l’erreur. Le reste du document est de la machinerie.</p>
+
+<p>Maintenant, traitons visuellement le cas d’erreur:</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">showOrHideErrorMessage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">show</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">showError = </span><span class="dl">"</span><span class="p">,</span> <span class="nx">show</span><span class="p">);</span>
+      <span class="k">if</span><span class="p">(</span><span class="nx">show</span><span class="p">)</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">.error</span><span class="dl">"</span><span class="p">).</span><span class="nx">show</span><span class="p">();</span>
+      <span class="k">else</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">.error</span><span class="dl">"</span><span class="p">).</span><span class="nx">hide</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="nx">isErrorAjaxCountries</span><span class="p">.</span><span class="nx">onValue</span><span class="p">(</span><span class="nx">showOrHideErrorMessage</span><span class="p">);</span></code></pre></figure>
+
+<p>A chaque fois qu’une nouvelle valeur arrive dans la <code class="highlighter-rouge">Property</code> <code class="highlighter-rouge">isErrorAjaxCountries</code>, on appelle la fonction chargée d’exécuter le <em>side effect</em>, ici <code class="highlighter-rouge">showOrHideErrorMessage</code>.
+Cette fonction peut faire n’importe quoi. Ici elle cache le span si la valeur est <code class="highlighter-rouge">false</code>, sinon elle l’affiche.</p>
+
+<p>Nous avons géré un appel ajax en traitant le cas d’erreur avec 2 vars et 2 fonction.</p>
+
+<h3 id="ajout-du-spinner-de-chargement">Ajout du spinner de chargement</h3>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">isOngoingAjaxCountries</span> <span class="o">=</span> <span class="nx">isErrorAjaxCountries</span><span class="p">.</span><span class="nx">awaiting</span><span class="p">(</span><span class="nx">ajaxCountries</span><span class="p">);</span></code></pre></figure>
+
+<p>On <strong>définit</strong> une nouvelle <code class="highlighter-rouge">Property</code> <code class="highlighter-rouge">isOngoingAjaxCountries</code> qui vaut :</p>
+
+<ul>
+  <li><code class="highlighter-rouge">false</code> tant que l’un des 2 <code class="highlighter-rouge">EventStream</code> n’a pas été alimenté ou dès que <code class="highlighter-rouge">isErrorAjaxCountries</code> a été alimenté par <code class="highlighter-rouge">ajaxCountries</code></li>
+  <li><code class="highlighter-rouge">true</code> tant que <code class="highlighter-rouge">isErrorAjaxCountries</code> n’a pas été alimenté par <code class="highlighter-rouge">ajaxCountries</code></li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-html" data-lang="html">  <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"spinner"</span><span class="nt">&gt;&lt;/span&gt;</span></code></pre></figure>
+
+<p>Visuellement, le spinner n’est qu’un <code class="highlighter-rouge">span</code> que l’on décide d’afficher ou non.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">showOrHide</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">show</span><span class="p">,</span> <span class="nx">selector</span><span class="p">){</span>
+      <span class="k">if</span><span class="p">(</span><span class="nx">show</span><span class="p">)</span> <span class="nx">selector</span><span class="p">.</span><span class="nx">show</span><span class="p">();</span>
+      <span class="k">else</span> <span class="nx">selector</span><span class="p">.</span><span class="nx">hide</span><span class="p">();</span>
+    <span class="p">};</span>
+
+    <span class="kd">var</span> <span class="nx">showOrHideSpinner</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">show</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">showSpinner = </span><span class="dl">"</span><span class="p">,</span> <span class="nx">show</span><span class="p">)</span>
+      <span class="nx">showOrHide</span><span class="p">(</span><span class="nx">show</span><span class="p">,</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">.spinner</span><span class="dl">"</span><span class="p">));</span>
+    <span class="p">};</span>
+
+    <span class="nx">isOngoingAjaxCountries</span><span class="p">.</span><span class="nx">onValue</span><span class="p">(</span><span class="nx">showOrHideSpinner</span><span class="p">);</span></code></pre></figure>
+
+<p>On applique le <em>side effect</em> pour afficher ou non le spinner, de façon similaire au message d’erreur.</p>
+
+<h3 id="affichage-dune-boîte-de-saisie-du-pays">Affichage d’une boîte de saisie du pays</h3>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">isDoneAjaxCountries</span> <span class="o">=</span> <span class="nx">ajaxCountries</span>
+        <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">not</span><span class="p">(</span><span class="nx">isError</span><span class="p">))</span>
+        <span class="p">.</span><span class="nx">toProperty</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">skipDuplicates</span><span class="p">();</span></code></pre></figure>
+
+<p>On définit un <code class="highlighter-rouge">EventStream</code> qui est un peu l’inverse de <code class="highlighter-rouge">isErrorAjaxCountries</code>.</p>
+
+<figure class="highlight"><pre><code class="language-html" data-lang="html">    <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"country"</span> <span class="na">list=</span><span class="s">"countries"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;datalist</span> <span class="na">id=</span><span class="s">"countries"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/datalist&gt;</span></code></pre></figure>
+
+<p>Visuellement, c’est une combobox éditable.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">showOrHideInputCountry</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">show</span><span class="p">){</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">show country input</span><span class="dl">"</span><span class="p">,</span> <span class="nx">show</span><span class="p">);</span>
+      <span class="nx">showOrHide</span><span class="p">(</span><span class="nx">show</span><span class="p">,</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">[name='country']</span><span class="dl">"</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="nx">isDoneAjaxCountries</span><span class="p">.</span><span class="nx">onValue</span><span class="p">(</span><span class="nx">showOrHideInputCountry</span><span class="p">);</span></code></pre></figure>
+
+<p>On applique le <em>side effect</em> pour afficher ou non l’input, de façon similaire au message d’erreur.</p>
+
+<h3 id="remplissage-de-la-boîte-de-saisie">Remplissage de la boîte de saisie</h3>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">countriesList</span> <span class="o">=</span> <span class="nx">ajaxCountries</span>
+      <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">not</span><span class="p">(</span><span class="nx">isError</span><span class="p">));</span></code></pre></figure>
+
+<p>On définit un <code class="highlighter-rouge">EventStream</code> qui nous renseigne sur la disponibilité
+de la liste des pays.</p>
+
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript">    <span class="kd">var</span> <span class="nx">fillCountries</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">countries</span><span class="p">){</span>
+      <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">countryCode</span> <span class="k">in</span> <span class="nx">countries</span><span class="p">){</span>
+        <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">#countries</span><span class="dl">"</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="dl">'</span><span class="s1">&lt;option value="</span><span class="dl">'</span><span class="o">+</span> <span class="nx">countries</span><span class="p">[</span><span class="nx">countryCode</span><span class="p">]</span> <span class="o">+</span><span class="dl">'</span><span class="s1">"&gt;</span><span class="dl">'</span> <span class="o">+</span> <span class="nx">countryCode</span> <span class="o">+</span> <span class="dl">'</span><span class="s1">&lt;/option&gt;</span><span class="dl">'</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">countriesList</span><span class="p">.</span><span class="nx">onValue</span><span class="p">(</span><span class="nx">fillCountries</span><span class="p">);</span></code></pre></figure>
+
+<p>On remplit la datalist avec la liste des pays.</p>
+
+<h2 id="récapitulons">Récapitulons</h2>
+
+<p>Le code javascript complet est accessible <a href="https://github.com/jprudent/jam-frp/blob/master/src/resources/public/index.js">ici</a>, je vous conseille de le parcourir rapidement. Le code est divisé en deux parties.</p>
+
+<p><br /></p>
+
+<p>D’une part, une partie que j’appelle <em>définitions</em>. Cette partie est  agnostique à la technologie. Elle décrit le flux de données de notre application.</p>
+
+<p>Chaque <code class="highlighter-rouge">Observable</code> défini dans cette partie a une sémantique propre et vraie quelque soit l’état de l’application. L’ensemble forme un graphe de dépendances.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">ajaxCountries</code> : le résultat de la requête ajax. C’est l’observable tout en haut de la pyramide des dépendances.</li>
+  <li><code class="highlighter-rouge">isErrorAjaxCountries</code> : contient <code class="highlighter-rouge">true</code> si la requête s’est mal passée.</li>
+  <li><code class="highlighter-rouge">isDoneAjaxCountries</code> : contient <code class="highlighter-rouge">true</code> si la requête s’est bien passée.</li>
+  <li><code class="highlighter-rouge">isOngoingAjaxCountries</code> : Contient <code class="highlighter-rouge">true</code> si la requête ajax est en cours.</li>
+  <li><code class="highlighter-rouge">countriesList</code> : contient la liste des pays.</li>
+</ul>
+
+<p><img src="/images/articles/bacon/dependencies.png" alt="graphe de dépendance" /></p>
+
+<p>Je trouve tout cela claire : on a la requête, ses 3 états et sa valeur finale.
+Je trouve aussi que c’est extensible. Par exemple on pourrait retravailler facilement les valeurs de <code class="highlighter-rouge">countriesList</code> avec un méthode <code class="highlighter-rouge">map</code> pour les passer en majuscule. Ou alors on aurait pu conditionner <code class="highlighter-rouge">ajaxCountries</code> par un autre <code class="highlighter-rouge">EventStream</code> pour ne faire la requête que sous certaines conditions …</p>
+
+<p><br /></p>
+
+<p>D’autre part, une partie appelée <em>side effects</em> qui ne contient que de la logique d’affichage :</p>
+
+<ul>
+  <li><code class="highlighter-rouge">isErrorAjaxCountries.onValue</code> : on affiche ou pas un message d’erreur</li>
+  <li><code class="highlighter-rouge">isOngoingAjaxCountries.onValue</code> : on affiche ou pas un spinner</li>
+  <li><code class="highlighter-rouge">isDoneAjaxCountries.onValue</code> : on affiche ou pas la boîte de saisie à l’utilisateur</li>
+  <li><code class="highlighter-rouge">countriesList.onValue</code> : on traite le résultat de la requête</li>
+</ul>
+
+<p>J’ai un bon sentiment sur le code que j’ai écrit. J’ai pas l’impression d’avoir laissé trainer des bugs. On a presque l’impression d’avoir écrit une preuve mathématique.
+On ne flippe pas sur un problème de déférencement non plus car toutes les variables sont immutables.</p>
+
+<h2 id="difficultés">Difficultés</h2>
+
+<h3 id="eventstream-ou-property-">EventStream ou Property ?</h3>
+
+<p>Bacon.js fait une distinction entre <code class="highlighter-rouge">EventStream</code> et <code class="highlighter-rouge">Property</code>. Je trouve que ce n’est pas très pratique, et on est souvent entrain de se demander quel est le type de notre Observable. Aussi, je trouve la barrière entre les deux concepts un peu floue. La seule différence semble être que la <code class="highlighter-rouge">Property</code> <em>peut</em> avoir une valeur par défaut.</p>
+
+<h3 id="un-graphe-de-dépendance">Un graphe de dépendance</h3>
+
+<p>Le debuggage est assez compliqué, il n’est parfois pas évident de trouver pourquoi tel événement a eu lieu.
+Avec un exemple assez conséquent, on oublie qui dépend de qui. Il faut reparcourir les définitions. Pouvoir extraire un arbre des dépendances et le visualiser synthétiserait et aiderait beaucoup le développeur. J’ai trop souvent recours à des <code class="highlighter-rouge">console.log()</code> pour debugger.</p>
+
+<h2 id="verbosité-">Verbosité ?</h2>
+
+<p>D’aucun me rétorquera qu’avec jQuery, on fait tout ça de manière moins verbeuse (<code class="highlighter-rouge">complete</code>, <code class="highlighter-rouge">error</code>, <code class="highlighter-rouge">success</code>, …). J’ai pris une requête ajax en exemple, car cela reste conçis mais j’aurais pu trouver un exemple où jQuery n’offre pas autant de raccourcis.</p>
+
+<p>J’ai également volontairement variabilisé les différentes étapes et les fonctions au lieu de les inliner. Je trouve ça plus claire, la syntaxe de Javascript étant très lourde.</p>
+
+<h2 id="aller-plus-loin-">Aller plus loin ?</h2>
+
+<p>J’ai à peine effleuré les capacité de Bacon. Il y a des tas de façon de travailler les streams (<code class="highlighter-rouge">merge</code>, <code class="highlighter-rouge">flatMap</code>, …). Notons aussi qu’il existe un petit <code class="highlighter-rouge">event bus</code> qui peut se révéler pratique sur des pages de plus grande envergure.</p>
+
+<p>Mais imaginons un scénario plus complexe où après avoir choisi son pays on l’invite à saisir son code postal. Dès que les 2 premiers chiffres sont saisis, on l’invite à choisir sa ville dans une liste récupérée en ajax, tout en lui laissant le choix de compléter son code postal en mettant à jour la liste des villes au fur et à mesure. On ne rend le bouton envoyer cliquable que si tout est saisi sans erreur. Le tout avec spinners et message d’erreur…
+Ce que je viens de décrire, je l’ai vraiment implémenté une fois avec un jQuery 1.4 (pas de <code class="highlighter-rouge">complete</code>, <code class="highlighter-rouge">error</code>, <code class="highlighter-rouge">success</code>) et sans plugins (je ne vous dirai pas où, j’ai trop honte). Et c’était l’enfer. Il faudrait que j’essaye de réimplémenter ça …</p>
+
+<h2 id="resources">Resources</h2>
+
+<p><a href="L'indispensable readme.md">https://github.com/baconjs/bacon.js</a></p>
+
+<p><a href="Video of the creator of Bacon.js">http://www.ustream.tv/recorded/29299079</a></p>
+:ET
