@@ -161,8 +161,8 @@ C'est open source, bien documenté.
 Il n'y a aucune restriction sur le type de contenu diffusé.
 Certains utilisateurs partagent des archives de centaines de
 gigas, d'autres de simples fichiers texte. Concernant la 
-moralité et la légalité des contenus, tant qu'on reste 
-loin de ces choses, on 
+moralité et la légalité, ça n'engage les personnes consultant
+et diffusant ces contenus.
 
 La gateway locale permet de construire des pages HTML
 riches (avec JS et CSS), qui lient d'autres pages ou contenus sur IPFS. C'est une
