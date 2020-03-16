@@ -21,7 +21,7 @@ un email à Tata Micheline pour lui souhaiter bonne année.
 
 ### Freenet 
 
-Il y a 15 ans, j'ai découvert [Freenet][1]. 
+Il y a 15 ans, j'ai découvert Freenet. 
 > Freenet is a peer-to-peer platform for censorship-resistant
 > communication and publishing
 
