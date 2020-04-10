@@ -2,6 +2,7 @@
 layout: default
 title: Dependency Inversion Principle
 lang: fr
+category: articles_prog
 categories:
 - articles_prog
 tags:

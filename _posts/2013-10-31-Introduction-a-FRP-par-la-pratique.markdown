@@ -2,6 +2,7 @@
 layout: default
 lang: fr
 title: Expérimentation de FRP avec Bacon.js
+category: articles_prog
 categories:
 - articles_prog
 tags:

@@ -1,6 +1,7 @@
 ---
 layout: default
 lang: fr
+category: articles_prog
 categories:
 - articles_prog
 tags:

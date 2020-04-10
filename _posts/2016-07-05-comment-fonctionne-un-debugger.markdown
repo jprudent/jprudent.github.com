@@ -2,6 +2,7 @@
 layout: default
 lang: fr
 title: Comment fonctionne un debugger ?
+category: articles_prog
 categories:
 - articles_prog
 tags: 

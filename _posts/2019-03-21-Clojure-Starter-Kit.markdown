@@ -2,6 +2,7 @@
 layout: default
 lang: en
 title: My Clojure starter kit
+category: articles_prog
 categories:
 - articles_prog
 tags: 

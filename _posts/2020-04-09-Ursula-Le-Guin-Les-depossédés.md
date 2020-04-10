@@ -1,6 +1,7 @@
 ---
 layout: default
 lang: fr
+category: book_review
 categories:
 - book_review
 tags:
