@@ -1,5 +1,7 @@
 ---
 layout: default
+author: Ursula Le Guin
+title: Les dépossédés
 lang: fr
 category: book_review
 categories:
@@ -11,7 +13,7 @@ tags:
 last_update: 2020-04-09
 ---
 
-# Ursula Le Guin - Les dépossédés
+# {{ post.author }} - Les dépossédés
 
 En une phrase : Un anarchiste promène ses idées.
 
