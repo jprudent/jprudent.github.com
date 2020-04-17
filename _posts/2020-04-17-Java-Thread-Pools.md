@@ -64,9 +64,10 @@ Les _ExecutorService_ [les plus communs][javadoc-executors] sont :
 |Single Scheduled | nb = 1 | non | oui|
 |Scheduled | $N < nb < MAX | oui | oui|
 
-Il est possible de [personnaliser la _thread pool_][javadoc-threadpoolexecutor].
+Il est possible de [personnaliser la _thread pool_][javadoc-threadpoolexecutor][^custom-executor-service].
 
 [^tasks]: [Callable][javadoc-callable] ou [Runnable][javadoc-runnable]
+[^custom-executor-service]: [Dirigiste][source-dirigiste] est une implémentation d'_ExecutorService_
 
 [javadoc-executor-service]: https://docs.oracle.com/en/java/javase/12/docs/api/java.base/java/util/concurrent/ExecutorService.html
 [javadoc-future]: https://docs.oracle.com/en/java/javase/12/docs/api/java.base/java/util/concurrent/Future.html
@@ -74,3 +75,4 @@ Il est possible de [personnaliser la _thread pool_][javadoc-threadpoolexecutor].
 [javadoc-runnable]: https://docs.oracle.com/en/java/javase/12/docs/api/java.base/java/lang/Runnable.html
 [javadoc-executors]: https://docs.oracle.com/en/java/javase/12/docs/api/java.base/java/util/concurrent/Executors.html
 [javadoc-threadpoolexecutor]: https://docs.oracle.com/en/java/javase/12/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html
+[source-dirigiste]: https://github.com/ztellman/dirigiste
