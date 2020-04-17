@@ -87,7 +87,11 @@ infos de la JVM sans modification du code.
 
 ## Requêtage de la base de donnée
 
+TODO
+
 ## Alertes
+
+TODO
 
 [prometheus-official-website]: https://prometheus.io
 [prometheus-etymologie]: https://fr.wikipedia.org/wiki/Prométhée

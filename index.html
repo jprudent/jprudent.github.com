@@ -20,6 +20,9 @@ title: Blog de Jérôme Prudent
 
 <h2 class="index-page">Bestiaire informatique</h2>
 {% assign sorted_tags = site.tags | sort %}
+<p>Un article du bestiaire explique en 3 minutes de lecture
+une idée, un concept ou un logiciel dans le domaine de
+l'informatique.</p>
 <ul>
 {% for tag in sorted_tags %}
 {% assign zz = tag[1] | where: "category", "bestiaire" | sort %}
