@@ -10,3 +10,5 @@ Since October 2022, I don't use issues anymore. I switched to a note taking app 
 
 A selection of pages are published at [https://jprudent.github.io/blah](https://jprudent.github.io/blah).
 
+Elsewhere I was also author of:
+- 2023-12-20 [Type Classes in Scala3: a beginner guide](https://www.ledger.com/blog/type-classes-in-scala3-a-beginners-guide) ([wayback machine](https://web.archive.org/web/20231220170543/https://www.ledger.com/blog/type-classes-in-scala3-a-beginners-guide))
